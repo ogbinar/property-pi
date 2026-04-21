@@ -6,232 +6,279 @@
 
 ```
 /projects/property-pi/
-├── src/
-│   ├── app/                      # Next.js App Router routes
-│   │   ├── (dashboard)/          # Route group: authenticated pages
-│   │   │   ├── layout.tsx        # Shared dashboard layout
+├── src/                          # Next.js application source
+│   ├── app/                      # App router pages and layouts
+│   │   ├── (dashboard)/          # Protected dashboard routes
 │   │   │   ├── page.tsx          # Dashboard home
-│   │   │   ├── units/            # Units management
-│   │   │   ├── tenants/          # Tenants management
-│   │   │   ├── leases/           # Leases management
-│   │   │   ├── rent/             # Rent collection
-│   │   │   ├── expenses/         # Expenses tracking
+│   │   │   ├── layout.tsx        # Dashboard layout (sidebar + header)
+│   │   │   ├── tenants/          # Tenant management
+│   │   │   ├── units/            # Unit management
+│   │   │   ├── leases/           # Lease management
+│   │   │   ├── rent/             # Rent/payment operations
+│   │   │   ├── expenses/         # Expense management
 │   │   │   └── maintenance/      # Maintenance requests
-│   │   ├── login/                # Public: authentication
-│   │   ├── tenant/               # Tenant portal (partial)
-│   │   ├── globals.css           # Global styles
+│   │   ├── login/                # Authentication
+│   │   │   └── page.tsx          # Login form
+│   │   ├── tenant/               # Tenant portal
+│   │   │   └── portal/           # Tenant-facing pages
 │   │   ├── layout.tsx            # Root layout
-│   │   └── page.tsx              # Landing page
+│   │   ├── page.tsx              # Root page (redirects to /login)
+│   │   └── globals.css           # Global styles
 │   ├── components/               # React components
-│   │   ├── ui/                   # Primitive UI components
 │   │   ├── layout/               # Layout components
+│   │   │   ├── sidebar.tsx       # Navigation sidebar
+│   │   │   └── header.tsx        # Top header bar
 │   │   ├── auth/                 # Authentication components
-│   │   ├── dashboard/            # Dashboard-specific components
-│   │   ├── units/                # Units feature components
-│   │   ├── tenants/              # Tenants feature components
-│   │   ├── leases/               # Leases feature components
-│   │   ├── expenses/             # Expenses feature components
-│   │   ├── maintenance/          # Maintenance feature components
-│   │   └── rent/                 # Rent feature components
-│   ├── lib/                      # Utility libraries
+│   │   │   ├── AuthGuard.tsx     # Route protection wrapper
+│   │   │   └── LogoutButton.tsx  # Logout action
+│   │   ├── ui/                   # Reusable UI primitives
+│   │   ├── dashboard/            # Dashboard widgets
+│   │   ├── units/                # Unit-specific components
+│   │   ├── tenants/              # Tenant-specific components
+│   │   ├── leases/               # Lease-specific components
+│   │   ├── rent/                 # Rent/payment components
+│   │   ├── expenses/             # Expense components
+│   │   └── maintenance/          # Maintenance components
+│   ├── lib/                      # Utilities and services
 │   │   ├── api.ts                # PocketBase API client (922 lines)
-│   │   ├── pocketbase.ts         # PocketBase SDK initialization
-│   │   ├── AuthProvider.tsx      # Authentication context
-│   │   ├── tenant-api.ts         # Tenant portal API
-│   │   └── utils.ts              # Utility functions
+│   │   ├── pocketbase.ts         # PocketBase SDK configuration
+│   │   └── AuthProvider.tsx      # Authentication context
 │   └── types/                    # TypeScript type definitions
-│       └── pocketbase.ts         # Database record interfaces
-├── .planning/                    # Planning documents
+│       └── pocketbase.ts         # Collection type interfaces
+├── backend/                      # FastAPI backend
+│   └── app/
+│       ├── main.py               # FastAPI application entry
+│       ├── config.py             # Settings from environment
+│       └── routers/              # API route handlers
+│           ├── dashboard.py      # Dashboard aggregation
+│           ├── rent.py           # Rent automation
+│           ├── expenses.py       # Expense processing
+│           ├── leases.py         # Lease operations
+│           └── health.py         # Health check
+├── .planning/                    # Project planning documents
 │   ├── codebase/                 # Codebase analysis
 │   ├── phases/                   # Implementation phases
-│   └── intel/                    # Research notes
-├── .env                          # Environment variables
-├── next.config.ts                # Next.js configuration
-├── tsconfig.json                 # TypeScript configuration
-└── package.json                  # Dependencies and scripts
+│   └── intel/                    # Research and intelligence
+├── package.json                  # Frontend dependencies
+└── requirements.txt              # Backend dependencies
 ```
 
 ## Directory Purposes
 
-**`src/app/`:**
-- Purpose: Next.js App Router file-based routing
-- Contains: Page components, layouts, route groups
-- Key files: `layout.tsx` (root), `(dashboard)/layout.tsx` (authenticated)
+**`src/app`:**
+- Purpose: Next.js App Router pages and layouts
+- Contains: Route definitions, page components, layout wrappers
+- Key files: `src/app/layout.tsx`, `src/app/page.tsx`, `src/app/(dashboard)/page.tsx`
 
-**`src/app/(dashboard)/`:**
-- Purpose: Protected routes requiring authentication
-- Contains: Feature pages for property management
-- Route structure: `/units`, `/tenants`, `/leases`, `/expenses`, `/maintenance`, `/rent`
-- All pages use `'use client'` directive for client-side rendering
+**`src/app/(dashboard)`:**
+- Purpose: Protected dashboard routes with shared layout
+- Contains: Feature-specific route groups (tenants, units, leases, etc.)
+- Key files: `src/app/(dashboard)/layout.tsx`, `src/app/(dashboard)/page.tsx`
 
-**`src/app/login/`:**
-- Purpose: Public authentication route
-- Contains: Login page only
-- No AuthGuard wrapper
+**`src/components`:**
+- Purpose: Reusable React components organized by feature/domain
+- Contains: Feature-specific and shared components
+- Key files: `src/components/layout/sidebar.tsx`, `src/components/layout/header.tsx`
 
-**`src/components/ui/`:**
-- Purpose: Reusable primitive components (design system)
-- Contains: `button.tsx`, `input.tsx`, `select.tsx`, `card.tsx`, `table.tsx`, `modal.tsx`, `badge.tsx`, `empty-state.tsx`, `textarea.tsx`
-- All use Tailwind CSS with CVA for variants
+**`src/lib`:**
+- Purpose: Application services, utilities, and shared logic
+- Contains: API client, authentication provider, PocketBase configuration
+- Key files: `src/lib/api.ts`, `src/lib/AuthProvider.tsx`
 
-**`src/components/layout/`:**
-- Purpose: Application-level layout components
-- Contains: `sidebar.tsx` (navigation), `header.tsx` (top bar)
-- Used by dashboard layout wrapper
-
-**`src/components/auth/`:**
-- Purpose: Authentication-related components
-- Contains: `AuthGuard.tsx` (route protection)
-- Used by dashboard layout to enforce authentication
-
-**`src/components/*` (feature folders):**
-- Purpose: Feature-specific components
-- Examples: `src/components/units/unit-card.tsx`, `src/components/units/unit-form.tsx`
-- Naming: `<feature>-<purpose>.tsx` (kebab-case)
-
-**`src/lib/`:**
-- Purpose: Business logic and external service integration
-- Contains: API client, authentication provider, utilities
-- Key file: `api.ts` (centralized data access layer)
-
-**`src/types/`:**
+**`src/types`:**
 - Purpose: TypeScript type definitions
-- Contains: `pocketbase.ts` (database record interfaces)
-- Pure type definitions, no runtime code
+- Contains: Collection interfaces matching PocketBase schema
+- Key files: `src/types/pocketbase.ts`
+
+**`backend/app`:**
+- Purpose: FastAPI backend service
+- Contains: Application entry, configuration, route handlers
+- Key files: `backend/app/main.py`, `backend/app/config.py`
+
+**`backend/app/routers`:**
+- Purpose: API route handlers for automation/aggregation
+- Contains: Domain-specific router modules
+- Key files: `backend/app/routers/dashboard.py`, `backend/app/routers/rent.py`
 
 ## Key File Locations
 
 **Entry Points:**
-- `src/app/layout.tsx`: Root layout with providers
-- `src/app/page.tsx`: Landing page (redirects to dashboard or login)
-- `src/app/login/page.tsx`: Authentication form
+- `src/app/page.tsx` - Root route (redirects to login)
+- `src/app/login/page.tsx` - Login page
+- `src/app/(dashboard)/page.tsx` - Dashboard home
+- `backend/app/main.py` - FastAPI application entry
 
 **Configuration:**
-- `next.config.ts`: Next.js 16 configuration
-- `tsconfig.json`: TypeScript 5 with `@/*` path alias to `src/`
-- `package.json`: Dependencies (Next.js 16, React 19, PocketBase)
+- `package.json` - Frontend dependencies and scripts
+- `backend/requirements.txt` - Backend dependencies
+- `backend/app/config.py` - Backend settings from environment
+- `src/lib/pocketbase.ts` - PocketBase SDK configuration
 
 **Core Logic:**
-- `src/lib/api.ts`: All data operations (CRUD for units, tenants, leases, payments, expenses, maintenance)
-- `src/lib/AuthProvider.tsx`: Authentication context and hooks
-- `src/lib/pocketbase.ts`: PocketBase client initialization
+- `src/lib/api.ts` - All PocketBase CRUD operations and data transformations
+- `src/lib/AuthProvider.tsx` - Authentication context and hooks
+- `src/types/pocketbase.ts` - Type definitions for all collections
 
-**Feature Pages:**
-- `src/app/(dashboard)/units/page.tsx`: Units listing with search/filter
-- `src/app/(dashboard)/units/new/`: Unit creation form
-- `src/app/(dashboard)/units/[id]/page.tsx`: Unit detail view
-- `src/app/(dashboard)/units/[id]/edit/`: Unit edit form
+**Routing:**
+- `src/app/(dashboard)/layout.tsx` - Dashboard layout with sidebar/header
+- `src/components/layout/sidebar.tsx` - Navigation sidebar
+- `src/components/layout/header.tsx` - Top header bar
 
-**Pattern across features:**
-```
-src/app/(dashboard)/<feature>/
-├── page.tsx              # List view
-├── new/
-│   └── page.tsx          # Create form
-└── [id]/
-    ├── page.tsx          # Detail view
-    └── edit/
-        └── page.tsx      # Edit form
-```
+**API Routers:**
+- `backend/app/routers/dashboard.py` - Dashboard aggregation endpoint
+- `backend/app/routers/rent.py` - Payment generation and overdue marking
+- `backend/app/routers/expenses.py` - Expense processing
+- `backend/app/routers/leases.py` - Lease operations
+- `backend/app/routers/health.py` - Health check endpoint
+
+## Feature Module Structure
+
+**Units Module:**
+- Routes: `/units`, `/units/new`, `/units/[id]`, `/units/[id]/edit`
+- Components: `src/components/units/`
+- API: `src/lib/api.ts` → `getUnits()`, `getUnit()`, `createUnit()`, `updateUnit()`, `deleteUnit()`
+
+**Tenants Module:**
+- Routes: `/tenants`, `/tenants/new`, `/tenants/[id]`, `/tenants/[id]/edit`
+- Components: `src/components/tenants/`, `src/components/tenant/`
+- API: `src/lib/api.ts` → `getTenants()`, `getTenant()`, `createTenant()`, `updateTenant()`, `deleteTenant()`
+
+**Leases Module:**
+- Routes: `/leases`, `/leases/new`, `/leases/[id]`
+- Components: `src/components/leases/`
+- API: `src/lib/api.ts` → `getLeases()`, `getLease()`, `createLease()`, `updateLease()`, `deleteLease()`
+
+**Rent/Payments Module:**
+- Routes: `/rent`
+- Components: `src/components/rent/`
+- API: `src/lib/api.ts` → `getMonthRent()`, `generateRent()`, `markPaid()`
+
+**Expenses Module:**
+- Routes: `/expenses`, `/expenses/new`, `/expenses/[id]`, `/expenses/[id]/edit`
+- Components: `src/components/expenses/`
+- API: `src/lib/api.ts` → `getExpenses()`, `getExpense()`, `createExpense()`, `updateExpense()`, `deleteExpense()`
+
+**Maintenance Module:**
+- Routes: `/maintenance`, `/maintenance/new`, `/maintenance/[id]`, `/maintenance/[id]/edit`
+- Components: `src/components/maintenance/`
+- API: `src/lib/api.ts` → `getMaintenance()`, `getMaintenanceRequest()`, `createMaintenance()`, `updateMaintenance()`, `deleteMaintenance()`
 
 ## Naming Conventions
 
 **Files:**
-- Components: kebab-case (`unit-card.tsx`, `auth-guard.tsx`)
-- Pages: `page.tsx` (Next.js convention)
-- Layouts: `layout.tsx` (Next.js convention)
-- Utilities: camelCase (`utils.ts`, `api.ts`)
-- Types: kebab-case (`pocketbase.ts`)
+- PascalCase for React components: `AuthGuard.tsx`, `RevenueCard.tsx`
+- lowercase for utilities/libraries: `api.ts`, `pocketbase.ts`, `utils.ts`
+- lowercase with hyphens for routes: `page.tsx`, `layout.tsx`
 
 **Directories:**
-- Feature folders: kebab-case (`user-profile`, `payment-processing`)
-- Route groups: parentheses (`(dashboard)`)
-- Dynamic routes: brackets (`[id]`, `[tenantId]`)
+- lowercase with hyphens: `(dashboard)`, `tenant-portal`
+- lowercase for feature modules: `components/units`, `components/tenants`
 
-**Components:**
-- PascalCase for component exports (`UnitCard`, `Sidebar`)
-- Named exports only (no default exports in components)
+**Functions:**
+- camelCase for API functions: `getUnits()`, `createUnit()`, `updateTenant()`
+- PascalCase for React components: `DashboardPage()`, `Sidebar()`
+
+**Variables:**
+- camelCase for variables: `unit_counts`, `monthly_revenue` (API mapping)
+- camelCase for React props: `unitNumber`, `tenantName`
+
+## Import Organization
+
+**Order:**
+1. React imports (`import { useState } from 'react'`)
+2. Third-party libraries (`import { useRouter } from 'next/navigation'`)
+3. Local imports from `@/` path alias
+4. Relative imports
+
+**Path Aliases:**
+- `@/lib/` - Service layer
+- `@/components/` - Component library
+- `@/types/` - Type definitions
+- `@/app/` - App router pages
 
 ## Where to Add New Code
 
 **New Feature Page:**
-- Primary code: `src/app/(dashboard)/<feature>/page.tsx`
-- Tests: `<feature>.test.tsx` (co-located or `__tests__/` subfolder)
+- Route: Add to `src/app/(dashboard)/<feature>/`
+- Page: `src/app/(dashboard)/<feature>/page.tsx`
+- Components: `src/components/<feature>/`
+- API: Add to `src/lib/api.ts`
 
 **New Component:**
-- UI primitive: `src/components/ui/<component>.tsx`
-- Feature component: `src/components/<feature>/<component>.tsx`
-- Layout component: `src/components/layout/<component>.tsx`
+- Feature-specific: `src/components/<feature>/<component>.tsx`
+- Reusable UI: `src/components/ui/<component>.tsx`
+- Layout: `src/components/layout/<component>.tsx`
 
-**New API Function:**
-- Add to `src/lib/api.ts` (centralized)
-- Add type to `src/types/pocketbase.ts` if new record type
+**New Backend Router:**
+- Route handler: `backend/app/routers/<feature>.py`
+- Register in: `backend/app/main.py` → `app.include_router()`
 
-**New Route:**
-- Public route: `src/app/<route>/page.tsx`
-- Protected route: `src/app/(dashboard)/<route>/page.tsx`
+**New Type:**
+- Interface: `src/types/pocketbase.ts` (if PocketBase collection)
+- Local types: Same file as component using them
 
 ## Special Directories
 
-**`(dashboard)` Route Group:**
-- Purpose: Share layout and auth requirement across authenticated routes
+**`src/app/(dashboard)`:**
+- Purpose: Route group with shared layout (parentheses exclude from URL)
 - Generated: No
 - Committed: Yes
-- Note: Folder name in parentheses doesn't appear in URL
+- Note: All routes here require authentication via `AuthGuard`
 
-**`[id]` Dynamic Routes:**
-- Purpose: Resource detail pages with URL parameter
-- Example: `/units/abc123` → `src/app/(dashboard)/units/[id]/page.tsx`
-- Access parameter via `useParams()` hook
+**`src/components/ui`:**
+- Purpose: Reusable UI primitives (buttons, cards, inputs, etc.)
+- Generated: No
+- Committed: Yes
+- Note: Contains base components used across features
+
+**`backend/app/routers`:**
+- Purpose: FastAPI route handlers
+- Generated: No
+- Committed: Yes
+- Note: Only automation/aggregation logic (not CRUD)
 
 **`.planning/`:**
-- Purpose: GSD workflow documents
-- Generated: Yes (by agents)
-- Committed: Yes (for phase continuity)
-- Subfolders: `codebase/`, `phases/`, `intel/`
-
-**`src/components/ui/`:**
-- Purpose: Shared design system primitives
-- Generated: No
+- Purpose: Project planning and documentation
+- Generated: Yes (by GSD commands)
 - Committed: Yes
-- Note: Should be framework-agnostic, reusable across features
+- Note: Contains codebase analysis, implementation phases, research
 
-## Module Boundaries
+## API Endpoint Structure
 
-**Strict Boundaries:**
-- `src/types/` → Pure types, no imports from other modules
-- `src/lib/pocketbase.ts` → Only PocketBase SDK initialization
-- `src/lib/api.ts` → Only data access, no React components
-- `src/lib/AuthProvider.tsx` → Only auth context, imports from `lib/`
+**Frontend API (`src/lib/api.ts`):**
+- All functions are async
+- Return typed interfaces (not raw PocketBase records)
+- Handle status mapping and data transformation
+- Use PocketBase SDK directly (not via FastAPI)
 
-**Flexible Boundaries:**
-- `src/components/` → Can import from `lib/`, `types/`, other components
-- `src/app/` → Can import from `components/`, `lib/`, `types/`
+**Backend API (FastAPI):**
+- Prefix: `/api/fastapi/`
+- Endpoints:
+  - `GET /api/fastapi/dashboard` - Aggregated dashboard data
+  - `POST /api/fastapi/rent/generate` - Generate monthly payments
+  - `POST /api/fastapi/rent/mark-overdue` - Mark overdue payments
+  - `GET /api/fastapi/expenses/*` - Expense processing
+  - `GET /api/fastapi/leases/*` - Lease operations
+  - `GET /health` - Health check
 
-**Import Path Convention:**
-- Use path alias: `@/lib/api`, `@/components/ui/button`
-- Relative imports only within same folder
+## Module Dependencies
 
-## Component Hierarchy
+**Frontend → PocketBase:**
+- Direct SDK usage via `src/lib/pocketbase.ts`
+- All CRUD operations go through PocketBase
 
-**Dashboard Page Structure:**
-```
-DashboardLayout (src/app/(dashboard)/layout.tsx)
-├── Sidebar (src/components/layout/sidebar.tsx)
-└── Main Content
-    ├── Header (src/components/layout/header.tsx)
-    └── Page Component (e.g., src/app/(dashboard)/units/page.tsx)
-        ├── Feature Component (e.g., UnitCard)
-        └── UI Primitives (Button, Input, Table, etc.)
-```
+**Frontend → FastAPI:**
+- Only for automation/aggregation
+- Called via `fetch()` (not typed client)
 
-**Authentication Flow:**
-```
-RootLayout (src/app/layout.tsx)
-└── AuthProvider (src/lib/AuthProvider.tsx)
-    └── AuthGuard (src/components/auth/AuthGuard.tsx)
-        └── Dashboard Content
-```
+**Backend → PocketBase:**
+- HTTP client (`httpx`) calls PocketBase API
+- Uses admin token for authenticated requests
+
+**Component Dependencies:**
+- Dashboard components depend on `src/lib/api.ts`
+- All feature components depend on `src/lib/api.ts`
+- Auth components depend on `src/lib/AuthProvider.tsx`
 
 ---
 

@@ -2,399 +2,637 @@
 
 **Analysis Date:** 2026-04-21
 
+---
+
 ## Test Framework
 
-**Status:** No test framework configured.
+**Status:** No testing framework configured
 
-**Runner:** None detected
-- No test runner found (no Vitest, Jest, Mocha, or similar)
-- No test configuration files present (`vitest.config.ts`, `jest.config.js`, `playwright.config.ts`, etc.)
-- No test dependencies in `package.json`
+**Detected:**
+- No Jest, Vitest, or similar test runner
+- No test configuration files (`jest.config.*`, `vitest.config.*`)
+- No test assertion libraries (Jest expect, Chai, etc.)
 
-**Dependencies from `package.json`:**
-```json
-{
-  "dependencies": {
-    "@hookform/resolvers": "^5.2.1",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "date-fns": "^4.1.0",
-    "lucide-react": "^1.8.0",
-    "next": "16.2.4",
-    "pocketbase": "^0.25.0",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "react-hook-form": "^7.72.1",
-    "recharts": "^3.8.1",
-    "sonner": "^2.0.7",
-    "tailwind-merge": "^3.5.0",
-    "zod": "^4.3.6"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.4",
-    "tailwindcss": "^4",
-    "tsx": "^4.21.0",
-    "typescript": "^5"
-  }
-}
-```
-
-**Run Commands:** None defined
-- No `test`, `test:watch`, or `test:coverage` scripts in `package.json`
-- Only scripts present: `dev`, `build`, `start`, `lint`
-
-## Test File Organization
-
-**Location:** No test files found
-
-**Search Results:**
-- No `.test.ts`, `.test.tsx`, `.spec.ts`, or `.spec.tsx` files in `src/`
-- No `__tests__/` directories
-- No `tests/` directory
-- No test setup files (`setupTests.ts`, `vitest.setup.ts`, `jest.setup.js`)
-
-**File Organization Pattern (recommended):**
-```
-src/
-├── components/
-│   ├── ui/
-│   │   ├── button.tsx
-│   │   ├── button.test.tsx          # Would test variant, size, loading states
-│   │   ├── input.tsx
-│   │   ├── input.test.tsx           # Would test validation, onChange
-│   │   └── modal.tsx
-│   └── tenants/
-│       ├── tenant-table.tsx
-│       └── tenant-table.test.tsx    # Would test rendering, actions
-├── lib/
-│   ├── api.ts
-│   ├── api.test.ts                  # Would test data mapping, error handling
-│   ├── pocketbase.ts
-│   ├── utils.ts
-│   └── utils.test.ts                # Would test cn() utility
-└── types/
-    └── pocketbase.ts                # Type definitions (not testable)
-```
-
-## Testing Patterns
-
-**Unit Tests:** Not implemented
-- No utility function tests (`src/lib/utils.ts` — `cn()` function)
-- No data mapping tests (`src/lib/api.ts` — `getStatusMap()`, `mapUnit()`, `mapTenant()`)
-- No component tests for UI primitives (`button.tsx`, `input.tsx`, `card.tsx`)
-- No component tests for feature components (`tenant-table.tsx`, `lease-form.tsx`)
-
-**Integration Tests:** Not implemented
-- No PocketBase client tests (`src/lib/pocketbase.ts`)
-- No API data flow tests (fetch → map → render)
-- No AuthProvider tests (`src/lib/AuthProvider.tsx`)
-
-**E2E Tests:** Not implemented
-- No Playwright, Cypress, or similar E2E tools configured
-- No test directories for E2E (`e2e/`, `integration/`)
-- No user flow tests (login → dashboard → CRUD operations)
-
-## Component Testing Analysis
-
-**Components Requiring Tests:**
-
-### UI Primitives (`src/components/ui/`)
-1. **button.tsx** — Test variants (primary, secondary, outline, ghost, danger), sizes (sm, md, lg, icon), loading state, disabled state
-2. **input.tsx** — Test onChange, value prop, placeholder, error state
-3. **card.tsx** — Test rendering with/without header, children
-4. **modal.tsx** — Test open/close, backdrop click, escape key
-5. **badge.tsx** — Test variants (success, neutral, warning, danger)
-6. **table.tsx** — Test rendering rows, columns
-7. **select.tsx** — Test option selection
-8. **textarea.tsx** — Test onChange, value
-9. **empty-state.tsx** — Test rendering with different messages
-
-### Feature Components
-1. **tenant-table.tsx** — Test rendering tenant list, action buttons, empty state
-2. **tenant-form.tsx** — Test form submission, validation errors
-3. **lease-table.tsx** — Test rendering leases, status badges
-4. **lease-form.tsx** — Test create/edit flows
-5. **unit-table.tsx** — Test rendering units, status indicators
-6. **maintenance-table.tsx** — Test priority badges, status filtering
-7. **expense-table.tsx** — Test category filtering, date display
-
-### Layout Components
-1. **Sidebar** — Test navigation items, active state, mobile toggle
-2. **header.tsx** — Test rendering, user menu
-
-### Auth Components
-1. **AuthGuard.tsx** — Test redirect behavior, loading state
-
-## Mocking
-
-**Framework:** None configured
-
-**Recommended Patterns (for future setup):**
-
-### Mocking PocketBase
-```typescript
-// tests/mocks/pocketbase.ts
-import PocketBase from 'pocketbase'
-
-const mockAuthStore = {
-  isValid: true,
-  record: { id: 'test-id', email: 'test@example.com' },
-  onChange: jest.fn(),
-  clear: jest.fn(),
-}
-
-const mockCollection = {
-  getFullList: jest.fn(),
-  getOne: jest.fn(),
-  create: jest.fn(),
-  update: jest.fn(),
-  delete: jest.fn(),
-}
-
-jest.mock('pocketbase', () => {
-  return jest.fn(() => ({
-    authStore: mockAuthStore,
-    collection: jest.fn(() => mockCollection),
-  }))
-})
-```
-
-### Mocking API Functions
-```typescript
-// tests/mocks/api.ts
-export const mockApi = {
-  getUnits: jest.fn(),
-  getTenants: jest.fn(),
-  createUnit: jest.fn(),
-  // ... other functions
-}
-```
-
-### Test Data Factories
-```typescript
-// tests/factories/unit.ts
-export function createUnitRecord(overrides = {}) {
-  return {
-    id: 'test-id',
-    number: '101',
-    floor: 1,
-    area: 1000,
-    type: 'studio',
-    rent: 1500,
-    deposit: 1500,
-    status: 'vacant',
-    features: '',
-    description: '',
-    rentHistory: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    ...overrides,
-  }
-}
-
-export function createTenantRecord(overrides = {}) {
-  return {
-    id: 'tenant-id',
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john@example.com',
-    phone: '555-1234',
-    unit: '',
-    moveInDate: '2024-01-01',
-    moveOutDate: null,
-    status: 'active',
-    notes: '',
-    contactLog: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    ...overrides,
-  }
-}
-```
-
-## Fixtures and Test Data
-
-**Location:** Not established
-
-**Recommended Structure:**
-```
-tests/
-├── fixtures/
-│   ├── units.ts           # Unit test data
-│   ├── tenants.ts         # Tenant test data
-│   ├── leases.ts          # Lease test data
-│   ├── payments.ts        # Payment test data
-│   ├── expenses.ts        # Expense test data
-│   └── maintenance.ts     # Maintenance test data
-├── mocks/
-│   ├── pocketbase.ts      # PocketBase SDK mock
-│   ├── api.ts             # API function mock
-│   └── router.ts          # Next.js router mock
-└── setup/
-    └── global.ts          # Global test setup
-```
-
-**Example Fixture:**
-```typescript
-// tests/fixtures/dashboard.ts
-export const mockDashboardData = {
-  unit_counts: {
-    total: 10,
-    occupied: 7,
-    vacant: 2,
-    maintenance: 1,
-    under_renovation: 0,
-  },
-  occupancy_rate: 70,
-  monthly_revenue: {
-    expected: 15000,
-    collected: 12000,
-  },
-  expenses: {
-    total: 3000,
-    net_profit: 9000,
-    by_category: {
-      Maintenance: 1500,
-      Utilities: 1000,
-      Insurance: 500,
-    },
-  },
-  recent_activities: [],
-  upcoming_expirations: [],
-}
-```
-
-## Coverage
-
-**Requirements:** None enforced — no coverage tool configured
-
-**Recommended Setup:**
+**Scripts in `package.json`:**
 ```json
 {
   "scripts": {
-    "test": "vitest",
-    "test:watch": "vitest watch",
-    "test:coverage": "vitest --coverage"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
   }
 }
 ```
 
-**View Coverage (after setup):**
+**Missing Test Scripts:**
+- No `test` script
+- No `test:watch` script
+- No `test:coverage` script
+
+---
+
+## Test File Organization
+
+**Status:** No test files detected in source directories
+
+**Search Results:**
+- No `*.test.*` files in `src/`
+- No `*.spec.*` files in `src/`
+- No `__tests__` directories
+- No `tests/` or `test/` directories
+
+**Test Directory Structure:**
+```
+Not configured
+```
+
+**Expected Structure (if implementing):**
+```
+src/
+├── __tests__/
+│   ├── components/
+│   ├── lib/
+│   └── app/
+└── test/
+    └── fixtures/
+```
+
+---
+
+## Test Framework Recommendations
+
+### Option 1: Jest + React Testing Library (Popular Choice)
+
+**Installation:**
+```bash
+npm install -D jest @types/jest jest-environment-jsdom @testing-library/react @testing-library/jest-dom @testing-library/user-event
+```
+
+**Configuration (`jest.config.js`):**
+```javascript
+const nextJest = require('next/jest')
+
+const createJestConfig = nextJest({
+  dir: './',
+})
+
+const customJestConfig = {
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  testEnvironment: 'jest-environment-jsdom',
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
+}
+
+module.exports = createJestConfig(customJestConfig)
+```
+
+**Package.json Scripts:**
+```json
+{
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  }
+}
+```
+
+### Option 2: Vitest (Modern Alternative)
+
+**Installation:**
+```bash
+npm install -D vitest @testing-library/react @testing-library/jest-dom jsdom
+```
+
+**Configuration (`vitest.config.ts`):**
+```typescript
+import { defineConfig } from 'vitest/config'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./test/setup.ts'],
+  },
+})
+```
+
+---
+
+## Test Structure (Recommended Patterns)
+
+### Unit Test Example
+
+```typescript
+// src/lib/utils.test.ts
+import { describe, it, expect } from 'vitest'
+import { cn } from '@/lib/utils'
+
+describe('cn utility', () => {
+  it('merges tailwind classes correctly', () => {
+    expect(cn('px-4 py-2', 'bg-blue-500')).toBe('px-4 py-2 bg-blue-500')
+  })
+
+  it('handles conditional classes', () => {
+    const isActive = true
+    expect(cn('base-class', isActive && 'active-class')).toBe('base-class active-class')
+  })
+})
+```
+
+### Component Test Example
+
+```typescript
+// src/components/ui/button.test.tsx
+import { describe, it, expect, vi } from 'vitest'
+import { render, screen, fireEvent } from '@testing-library/react'
+import { Button } from '@/components/ui/button'
+
+describe('Button component', () => {
+  it('renders children correctly', () => {
+    render(<Button>Click me</Button>)
+    expect(screen.getByText('Click me')).toBeInTheDocument()
+  })
+
+  it('calls onClick when clicked', () => {
+    const handleClick = vi.fn()
+    render(<Button onClick={handleClick}>Click</Button>)
+    
+    fireEvent.click(screen.getByText('Click'))
+    expect(handleClick).toHaveBeenCalledTimes(1)
+  })
+
+  it('is disabled when isLoading is true', () => {
+    render(<Button isLoading>Loading</Button>)
+    expect(screen.getByText('Loading')).toBeDisabled()
+  })
+
+  it('applies correct variant classes', () => {
+    const { container } = render(<Button variant="danger">Danger</Button>)
+    expect(container.firstChild).toHaveClass('bg-red-600')
+  })
+})
+```
+
+### Form Component Test Example
+
+```typescript
+// src/components/units/unit-form.test.tsx
+import { describe, it, expect, vi } from 'vitest'
+import { render, screen, fireEvent } from '@testing-library/react'
+import { UnitForm } from '@/components/units/unit-form'
+
+describe('UnitForm component', () => {
+  const mockOnSubmit = vi.fn()
+
+  it('renders form fields', () => {
+    render(
+      <UnitForm
+        submitLabel="Create Unit"
+        onSubmit={mockOnSubmit}
+        isLoading={false}
+      />
+    )
+    
+    expect(screen.getByLabelText('Unit Number')).toBeInTheDocument()
+    expect(screen.getByLabelText('Type')).toBeInTheDocument()
+    expect(screen.getByLabelText('Monthly Rent')).toBeInTheDocument()
+  })
+
+  it('submits form data', async () => {
+    render(
+      <UnitForm
+        submitLabel="Create Unit"
+        onSubmit={mockOnSubmit}
+        isLoading={false}
+      />
+    )
+
+    fireEvent.change(screen.getByLabelText('Unit Number'), {
+      target: { value: 'A-101' },
+    })
+    fireEvent.change(screen.getByLabelText('Type'), {
+      target: { value: '1BR' },
+    })
+    fireEvent.change(screen.getByLabelText('Monthly Rent'), {
+      target: { value: '15000' },
+    })
+    fireEvent.change(screen.getByLabelText('Security Deposit'), {
+      target: { value: '30000' },
+    })
+
+    fireEvent.click(screen.getByText('Create Unit'))
+    expect(mockOnSubmit).toHaveBeenCalledWith({
+      unitNumber: 'A-101',
+      type: '1BR',
+      rentAmount: '15000',
+      securityDeposit: '30000',
+    })
+  })
+
+  it('shows validation errors for empty fields', () => {
+    render(
+      <UnitForm
+        submitLabel="Create Unit"
+        onSubmit={mockOnSubmit}
+        isLoading={false}
+      />
+    )
+
+    fireEvent.click(screen.getByText('Create Unit'))
+    expect(screen.getByText('Unit number is required')).toBeInTheDocument()
+  })
+})
+```
+
+---
+
+## Mocking Strategies
+
+### API Mocking (Recommended)
+
+**Using MSW (Mock Service Worker):**
+
+```bash
+npm install -D msw
+```
+
+```typescript
+// test/mocks/handlers.ts
+import { http, HttpResponse } from 'msw'
+
+export const handlers = [
+  http.get('/api/units', () => {
+    return HttpResponse.json([
+      { id: '1', name: 'Unit A', status: 'vacant' },
+    ])
+  }),
+
+  http.post('/api/units', async ({ request }) => {
+    const data = await request.json()
+    return HttpResponse.json({ id: '2', ...data })
+  }),
+]
+```
+
+### PocketBase Mocking
+
+```typescript
+// test/mocks/pocketbase.ts
+import { vi } from 'vitest'
+import PocketBase from 'pocketbase'
+
+// Mock PocketBase instance
+export const mockPocketBase = {
+  authStore: {
+    isValid: true,
+    record: { id: '1', email: 'test@example.com' },
+    onChange: vi.fn(),
+    clear: vi.fn(),
+  },
+  collection: vi.fn(() => ({
+    authWithPassword: vi.fn(),
+    getOne: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+  })),
+}
+
+vi.mock('@/lib/pocketbase', () => ({
+  default: mockPocketBase,
+}))
+```
+
+---
+
+## Fixtures and Factories
+
+### Test Data Factories (Recommended)
+
+```typescript
+// test/fixtures/units.ts
+export const unitFixture = {
+  id: '1',
+  name: 'Unit A-101',
+  number: 'A-101',
+  floor: 1,
+  area: 50,
+  type: '1BR',
+  rent: 15000,
+  deposit: 30000,
+  status: 'vacant' as const,
+  features: 'Balcony, AC',
+  description: 'Cozy 1BR unit',
+  rentHistory: [],
+  createdAt: '2024-01-01T00:00:00Z',
+  updatedAt: '2024-01-01T00:00:00Z',
+}
+
+export function createUnitFixture(overrides?: Partial<typeof unitFixture>) {
+  return { ...unitFixture, ...overrides }
+}
+```
+
+```typescript
+// test/fixtures/tenants.ts
+export const tenantFixture = {
+  id: '1',
+  firstName: 'John',
+  lastName: 'Doe',
+  email: 'john@example.com',
+  phone: '123-456-7890',
+  unit: '1',
+  moveInDate: '2024-01-01',
+  moveOutDate: null,
+  status: 'active' as const,
+  notes: '',
+  contactLog: [],
+  createdAt: '2024-01-01T00:00:00Z',
+  updatedAt: '2024-01-01T00:00:00Z',
+}
+```
+
+### Location
+
+**Recommended:** `test/fixtures/` or `src/__tests__/fixtures/`
+
+---
+
+## Coverage
+
+**Status:** No coverage configuration or reporting
+
+**Recommended Setup (Jest):**
+
 ```bash
 npm run test:coverage
 ```
 
+**Coverage Configuration:**
+```javascript
+// jest.config.js
+module.exports = {
+  coverageThreshold: {
+    global: {
+      branches: 70,
+      functions: 70,
+      lines: 70,
+      statements: 70,
+    },
+  },
+  coverageDirectory: 'coverage',
+  collectCoverageFrom: [
+    'src/**/*.{ts,tsx}',
+    '!src/**/*.d.ts',
+    '!src/app/**/page.tsx',
+  ],
+}
+```
+
+**Coverage Report Location:** `./coverage/lcov-report/index.html`
+
+---
+
 ## Test Types
 
-**Unit Tests:** Not implemented
-- **Scope:** Individual functions, utilities, small components
-- **Approach:** Isolated tests with mocked dependencies
-- **Examples to add:**
-  - `getStatusMap()` — test status conversion logic
-  - `cn()` utility — test class merging
-  - Form validation schemas (if Zod is used)
+### Unit Tests (Recommended Priority: High)
 
-**Integration Tests:** Not implemented
-- **Scope:** API data flow, component interactions
-- **Approach:** Test multiple layers together (API → component)
-- **Examples to add:**
-  - `getUnits()` with mocked PocketBase response
-  - `AuthProvider` context flow
-  - Form submission with `react-hook-form`
+**Scope:**
+- Utility functions (`src/lib/utils.ts`)
+- Form validation schemas
+- Type guards and helpers
 
-**E2E Tests:** Not implemented
-- **Framework:** Not configured
-- **Recommended:** Playwright or Cypress
-- **Tests to add:**
-  - Login flow
-  - Create unit flow
-  - Create tenant flow
-  - Lease creation flow
-  - Rent payment flow
+**Example Files:**
+- `src/lib/utils.test.ts`
+- `src/types/pocketbase.test.ts`
+
+### Component Tests (Recommended Priority: High)
+
+**Scope:**
+- UI components (`src/components/ui/*`)
+- Feature components (`src/components/{feature}/*`)
+- Form components
+
+**Example Files:**
+- `src/components/ui/button.test.tsx`
+- `src/components/units/unit-form.test.tsx`
+- `src/components/auth/auth-guard.test.tsx`
+
+### Integration Tests (Recommended Priority: Medium)
+
+**Scope:**
+- API client functions (`src/lib/api.ts`)
+- PocketBase interactions
+- Authentication flow
+
+**Example Files:**
+- `src/lib/api.test.ts`
+- `src/lib/AuthProvider.test.tsx`
+
+### E2E Tests (Recommended Priority: Low)
+
+**Status:** Not configured
+
+**Recommended Tools:**
+- Playwright (Next.js recommended)
+- Cypress
+
+**Installation (Playwright):**
+```bash
+npm install -D @playwright/test
+npx playwright install
+```
+
+**Configuration (`playwright.config.ts`):**
+```typescript
+import { defineConfig } from '@playwright/test'
+
+export default defineConfig({
+  testDir: './e2e',
+  use: {
+    baseURL: 'http://localhost:3000',
+  },
+  projects: [
+    { name: 'chromium', use: { browserName: 'chromium' } },
+  ],
+})
+```
+
+**Example E2E Test:**
+```typescript
+// e2e/login.spec.ts
+import { test, expect } from '@playwright/test'
+
+test('login flow', async ({ page }) => {
+  await page.goto('/login')
+  await page.fill('#email', 'admin@example.com')
+  await page.fill('#password', 'password123')
+  await page.click('button[type="submit"]')
+  await expect(page).toHaveURL('/')
+})
+```
+
+---
+
+## CI/CD Test Integration
+
+**Status:** No CI/CD pipeline configured
+
+**Detected:**
+- No `.github/workflows/` directory
+- No CI configuration files
+
+**Recommended GitHub Actions Workflow:**
+
+```yaml
+# .github/workflows/test.yml
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Lint
+        run: npm run lint
+      
+      - name: Run tests
+        run: npm run test
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+```
+
+---
 
 ## Common Patterns (Recommended)
 
-**Async Testing:**
+### Async Testing
+
 ```typescript
-// Would look like this with Vitest + Testing Library
-import { render, screen, waitFor } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
+// With async/await
+it('handles async operations', async () => {
+  const data = await fetchData()
+  expect(data).toBeDefined()
+})
 
-describe('UnitTable', () => {
-  it('loads and displays units', async () => {
-    const mockUnits = [/* ... */]
-    vi.spyOn(api, 'getUnits').mockResolvedValue(mockUnits)
-
-    render(<UnitTable />)
-
-    await waitFor(() => {
-      expect(screen.getByText('101')).toBeInTheDocument()
-    })
-  })
+// With Promise
+it('returns a promise', () => {
+  const promise = asyncFunction()
+  expect(promise).toBeInstanceOf(Promise)
 })
 ```
 
-**Error Testing:**
+### Error Testing
+
 ```typescript
-describe('UnitTable', () => {
-  it('shows error state when fetch fails', async () => {
-    vi.spyOn(api, 'getUnits').mockRejectedValue(new Error('Failed to fetch'))
+// Testing thrown errors
+it('throws an error for invalid input', () => {
+  expect(() => validateInput('')).toThrow('Invalid input')
+})
 
-    render(<UnitTable />)
+// Testing rejected promises
+it('rejects on failure', async () => {
+  await expect(failingFunction()).rejects.toThrow('Failed')
+})
 
-    await waitFor(() => {
-      expect(screen.getByText(/failed to load/i)).toBeInTheDocument()
-    })
+// Testing error messages in try-catch
+it('handles error state', async () => {
+  const { result } = renderHook(() => useAuth())
+  await act(async () => {
+    await result.current.signIn('invalid', 'credentials')
   })
+  expect(result.current.error).toBe('Invalid credentials')
 })
 ```
 
-**Component Snapshot Testing:**
-```typescript
-import { render } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
-import { Button } from '@/components/ui/button'
+### Context Testing
 
-describe('Button', () => {
-  it('matches snapshot', () => {
-    const { container } = render(<Button>Click</Button>)
-    expect(container).toMatchSnapshot()
+```typescript
+it('provides auth context values', () => {
+  const { result } = renderHook(() => useAuth(), {
+    wrapper: ({ children }) => (
+      <AuthProvider>
+        {children}
+      </AuthProvider>
+    ),
   })
+  
+  expect(result.current.user).toBeNull()
+  expect(result.current.isLoading).toBe(true)
 })
 ```
 
-## Testing Recommendations
+---
 
-### Priority 1: Critical Infrastructure
-1. **Set up Vitest** — Fast, Next.js-compatible test runner
-2. **Configure Testing Library** — For React component testing
-3. **Add MSW (Mock Service Worker)** — For API mocking
-4. **Create test utilities** — Custom render, mock factories
+## Test Coverage Gaps
 
-### Priority 2: Core Functionality
-1. **Test data mapping functions** — `getStatusMap()`, `mapUnit()`, `mapTenant()`
-2. **Test UI primitives** — `Button`, `Input`, `Modal`, `Badge`
-3. **Test table components** — `TenantTable`, `UnitTable`, `LeaseTable`
-4. **Test form components** — `TenantForm`, `UnitForm`, `LeaseForm`
+### Currently Untested Areas
 
-### Priority 3: Integration
-1. **Test API layer** — Mock PocketBase, test `api.ts` functions
-2. **Test AuthProvider** — Context flow, login/logout
-3. **Test layout components** — `Sidebar`, `Header`
+| Area | Files | Risk | Priority |
+|------|-------|------|----------|
+| Form validation | `src/components/**/unit-form.tsx`, `*-form.tsx` | High | High |
+| Auth flow | `src/lib/AuthProvider.tsx`, `src/components/auth/` | High | High |
+| API client | `src/lib/api.ts`, `src/lib/tenant-api.ts` | High | High |
+| UI components | `src/components/ui/*` | Medium | High |
+| Page components | `src/app/**/page.tsx` | Medium | Medium |
+| Layout components | `src/components/layout/*` | Low | Low |
 
-### Priority 4: E2E
-1. **Set up Playwright** — Browser automation
-2. **Test critical user flows:**
-   - Login → Dashboard
-   - Create unit
-   - Create tenant
-   - Create lease
-   - Record payment
+### Critical Test Files to Create First
+
+1. **`src/lib/utils.test.ts`** - Tests `cn()` utility
+2. **`src/components/ui/button.test.tsx`** - Core UI component
+3. **`src/components/auth/auth-guard.test.tsx`** - Auth protection
+4. **`src/lib/AuthProvider.test.tsx`** - Auth context
+5. **`src/components/units/unit-form.test.tsx`** - Form validation
+
+---
+
+## Recommendations Summary
+
+### Immediate Actions
+
+1. **Choose a test framework** - Vitest (modern) or Jest (established)
+2. **Set up test configuration** - Config file + test scripts in package.json
+3. **Create test directory structure** - `src/__tests__/` or `test/`
+4. **Write utility tests first** - `utils.ts` is small and foundational
+5. **Add test script to CI** - Even without full coverage initially
+
+### Short-term Goals
+
+1. **Achieve 70%+ coverage** on `src/lib/` utilities
+2. **Test all UI components** in `src/components/ui/`
+3. **Add form validation tests** for all `*-form.tsx` components
+4. **Set up coverage reporting** with thresholds
+
+### Long-term Goals
+
+1. **Add E2E tests** with Playwright for critical user flows
+2. **Implement MSW** for API mocking
+3. **Achieve 80%+ overall coverage**
+4. **Add visual regression tests** (optional)
 
 ---
 

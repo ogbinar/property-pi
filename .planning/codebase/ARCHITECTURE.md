@@ -4,125 +4,185 @@
 
 ## Pattern Overview
 
-**Overall:** Next.js 16 App Router with React 19 Client-Side SPA pattern
+**Overall:** Full-stack property management application with Next.js frontend and FastAPI backend
 
 **Key Characteristics:**
-- Next.js App Router with route groups (`(dashboard)`)
-- Client-side rendering for all interactive pages (`'use client'`)
-- PocketBase as backend database and authentication service
-- Component-driven UI with shared design system
-- TypeScript-first development with strict typing
+- Client-side rendering with PocketBase as primary data store
+- FastAPI backend provides automation/aggregation services only (not CRUD)
+- Feature-based component organization matching routing structure
+- Context-based authentication with React Context API
+
+## System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Client (Next.js)                        │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │  App Router (src/app)                                 │  │
+│  │  ├── (dashboard) - Protected routes with sidebar      │  │
+│  │  ├── login - Authentication entry point              │  │
+│  │  └── tenant/portal - Tenant-facing portal            │  │
+│  └───────────────────────────────────────────────────────┘  │
+│                          │                                   │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │  Components (src/components)                          │  │
+│  │  ├── Feature-specific (units, tenants, leases, etc.) │  │
+│  │  ├── Layout (sidebar, header)                        │  │
+│  │  └── UI (reusable primitives)                        │  │
+│  └───────────────────────────────────────────────────────┘  │
+│                          │                                   │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │  Services (src/lib)                                   │  │
+│  │  ├── api.ts - PocketBase CRUD operations             │  │
+│  │  ├── pocketbase.ts - SDK configuration               │  │
+│  │  └── AuthProvider.tsx - Auth context                 │  │
+│  └───────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                 Backend (FastAPI)                           │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │  Routers (backend/app/routers)                        │  │
+│  │  ├── dashboard.py - Aggregation from PocketBase      │  │
+│  │  ├── rent.py - Payment generation/automation         │  │
+│  │  ├── expenses.py - Expense processing                │  │
+│  │  ├── leases.py - Lease operations                    │  │
+│  │  └── health.py - Health check                        │  │
+│  └───────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│              Data Store (PocketBase)                        │
+│  Collections: units, tenants, leases, payments, expenses,   │
+│              maintenance, users                             │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ## Layers
 
 **Presentation Layer:**
-- Purpose: User interface and user experience
-- Location: `src/components/`, `src/app/`
-- Contains: React components, page layouts, UI primitives
-- Depends on: Type definitions from `src/types/`
-- Used by: All user-facing routes
+- Purpose: UI rendering and user interaction
+- Location: `src/app`, `src/components`
+- Contains: React components, page layouts, routing
+- Depends on: Services layer (API calls), AuthProvider
+- Used by: Browser/NEXT.js runtime
 
-**Application Layer:**
+**Application Layer (Frontend):**
 - Purpose: Business logic and data orchestration
 - Location: `src/lib/api.ts`, `src/lib/AuthProvider.tsx`
-- Contains: API functions, authentication context, data mapping
-- Depends on: PocketBase SDK (`src/lib/pocketbase.ts`)
-- Used by: All page components
+- Contains: API functions, authentication logic, data transformation
+- Depends on: PocketBase SDK
+- Used by: React components
+
+**Backend Service Layer:**
+- Purpose: Automation and aggregation services
+- Location: `backend/app/routers`
+- Contains: FastAPI route handlers, business logic for automation
+- Depends on: PocketBase HTTP API, httpx
+- Used by: Frontend (via REST calls)
 
 **Data Layer:**
-- Purpose: Type definitions and data contracts
-- Location: `src/types/pocketbase.ts`
-- Contains: TypeScript interfaces for database records
-- Depends on: None (pure type definitions)
-- Used by: API layer and components
+- Purpose: Persistent storage and retrieval
+- Location: PocketBase instance (external)
+- Contains: Collections (units, tenants, leases, payments, expenses, maintenance)
+- Depends on: None (self-contained)
+- Used by: Both frontend (direct) and backend (via HTTP)
 
 ## Data Flow
 
-**Page Load Flow:**
+**Dashboard Data Flow:**
 
-1. User navigates to route → Next.js App Router matches route
-2. Layout components render (Sidebar, Header, AuthGuard)
-3. AuthGuard checks PocketBase auth store validity
-4. If unauthenticated → redirect to `/login`
-5. Page component mounts with `'use client'` directive
-6. `useEffect` triggers data fetch from PocketBase via `src/lib/api.ts`
-7. API layer transforms PocketBase records to expected format
-8. Component state updates → UI re-renders
+1. User navigates to dashboard (`/`)
+2. `DashboardPage` component mounts
+3. `getDashboard()` called from `src/lib/api.ts`
+4. Function fetches all collections from PocketBase directly:
+   - Units, payments, expenses, leases
+5. Client-side aggregation computes metrics
+6. Data transformed to component format
+7. UI renders with computed values
 
 **Authentication Flow:**
 
-1. User enters credentials on `/login` page
-2. `useAuth().signIn()` calls PocketBase `authWithPassword()`
-3. PocketBase SDK stores token in `authStore`
-4. `AuthProvider` listens to `authStore.onChange`
-5. Context updates → protected routes re-render
-6. `AuthGuard` allows access to protected pages
+1. User lands on `/` → redirects to `/login`
+2. `LoginPage` uses `useAuth()` hook
+3. User submits credentials
+4. `signIn()` calls `pb.collection('users').authWithPassword()`
+5. PocketBase SDK stores auth token in `authStore`
+6. `AuthProvider` context updates `user` state
+7. User redirected to dashboard
+8. `AuthGuard` validates session on protected routes
 
-**State Management:**
+**Rent Generation Flow:**
 
-- Global auth state: React Context via `AuthProvider`
-- Page-level state: React `useState` hooks
-- Server state: PocketBase database (no React Query/SWR)
-- URL state: Search params via `useSearchParams()`
+1. User triggers "Generate Rent" action
+2. Frontend calls `POST /api/fastapi/rent/generate`
+3. FastAPI router fetches active leases from PocketBase
+4. For each lease, creates payment record via PocketBase API
+5. Returns list of created payments
 
 ## Key Abstractions
 
-**PocketBase Abstraction:**
-- Purpose: Hide PocketBase SDK complexity behind typed API functions
-- Examples: `src/lib/api.ts` (922 lines)
-- Pattern: Repository pattern with data mapping layer
-- All CRUD operations centralized in single file
+**Collection Abstraction:**
+- Purpose: Maps PocketBase collections to typed interfaces
+- Examples: `src/types/pocketbase.ts`
+- Pattern: TypeScript interfaces for each collection (UnitRecord, TenantRecord, etc.)
 
-**UI Component Abstraction:**
-- Purpose: Provide consistent design system
-- Examples: `src/components/ui/button.tsx`, `src/components/ui/card.tsx`
-- Pattern: Compound components with CVA (class-variance-authority)
-- Tailwind CSS for styling
+**API Service Abstraction:**
+- Purpose: Encapsulates all data operations with consistent naming
+- Examples: `src/lib/api.ts`
+- Pattern: 
+  - `getEntities()` - list all/fetch filtered
+  - `getEntity(id)` - fetch single
+  - `createEntity(data)` - create new
+  - `updateEntity(id, data)` - update existing
+  - `deleteEntity(id)` - remove
+  - Raw functions (`getUnitsRaw()`) for direct SDK access
 
-**Route Group Abstraction:**
-- Purpose: Separate public vs authenticated routes
-- Examples: `src/app/(dashboard)/`, `src/app/login/`
-- Pattern: Next.js route groups with shared layout
+**Status Mapping:**
+- Purpose: Translates PocketBase lowercase status values to legacy uppercase convention
+- Examples: `src/lib/api.ts` → `getStatusMap()` function
+- Pattern: Centralized mapping handles inconsistencies between old/new conventions
 
 ## Entry Points
 
-**Application Root:**
-- Location: `src/app/layout.tsx`
-- Triggers: Initial page load
-- Responsibilities: Root HTML structure, font loading, global providers (AuthProvider, Toaster)
+**Application Entry:**
+- Location: `src/app/page.tsx`
+- Triggers: Root URL access
+- Responsibilities: Redirects to `/login`
 
-**Dashboard Layout:**
-- Location: `src/app/(dashboard)/layout.tsx`
-- Triggers: Any authenticated route
-- Responsibilities: Sidebar navigation, header, AuthGuard wrapper
-
-**Login Page:**
+**Login Entry:**
 - Location: `src/app/login/page.tsx`
-- Triggers: Unauthenticated access or manual login
-- Responsibilities: Credential form, redirect on success
+- Triggers: Unauthenticated access or explicit navigation
+- Responsibilities: Form handling, authentication via `useAuth()`
 
-**Feature Pages:**
-- Location: `src/app/(dashboard)/*`
-- Examples: `src/app/(dashboard)/units/page.tsx`, `src/app/(dashboard)/tenants/page.tsx`
-- Triggers: Navigation to feature routes
-- Responsibilities: Feature-specific data fetching and rendering
+**Dashboard Entry:**
+- Location: `src/app/(dashboard)/page.tsx`
+- Triggers: Authenticated user navigation
+- Responsibilities: Fetches dashboard data, renders metrics
+
+**Backend Entry:**
+- Location: `backend/app/main.py`
+- Triggers: HTTP requests to FastAPI server
+- Responsibilities: CORS setup, rate limiting, router registration
 
 ## Error Handling
 
-**Strategy:** Try-catch in async functions with user-facing error states
+**Strategy:** Client-side try/catch with user-facing error messages
 
 **Patterns:**
-- API functions throw errors → caught by page components
-- Pages display error banners with retry buttons
-- Loading states with skeleton placeholders during fetch
-- Empty states when no data available
+- API functions throw errors via `throw new Error()`
+- Components catch errors in try/catch blocks
+- Error state stored in component state
+- User-facing error display in UI
+- Auth errors redirect to login
 
-**Example Pattern (from `src/app/(dashboard)/units/page.tsx`):**
+**Example (Dashboard):**
 ```typescript
 try {
-  const data = await getUnits(search || undefined)
-  setUnits(data)
-  setError(null)
+  const dashboardData = await getDashboard()
+  setData(dashboardData)
 } catch (err) {
   setError(err instanceof Error ? err.message : 'Unknown error')
 }
@@ -130,38 +190,56 @@ try {
 
 ## Cross-Cutting Concerns
 
-**Logging:** Console only (no dedicated logging framework)
+**Logging:**
+- Approach: None formalized (console errors only)
 
-**Validation:** Form-level validation via HTML5 constraints (no Zod/Yup at form level)
+**Validation:**
+- Approach: Client-side HTML5 validation on forms
+- Type safety via TypeScript interfaces
 
-**Authentication:** PocketBase auth store with React Context wrapper
-- `AuthProvider` manages session state
-- `AuthGuard` component protects routes
-- `useAuth()` hook provides access to auth state
+**Authentication:**
+- Approach: PocketBase JWT-based auth
+- Implementation: 
+  - `AuthProvider` manages auth state via context
+  - `AuthGuard` component protects routes
+  - Auth changes tracked via `pb.authStore.onChange()`
 
-**Styling:** Tailwind CSS v4 with dark mode support
-- Custom component classes via `class-variance-authority`
-- Utility-first approach
-- Dark mode via `dark:` prefix
+**Rate Limiting:**
+- Approach: FastAPI backend uses `slowapi`
+- Configuration: 100 requests/hour per IP (default)
 
-**Routing:** Next.js App Router with file-based routing
-- Route groups: `(dashboard)` for authenticated section
-- Dynamic routes: `[id]` for resource detail pages
-- Nested routes: `[id]/edit` for nested actions
+## State Management
 
-## Data Mapping Strategy
+**Approach:** React Context API for global state
 
-**PocketBase to Frontend Mapping:**
-- PocketBase uses camelCase (`firstName`, `startDate`)
-- Frontend expects snake_case (`first_name`, `start_date`)
-- `src/lib/api.ts` handles transformation in all CRUD functions
-- `getStatusMap()` normalizes status values across collections
+**Global State:**
+- Authentication state (`AuthProvider`)
+  - `user`: Current user object or null
+  - `isLoading`: Authentication loading state
 
-**Relations Handling:**
-- PocketBase stores relation IDs (e.g., `unit: "abc123"`)
-- Frontend expects nested objects (e.g., `unit: { id, unit_number }`)
-- Current implementation: relations not pre-loaded (client-side only)
-- `UnitWithRelations` interface defines expected shape but relations are `null`
+**Local State:**
+- Component-level state via `useState`
+- Server state via direct API calls on mount (`useEffect`)
+
+**No:** Redux, Zustand, React Query, or other state management libraries
+
+## Backend Architecture
+
+**Router Pattern:**
+- Location: `backend/app/routers/`
+- Each router handles specific domain:
+  - `dashboard.py`: Aggregation endpoint
+  - `rent.py`: Payment automation
+  - `expenses.py`: Expense processing
+  - `leases.py`: Lease operations
+  - `health.py`: Health check
+
+**Backend Role:**
+- Not a CRUD API (PocketBase handles CRUD)
+- Provides automation/aggregation that requires:
+  - Complex multi-collection queries
+  - Scheduled/triggered operations
+  - Cross-system coordination
 
 ---
 

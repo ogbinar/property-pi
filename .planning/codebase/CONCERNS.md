@@ -2,141 +2,195 @@
 
 **Analysis Date:** 2026-04-21
 
-## Test Coverage Gaps
+## Critical Issues
 
-**No test suite detected:**
-- What's not tested: Complete absence of unit tests, integration tests, or E2E tests
-- Files: No test files found in `src/` directory
-- Risk: Any code change could introduce regressions without detection
-- Priority: **High** - Critical for maintaining application stability
+**Missing Error Handling in API Layer:**
+- Issue: Catch blocks silently return empty arrays or null without logging errors
+- Files: `src/lib/tenant-api.ts`, `src/lib/api.ts`
+- Impact: Production errors are invisible, debugging becomes impossible
+- Fix approach: Add structured error logging with error details to catch blocks
 
-## Security Considerations
+**No Backend API Routes Implemented:**
+- Issue: Frontend calls `/api/tenants`, `/api/units`, `/api/leases` but no Next.js API routes exist
+- Files: Frontend components in `src/app/(dashboard)/leases/new/page.tsx`, `src/app/(dashboard)/expenses/` call non-existent endpoints
+- Impact: API calls will fail at runtime, features broken
+- Fix approach: Create Next.js API routes in `src/app/api/` or implement direct PocketBase calls on server side
 
-**Potential SQL Injection in PocketBase Filters:**
-- Risk: String interpolation in filter queries could be vulnerable if user input is not sanitized
-- Files: `src/lib/tenant-api.ts` (lines 31, 50, 68)
-- Current mitigation: Variables appear to be internal IDs, but no explicit validation
-- Recommendations: Add input validation before constructing filter strings
+**Hard-coded Environment Default:**
+- Issue: `src/lib/pocketbase.ts` hard-codes `http://localhost:8090` as fallback
+- Files: `src/lib/pocketbase.ts`
+- Impact: Misconfigured deployments will silently connect to wrong URL
+- Fix approach: Throw error on missing env var in production, add runtime validation
 
-**Silent Error Handling:**
-- Risk: Errors are caught and swallowed without logging or user notification
-- Files:
-  - `src/lib/tenant-api.ts` (lines 20, 36, 54, 72) - returns null/empty arrays
-  - `src/components/leases/renewal-modal.tsx` (line 57)
-  - `src/components/tenant/maintenance-request-form.tsx` (line 55)
-  - `src/app/tenant/portal/page.tsx` (lines 67, 90)
-  - `src/app/(dashboard)/rent/page.tsx` (lines 79, 98, 114)
-  - `src/app/(dashboard)/leases/[id]/page.tsx` (lines 99, 130)
-  - `src/app/(dashboard)/expenses/[id]/page.tsx` (line 55)
-- Current mitigation: None - errors fail silently
-- Recommendations: Implement proper error logging and user feedback
+## High Priority Concerns
 
-**Console Errors in Production:**
-- Risk: Debug console statements present throughout codebase
-- Files: 11 console.error statements across multiple dashboard pages
-- Current mitigation: None
-- Recommendations: Replace with proper logging service or remove in production builds
+**Empty Catch Blocks Swallow Errors:**
+- Issue: 16+ catch blocks use bare `catch { return null/[] }` patterns
+- Files: `src/lib/tenant-api.ts`, `src/app/(dashboard)/rent/page.tsx`, `src/app/(dashboard)/leases/[id]/page.tsx`
+- Impact: Silent failures, poor user experience, unmaintainable code
+- Fix approach: Log errors to console/error tracking, show user-friendly messages
 
-## Performance Bottlenecks
+**No Test Coverage:**
+- Issue: Zero test files in `src/` directory, no jest/vitest config
+- Files: N/A
+- Impact: Regressions undetected, refactoring risky, no CI validation
+- Fix approach: Add vitest/jest config, write unit tests for `src/lib/api.ts`, component tests
 
-**Client-Side Data Filtering:**
-- Problem: Large datasets fetched entirely then filtered on client
-- Files: `src/lib/api.ts` (lines 95-103, 206-217, 331-334, 446-458, 591-607, 714-725)
-- Cause: `getFullList()` fetches all records, then client-side filtering applied
-- Impact: Poor performance with large datasets, unnecessary network transfer
-- Improvement path: Implement server-side filtering using PocketBase query parameters
+**Client-Side Filtering Instead of Server-Side:**
+- Issue: Large datasets retrieved then filtered client-side (units, tenants, leases)
+- Files: `src/lib/api.ts` lines 96-103, 207-215
+- Impact: Performance degrades with data growth, unnecessary data transfer
+- Fix approach: Use PocketBase filter queries server-side
 
-**Unoptimized Dashboard Queries:**
-- Problem: Dashboard fetches all collections without pagination or limiting
-- Files: `src/lib/api.ts` (lines 840-922)
-- Cause: `getDashboard()` calls `getFullList()` on units, payments, expenses, leases
-- Impact: Slow dashboard load as data grows
-- Improvement path: Add pagination, date-range filters, or caching
+**Status Mapping Inconsistencies:**
+- Issue: Complex `getStatusMap()` function with hardcoded status translations
+- Files: `src/lib/api.ts` lines 47-57
+- Impact: Status values diverge between frontend/backend/PocketBase, bugs likely
+- Fix approach: Centralize status definitions, use TypeScript enums
 
-**Inefficient Nested Client Components:**
-- Problem: 47 components marked with 'use client' directive
-- Files: Throughout `src/components/` and `src/app/`
-- Impact: Reduces server-side rendering benefits, larger bundle size
-- Improvement path: Audit which components truly need client-side interactivity
+## Medium Priority Concerns
 
-## Fragile Areas
+**Console Error Usage:**
+- Issue: 11+ `console.error()` calls scattered throughout components
+- Files: `src/components/dashboard/unit-status-grid.tsx`, `src/app/(dashboard)/tenants/[id]/page.tsx`, etc.
+- Impact: Inconsistent error handling, no error tracking integration
+- Fix approach: Centralize error handling, integrate error tracking service (Sentry)
 
-**Type Safety Gaps:**
-- Issue: Use of `any` type undermines TypeScript benefits
-- Files: `src/app/(dashboard)/maintenance/[id]/page.tsx` (line 29)
-- Why fragile: Type errors won't be caught at compile time
-- Safe modification: Define proper TypeScript interfaces
-- Test coverage: None
+**Missing Type Safety in API Calls:**
+- Issue: `as unknown as LeaseRecord` patterns bypass type checking
+- Files: `src/lib/api.ts` lines 314, 387, 400, 579, 701
+- Impact: Runtime type errors, defeats TypeScript purpose
+- Fix approach: Proper type guards or Zod validation on API responses
 
-**Data Mapping Inconsistencies:**
-- Issue: Complex field name transformations between PocketBase and UI
-- Files: `src/lib/api.ts` (throughout - getStatusMap, mapUnit, mapTenant, mapLease, mapExpense, mapMaintenance)
-- Why fragile: Easy to introduce bugs during field mapping
-- Safe modification: Consider using Zod schemas for validation
-- Test coverage: None
+**No Input Validation on Forms:**
+- Issue: Form submissions rely only on UI validation, no backend validation
+- Files: All form components in `src/components/*/` and `src/app/(dashboard)/*/new/`
+- Impact: Data integrity risks, potential for invalid data in database
+- Fix approach: Add Zod schemas, validate on both client and server
 
-**Empty Filter Results Not Handled:**
-- Issue: Multiple pages show generic messages but logic may not handle edge cases
-- Files:
-  - `src/app/(dashboard)/maintenance/page.tsx` (line 256)
-  - `src/app/(dashboard)/units/page.tsx` (line 154)
-  - `src/app/(dashboard)/expenses/page.tsx` (line 235)
-- Why fragile: User experience degrades with empty data
-- Safe modification: Add comprehensive empty state handling
+**Empty Recent Activities Dashboard:**
+- Issue: `getDashboard()` returns empty `recent_activities` array
+- Files: `src/lib/api.ts` lines 898-900
+- Impact: Dashboard incomplete, user confusion
+- Fix approach: Implement activity tracking from PocketBase events
 
-## Tech Debt
+**Lease Unit/Tenant Not Expanded:**
+- Issue: Dashboard expirations don't populate unit_number or tenant_name
+- Files: `src/lib/api.ts` lines 898-911
+- Impact: Incomplete data displayed, extra queries needed
+- Fix approach: Use PocketBase expand parameter in queries
 
-**API Layer Migration Incomplete:**
-- Issue: Comments reference "old" and "new" conventions indicating incomplete migration
-- Files: `src/lib/api.ts` (lines 4-6, 44-56 comments)
-- Impact: Confusion about which naming convention to use
-- Fix approach: Complete migration to consistent PocketBase field naming
+## Low Priority Concerns
 
-**Missing Unit Relation Population:**
-- Issue: Unit and tenant relations not populated in API responses
-- Files: `src/lib/api.ts` (lines 90-91, 124-125, 237-238)
-- Impact: Additional queries needed to fetch related data
-- Fix approach: Use PocketBase expand parameter to fetch relations in single query
+**Inconsistent Field Naming:**
+- Issue: Mix of snake_case (`unit_number`) and camelCase (`firstName`) across types
+- Files: `src/types/pocketbase.ts`, `src/lib/api.ts`
+- Impact: Cognitive overhead, potential bugs
+- Fix approach: Standardize on one convention
 
-**Lease Expiration Logic Missing Data:**
-- Issue: Dashboard expiration calculation returns empty array
-- Files: `src/lib/api.ts` (lines 898-910)
-- Impact: Upcoming lease expirations not shown to users
-- Fix approach: Implement proper unit and tenant expansion for lease data
+**Unused `documents` Field in Lease:**
+- Issue: `Lease.documents` always returns empty array
+- Files: `src/lib/api.ts` line 326
+- Impact: Feature incomplete
+- Fix approach: Implement file upload/download for lease documents
 
-**Currency Formatting Hardcoded:**
-- Issue: Philippine Peso (PHP) currency hardcoded
-- Files: `src/app/(dashboard)/maintenance/[id]/page.tsx` (lines 162-167)
-- Impact: Not adaptable to different currencies/regions
-- Fix approach: Extract to configuration or context
+**Missing Maintenance Cost Tracking:**
+- Issue: `MaintenanceRequest.cost` field exists but never populated in UI
+- Files: `src/lib/api.ts` line 704
+- Impact: Budget tracking incomplete
+- Fix approach: Add cost field to maintenance forms
+
+**No Pagination:**
+- Issue: All queries use `getFullList()` fetching entire collections
+- Files: `src/lib/api.ts`
+- Impact: Memory/performance issues at scale
+- Fix approach: Implement PocketBase pagination with `page` and `perPage`
+
+## Scalability Risks
+
+**SQLite Database Limitations:**
+- Issue: PocketBase uses SQLite which has known limits
+- Files: N/A (architecture)
+- Impact: Cannot scale beyond single instance, limited concurrent connections
+- Fix approach: Plan migration path to PostgreSQL for production
+
+**No Caching Layer:**
+- Issue: Every dashboard load queries all collections fresh
+- Files: `src/lib/api.ts` `getDashboard()`
+- Impact: Database load increases with usage, slow page loads
+- Fix approach: Add React Query/SWR for client caching, consider Redis for server
+
+**No Rate Limiting:**
+- Issue: No rate limiting on frontend or backend
+- Files: N/A
+- Impact: Vulnerable to DoS, potential abuse
+- Fix approach: Implement rate limiting in FastAPI, add middleware in Next.js
+
+## Documentation Gaps
+
+**Missing TypeScript JSDoc:**
+- Issue: Functions lack documentation comments
+- Files: `src/lib/api.ts`, `src/lib/tenant-api.ts`
+- Impact: Onboarding difficulty, incorrect usage
+- Fix approach: Add JSDoc to all public functions
+
+**No API Documentation:**
+- Issue: Frontend API functions not documented for component authors
+- Files: N/A
+- Impact: Redundant code, inconsistent usage
+- Fix approach: Document API surface in README or separate docs
 
 ## Dependencies at Risk
 
-**No Validation Library for Runtime:**
-- Risk: No Zod/Joi/Yup for runtime validation of API responses
-- Impact: Type mismatches between PocketBase schema and TypeScript types could cause runtime errors
-- Migration plan: Add Zod schemas mirroring PocketBase types
+**Next.js 16.2.4:**
+- Risk: Very recent version, potential stability issues
+- Impact: Breaking changes in patch releases
+- Migration plan: Pin version, monitor release notes
 
-**Missing Error Boundary Components:**
-- Risk: No React ErrorBoundary for graceful error handling
-- Impact: Unhandled errors crash entire application
-- Migration plan: Add error boundary wrapper around dashboard
+**React 19.2.4:**
+- Risk: Very recent version, ecosystem may not be fully compatible
+- Impact: Third-party library incompatibilities
+- Migration plan: Test all dependencies after updates
 
-## Missing Critical Features
+## Security Considerations
 
-**No Input Sanitization:**
-- Problem: User input not validated before database operations
-- Files: All form submission handlers in `src/app/(dashboard)/**/`
-- Blocks: Security vulnerability for XSS or injection attacks
+**Tenant Portal Token Validation:**
+- Risk: Tenant access token stored in plain text in `LeaseRecord.tenantAccess`
+- Files: `src/types/pocketbase.ts` line 58, `src/lib/tenant-api.ts` line 16
+- Current mitigation: Token comparison in `validateTenantToken()`
+- Recommendations: Use hashed tokens with expiration, implement token revocation
 
-**No Rate Limiting:**
-- Problem: No protection against API abuse
-- Blocks: Application vulnerable to DoS attacks
+**No Authentication on Tenant Portal:**
+- Risk: Anyone with link can access tenant data
+- Files: `src/app/tenant/portal/page.tsx`
+- Current mitigation: Token required in URL
+- Recommendations: Add token expiration, IP whitelisting option
 
-**Missing Loading States:**
-- Problem: Inconsistent or missing loading indicators
-- Files: Various dashboard pages
-- Blocks: Poor user experience during data fetch
+**Environment Variable Exposure:**
+- Risk: `BACKEND_SECRET_KEY` defaults to weak value in docker-compose
+- Files: `docker-compose.yml` line 20
+- Current mitigation: Can be overridden with env var
+- Recommendations: Enforce strong secret generation, document security requirements
+
+## Test Coverage Gaps
+
+**Unittest Missing:**
+- What's not tested: All API functions, data transformations
+- Files: `src/lib/api.ts`, `src/lib/tenant-api.ts`
+- Risk: Data corruption, silent failures
+- Priority: High
+
+**Integration Tests Missing:**
+- What's not tested: End-to-end flows (create lease, generate rent, process payment)
+- Files: N/A
+- Risk: Broken workflows undetected
+- Priority: High
+
+**Component Tests Missing:**
+- What's not tested: Form validation, error states, loading states
+- Files: All form components
+- Risk: UI regressions, poor UX
+- Priority: Medium
 
 ---
 

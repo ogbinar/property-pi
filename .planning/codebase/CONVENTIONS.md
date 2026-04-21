@@ -2,196 +2,504 @@
 
 **Analysis Date:** 2026-04-21
 
+## Project Overview
+
+**Framework:** Next.js 16.2.4 (App Router)
+**Language:** TypeScript 5.x
+**UI Library:** React 19.2.4
+**Styling:** Tailwind CSS 4.x
+
+---
+
 ## Naming Patterns
 
-**Files:**
-- **kebab-case** for component files: `tenant-table.tsx`, `lease-form.tsx`, `expense-search.tsx`
-- **Route files** follow Next.js App Router convention: `page.tsx`, `layout.tsx`, `[id]/page.tsx`, `new/page.tsx`, `edit/page.tsx`
-- **UI components** in `src/components/ui/`: `button.tsx`, `input.tsx`, `card.tsx`, `modal.tsx`, `badge.tsx`, `select.tsx`, `textarea.tsx`, `table.tsx`, `empty-state.tsx`
-- **Feature components** organized by domain: `src/components/tenants/`, `src/components/leases/`, `src/components/units/`, `src/components/expenses/`, `src/components/maintenance/`, `src/components/rent/`, `src/components/dashboard/`, `src/components/auth/`, `src/components/layout/`
-- **Library files** in `src/lib/`: `api.ts`, `pocketbase.ts`, `utils.ts`, `AuthProvider.tsx`
-- **Type definitions** in `src/types/`: `pocketbase.ts`
+### Files and Directories
 
-**Functions:**
-- camelCase for functions: `getUnits`, `getTenants`, `createUnit`, `updateTenant`, `getStatusMap`, `mapUnit`, `mapTenant`
-- Named exports for components: `export function Sidebar()`, `export function TenantTable()`, `export const Button = forwardRef(...)`
-- API functions return typed data: `Promise<UnitWithRelations[]>`, `Promise<Tenant>`
+**Component Files:**
+- Use `kebab-case` for feature components: `tenant-form.tsx`, `maintenance-table.tsx`
+- Use `kebab-case` for UI components: `button.tsx`, `input.tsx`, `card.tsx`
+- Directory structure: `src/components/{feature}/{component}.tsx`
+
+**Page Files:**
+- Always named `page.tsx` within route folders
+- Route folders use `kebab-case`: `/tenant/[id]/edit`
+
+**Library Files:**
+- Use `camelCase` for utility files: `utils.ts`, `pocketbase.ts`
+- Use `PascalCase` for React context providers: `AuthProvider.tsx`
+
+### Functions and Components
+
+**React Components:**
+- Use `PascalCase` for component names: `AuthGuard`, `UnitForm`, `Sidebar`
+- Function components defined with `export function ComponentName()`
+- Named exports preferred over default exports
+
+**Utility Functions:**
+- Use `camelCase`: `cn()`, `handleSubmitForm()`
+- Single responsibility functions
+
+### Variables and Types
 
 **Variables:**
-- camelCase for variables: `pathname`, `isOpen`, `deleteId`, `unitCounts`, `occupancyRate`
-- Interface names use PascalCase: `Unit`, `Tenant`, `Lease`, `Payment`, `Expense`, `MaintenanceRequest`, `Dashboard`
-- Record types from PocketBase: `UnitRecord`, `TenantRecord`, `LeaseRecord`, `PaymentRecord`, `ExpenseRecord`, `MaintenanceRecord`
+- Use `camelCase`: `user`, `isLoading`, `handleSubmit`
+- State variables follow React conventions: `[user, setUser] = useState()`
 
-**Types:**
-- Interface preferred over type for data contracts
-- Type alias used for Zod inference (not present - no Zod in current codebase)
-- Generic types: `Record<string, number>`, `Promise<T>`, `React.ReactNode`
+**Interfaces and Types:**
+- Use `PascalCase`: `UnitFormData`, `SelectOption`, `AuthContextType`
+- Type suffixes for inferred types: `UnitFormData` (from `z.infer<typeof unitSchema>`)
+
+**TypeScript Records:**
+- Use `PascalCase` with `Record` suffix for PocketBase schemas: `UserRecord`, `UnitRecord`, `TenantRecord`
+
+---
 
 ## Code Style
 
-**Formatting:**
-- No Prettier configuration — formatting handled by ESLint and/or editor preferences
-- **2-space indentation** used consistently across all files
-- **Semicolons omitted** — trailing commas used for multi-line statements
-- **Single quotes** for strings: `'use client'`, `'http://localhost:8090'`, `'occupied'`, `'PAID'`
-- **Double quotes** avoided in source code
+### Formatting
 
-**Linting:**
-- **ESLint** configured via `eslint.config.mjs`
-- Uses `eslint-config-next` presets:
-  - `nextVitals` — Core Web Vitals optimization rules
-  - `nextTs` — TypeScript-specific rules
-- Default ignores: `.next/**`, `out/**`, `build/**`, `next-env.d.ts`
-- No custom rules beyond Next.js defaults
+**Tool:** ESLint with `eslint-config-next`
 
-**Component Style:**
-- `'use client'` directive at top of client components
-- All components use **named exports**: `export function ComponentName()`
-- **forwardRef** pattern for UI components with `displayName` set:
-  ```typescript
-  export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant, size, ...props }, ref) => { ... }
-  )
-  Button.displayName = 'Button'
-  ```
+**Key Settings (inferred from code):**
+- 2-space indentation
+- Single quotes for strings
+- Semicolons omitted
+- Trailing commas in multiline objects
+- Maximum line length follows Next.js defaults
+
+**Component Structure Pattern:**
+```tsx
+'use client'  // If client component
+
+import { ... } from 'library'
+import { ... } from '@/path/to/import'
+
+interface ComponentProps {
+  // Props with types
+}
+
+export function ComponentName({ props }: ComponentProps) {
+  // Hooks
+  // State
+  // Effects
+  // Handlers
+  // Render
+}
+```
+
+### Linting
+
+**Configuration:** `eslint.config.mjs`
+```javascript
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript";
+
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  ...nextTs,
+  globalIgnores([
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+  ]),
+]);
+
+export default eslintConfig;
+```
+
+**Run Command:**
+```bash
+npm run lint    # Runs ESLint
+```
+
+**Enforced Rules:**
+- Next.js core web vitals optimizations
+- TypeScript strict mode enabled
+- Import ordering via eslint-config-next
+
+---
 
 ## Import Organization
 
-**Order:**
-1. React/Next.js framework imports: `import { useState } from 'react'`, `import Link from 'next/link'`
-2. Third-party library imports: `import { cva } from 'class-variance-authority'`, `import PocketBase from 'pocketbase'`
-3. Local component imports: `import { Badge } from '@/components/ui/badge'`
-4. Utility/library imports: `import { cn } from '@/lib/utils'`, `import pb from '@/lib/pocketbase'`
+### Import Order
 
-**Path Aliases:**
-- `@/` → `src/` configured in Next.js
-- Examples: `@/lib/utils`, `@/components/ui/button`, `@/types/pocketbase`
+1. **React imports:** `import { useState, useEffect } from 'react'`
+2. **Third-party libraries:** `import { zodResolver } from '@hookform/resolvers/zod'`
+3. **UI components:** `import { Button } from '@/components/ui/button'`
+4. **Local utilities:** `import { cn } from '@/lib/utils'`
+5. **Type imports:** `import type { Metadata } from 'next'`
 
-**Import Patterns:**
-- Named imports preferred: `import { useState, useEffect } from 'react'`
-- Default imports for libraries: `import PocketBase from 'pocketbase'`
-- Type imports: `import type { UnitRecord } from '@/types/pocketbase'`
+### Path Aliases
+
+**Configuration in `tsconfig.json`:**
+```json
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
+```
+
+**Usage:**
+- `@/lib/utils` → `src/lib/utils.ts`
+- `@/components/ui/button` → `src/components/ui/button.tsx`
+- `@/app/layout` → `src/app/layout.tsx`
+
+---
 
 ## Error Handling
 
-**Patterns:**
-- **console.error** for client-side errors (no error logging library):
-  ```typescript
-  console.error('Failed to fetch units:', error)
-  ```
-- **Try/catch** blocks in async functions
-- **Error state** in components: `const [error, setError] = useState<string | null>(null)`
-- **Throw errors** for critical failures: `throw new Error('Unit not found')`
-- **Optional chaining** for nullable values: `u.type || ''`, `t.phone || null`
+### Patterns Used
 
-**Missing Patterns:**
-- No global error boundary component
-- No error logging service (Sentry, LogRocket, etc.)
-- No structured error types or custom error classes
-- API error responses not standardized (no API routes in current implementation)
+**Try-Catch with Error Messages:**
+```tsx
+try {
+  await signIn(email, password)
+  router.push('/')
+} catch (err: unknown) {
+  const message = err instanceof Error ? err.message : 'Login failed'
+  setError(message)
+}
+```
+
+**Form Submission Error Handling:**
+```tsx
+const handleSubmitForm = async (data: UnitFormData) => {
+  await onSubmit(data)
+}
+
+// In component:
+onSubmit={handleSubmit(handleSubmitForm)}
+```
+
+**API Error Logging:**
+```tsx
+.catch((error) => {
+  console.error('Failed to fetch units:', error)
+  // Show error UI
+})
+```
+
+**Error Display:**
+- Form field errors via `error` prop on inputs
+- Inline error messages below fields: `<p className="text-sm text-red-600">{error}</p>`
+- Error alerts at form/page level
+
+### Loading States
+
+**Pattern:**
+```tsx
+const [isLoading, setIsLoading] = useState(false)
+
+const handleSubmit = async () => {
+  setIsLoading(true)
+  try {
+    await someAsyncOperation()
+  } finally {
+    setIsLoading(false)
+  }
+}
+```
+
+**UI Feedback:**
+- Loading spinners via `isLoading` prop on Button: `<Button isLoading>Loading</Button>`
+- Disabled states during submission
+
+---
 
 ## Logging
 
-**Framework:** `console` only — no logging library
+**Framework:** `console` built-in only
 
-**Patterns:**
-- `console.error()` used for error debugging in data fetching
-- No `console.log()` in production code
-- No logging for user actions or system events
-- No structured logging format
+**Patterns Observed:**
+```tsx
+console.error('Failed to fetch units:', error)
+console.error('Failed to create maintenance request:', error)
+```
 
-**Locations:**
-- `src/components/dashboard/unit-status-grid.tsx:57` — fetch errors
-- `src/app/(dashboard)/tenants/[id]/page.tsx:90` — load errors
-- `src/app/(dashboard)/rent/page.tsx` — form submission errors
+**Guidelines:**
+- Use `console.error()` for API failures
+- No structured logging framework installed
+- No logging library detected (e.g., winston, pino)
+
+---
 
 ## Comments
 
 **When to Comment:**
-- Minimal comments found in codebase
-- No inline comments explaining complex logic
-- No JSDoc comments on functions or components
+- Minimal inline comments in current codebase
+- No JSDoc/TSDoc comments detected on functions
 
-**JSDoc/TSDoc:**
-- Not used — types serve as documentation
-- Interface definitions provide self-documenting API contracts
-- No `/** */` block comments found
+**Documentation:**
+- `.planning/` directory contains project documentation
+- `.env.example` has inline comments explaining configuration
+
+---
 
 ## Function Design
 
-**Size:**
-- Functions vary widely in size
-- **Small helper functions**: `getStatusMap()` — 15 lines
-- **Large API functions**: `getDashboard()` — 100+ lines (fetches and computes multiple data sources)
-- **Component functions**: 30-100 lines typically
+### Size Guidelines
 
-**Parameters:**
-- Function parameters use destructuring where appropriate
-- Optional parameters with default values: `filters?: { category?: string }`
-- Interface-based parameters for complex data: `createUnit(data: CreateUnitData)`
+**Observed Patterns:**
+- UI components: 50-180 lines
+- Utility functions: 5-10 lines
+- Form schemas: 10-20 lines
 
-**Return Values:**
-- Consistent return types: `Promise<T>` for async functions
-- Early returns for edge cases: `if (!u) throw new Error(...)`
-- Mapped data patterns: PocketBase records mapped to interface types
+**Example Small Function:**
+```tsx
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+```
+
+### Parameters
+
+**Pattern:** Object destructuring for props
+```tsx
+export function UnitForm({
+  defaultValues,
+  submitLabel,
+  onSubmit,
+  isLoading,
+  disabledUnitNumber = false,
+  onCancel,
+  className,
+}: UnitFormProps) {
+```
+
+**Default Values:**
+- Use destructuring defaults: `disabledUnitNumber = false`
+- Optional chaining: `onChange?.(e.target.value)`
+
+### Return Values
+
+**React Components:** Return JSX directly
+**Async Functions:** Return `Promise<void>` or data
+**Utility Functions:** Return computed values
+
+---
 
 ## Module Design
 
-**Exports:**
-- Named exports only — no default exports in library files
-- Example: `export async function getUnits()`, `export interface Unit`, `export type UnitWithRelations`
+### Exports
 
-**Barrel Files:**
-- **No index.ts barrel files** — imports use direct paths
-- Example: `import { Button } from '@/components/ui/button'` not `import { Button } from '@/components/ui'`
+**Pattern:** Named exports preferred
+```tsx
+export function ComponentName() { }
+export const VariableName = ...
+export type TypeName = ...
+```
 
-**Data Access Layer:**
-- `src/lib/api.ts` — central API client with all data operations
-- `src/lib/pocketbase.ts` — PocketBase SDK singleton
-- All data fetching goes through `api.ts` functions
-- Consistent mapping from PocketBase records to domain types
+**Single Default Export (rare):**
+```tsx
+export default pocketBase  // For singleton instances
+```
 
-**State Management:**
-- React Context for auth state: `AuthProvider.tsx`
-- Local component state with `useState`
-- No global state management library (Redux, Zustand, Jotai)
-- No server state caching library (React Query, SWR)
+### Barrel Files
 
-## UI Component Patterns
+**Not Used:** Components imported directly from their file paths
+- No index.ts barrel files detected
+- Direct imports: `import { Button } from '@/components/ui/button'`
 
-**Component Libraries:**
-- **lucide-react** — icon library: `import { Building2, Users, Menu } from 'lucide-react'`
-- **class-variance-authority** — variant management: `buttonVariants = cva(...)`
-- **clsx + tailwind-merge** — conditional classes: `cn(...inputs)`
-- **sonner** — toast notifications: `<Toaster position="top-right" />`
+---
 
-**Styling:**
-- **Tailwind CSS v4** — utility-first CSS framework
-- **Dark mode** supported via `dark:` prefix throughout
-- No CSS modules or styled-components
-- No custom CSS files except `globals.css` for base styles
+## Component Patterns
 
-**Form Handling:**
-- **react-hook-form** — form state management (imported but usage not seen in analyzed files)
-- **zod** — schema validation (imported but no schema definitions found in current codebase)
-- Forms use controlled components with `useState`
+### UI Components (src/components/ui/)
 
-## Data Conventions
+**Standard Props Interface:**
+```tsx
+interface ComponentProps extends React.HTMLAttributes<ElementType> {
+  className?: string
+  // Custom props
+}
+```
 
-**Status Values:**
-- PocketBase stores **lowercase**: `'occupied'`, `'active'`, `'pending'`
-- UI displays **uppercase** convention: `'OCCUPIED'`, `'ACTIVE'`, `'PENDING'`
-- `getStatusMap()` function handles conversion in `src/lib/api.ts`
+**Forward Ref Pattern:**
+```tsx
+export const ComponentName = forwardRef<ElementType, ComponentProps>(
+  ({ className, ...props }, ref) => {
+    return <element ref={ref} className={cn(className)} {...props} />
+  }
+)
+ComponentName.displayName = 'ComponentName'
+```
 
-**Date Handling:**
-- ISO string format: `YYYY-MM-DD` for dates
-- `createdAt`, `updatedAt` from PocketBase
-- Client-side date manipulation with native `Date` object
+**Variant Components (using class-variance-authority):**
+```tsx
+const buttonVariants = cva('base-classes', {
+  variants: {
+    variant: { primary: '...', secondary: '...' },
+    size: { sm: '...', md: '...', lg: '...' },
+  },
+  defaultVariants: { variant: 'primary', size: 'md' },
+})
 
-**Null vs Empty:**
-- `null` for optional/missing values: `phone: string | null`
-- Empty string `''` for required but empty fields
-- Consistent fallbacks: `u.type || ''`, `t.phone || null`
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  isLoading?: boolean
+}
+```
+
+### Form Components
+
+**Schema Validation (Zod + react-hook-form):**
+```tsx
+const schema = z.object({
+  field: z.string().min(1, 'Required'),
+})
+
+type FormData = z.infer<typeof schema>
+
+const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+  resolver: zodResolver(schema),
+  defaultValues,
+})
+```
+
+**Error Display:**
+```tsx
+<Input
+  label="Field Name"
+  error={errors.field?.message}
+  {...register('field')}
+/>
+{errors.field && <p className="text-red-600">{errors.field.message}</p>}
+```
+
+### Layout Components
+
+**AuthGuard Pattern:**
+```tsx
+export function AuthGuard({ children }: { children: React.ReactNode }) {
+  const [checking, setChecking] = useState(true)
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      redirect('/login')
+    }
+    setChecking(false)
+  }, [])
+
+  if (checking) return <LoadingSpinner />
+  return <>{children}</>
+}
+```
+
+**Layout Composition:**
+```tsx
+export default function DashboardLayout({ children }) {
+  return (
+    <AuthGuard>
+      <Sidebar />
+      <div className="flex-1">
+        <Header />
+        <main>{children}</main>
+      </div>
+    </AuthGuard>
+  )
+}
+```
+
+---
+
+## Styling Conventions
+
+### Tailwind CSS
+
+**Class Organization:**
+- Base classes first, variant classes last
+- Use `cn()` utility for conditional classes
+- Dark mode classes: `dark:bg-gray-800`
+
+**Pattern:**
+```tsx
+className={cn(
+  'base-classes',
+  variant === 'primary' && 'primary-classes',
+  error && 'error-classes',
+  className
+)}
+```
+
+### Component Libraries
+
+**Used:**
+- `class-variance-authority` for variant management
+- `clsx` + `tailwind-merge` via `cn()` utility
+
+---
+
+## File Organization
+
+### Directory Structure
+
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── layout.tsx         # Root layout
+│   ├── page.tsx           # Home page
+│   ├── login/             # Login route
+│   └── (dashboard)/       # Dashboard route group
+├── components/            # React components
+│   ├── ui/               # Reusable UI components
+│   ├── auth/             # Authentication components
+│   ├── layout/           # Layout components
+│   └── {feature}/        # Feature-specific components
+├── lib/                  # Utilities and configurations
+│   ├── utils.ts          # Helper functions
+│   ├── pocketbase.ts     # PocketBase client
+│   └── AuthProvider.tsx  # Auth context
+└── types/                # TypeScript type definitions
+    └── pocketbase.ts     # PocketBase record types
+```
+
+### File Placement Guidelines
+
+**New UI Component:** `src/components/ui/{name}.tsx`
+**New Feature Component:** `src/components/{feature}/{name}.tsx`
+**New Page:** `src/app/{route}/page.tsx`
+**New Utility:** `src/lib/{name}.ts`
+**New Type:** `src/types/{name}.ts`
+
+---
+
+## Commit Conventions
+
+**Not Enforced:** No commitlint or husky detected
+**Recommended:** Follow conventional commits for consistency
+- `feat: add new feature`
+- `fix: patch a bug`
+- `docs: update documentation`
+- `refactor: code restructuring`
+
+---
+
+## TypeScript Configuration
+
+**`tsconfig.json` Key Settings:**
+```json
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "strict": true,
+    "esModuleInterop": true,
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "paths": { "@/*": ["./src/*"] }
+  }
+}
+```
+
+**Strict Mode Enabled:**
+- No `any` types allowed
+- Proper type inference required
+- Type guards for unknown types
 
 ---
 

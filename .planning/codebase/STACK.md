@@ -5,150 +5,93 @@
 ## Languages
 
 **Primary:**
-- **TypeScript** 5.x - Frontend (Next.js app, components, API utilities)
-- **Python** 3.x - Backend (FastAPI routers and configuration)
+- TypeScript 5.x - Frontend application (`tsconfig.json`)
+- Python 3.12 - Backend API (`backend/Dockerfile`, `backend/requirements.txt`)
 
 **Secondary:**
-- **JavaScript (ESNext)** - React components with JSX
-- **Python** - FastAPI backend services
+- JavaScript (React components with JSX)
 
 ## Runtime
 
-**Frontend Environment:**
-- **Node.js** - Next.js runtime
-- **Package Manager:** npm (package-lock.json present)
+**Environment:**
+- Node.js 20 (Alpine Linux for Docker) - Next.js frontend
+- Python 3.12 (Slim Linux for Docker) - FastAPI backend
 
-**Backend Environment:**
-- **Python** - FastAPI application
-- **Virtual Environment:** `.venv` directory present
-- **Package Manager:** pip (requirements.txt)
+**Package Manager:**
+- npm - Frontend dependencies (`package.json`, `package-lock.json` present)
+- pip - Backend dependencies (`backend/requirements.txt`)
 
 ## Frameworks
 
-### Frontend Framework
-- **Next.js** 16.2.4 - Full-stack React framework with App Router
-  - Route groups: `(dashboard)` and `(auth)` for layout isolation
-  - Uses `'use client'` and `'use server'` directives
-  - Config: `next.config.ts` (empty - defaults used)
-- **React** 19.2.4 - UI library with JSX
-- **Tailwind CSS** 4 - Utility-first CSS via `@tailwindcss/postcss`
-  - PostCSS config: `postcss.config.mjs`
-  - Theme: CSS variables via `@theme inline` in `src/app/globals.css`
+**Core:**
+- Next.js 16.2.4 - Full-stack React framework with App Router
+- React 19.2.4 - UI library
+- React DOM 19.2.4 - DOM rendering
+- FastAPI 0.115.0 - Python backend API framework
+- Uvicorn 0.32.1 - ASGI server for FastAPI
 
-### Backend Framework
-- **FastAPI** 0.115.0 - Async Python API framework
-  - ASGI server: **uvicorn** 0.32.1 (`uvicorn[standard]`)
-  - Validation: **pydantic-settings** 2.5.2 for configuration
-  - HTTP client: **httpx** 0.27.2 for PocketBase API calls
+**Testing:**
+- Not detected (no test framework configured)
 
-### Build/Dev Tools
-- **TypeScript** 5.x - Strict mode, ES2017 target
-  - Config: `tsconfig.json` with `@/*` path alias → `./src/*`
-- **ESLint** 9 - Linting via `eslint-config-next`
-  - Config: `eslint.config.mjs` (flat config format)
-  - Rules: Core web vitals + TypeScript config
-- **tsx** 4.21.0 - TypeScript execution utility
+**Build/Dev:**
+- ESLint 9 - Code linting (`eslint.config.mjs`)
+- Tailwind CSS 4 - Utility-first CSS framework
+- PostCSS - CSS processing (`postcss.config.mjs`)
+- TypeScript 5.x - Type checking
+- tsx 4.21.0 - TypeScript execution
 
 ## Key Dependencies
 
-### Frontend (package.json)
+**Critical:**
+- `pocketbase` 0.25.0 - PocketBase JavaScript SDK for database/auth client (`package.json`)
+- `zod` 4.3.6 - Schema validation and type inference
+- `react-hook-form` 7.72.1 - Form management
+- `@hookform/resolvers` 5.2.1 - Hook form resolvers integration
+- `lucide-react` 1.8.0 - Icon library
+- `recharts` 3.8.1 - Charting library for dashboards
+- `sonner` 2.0.7 - Toast notifications
+- `date-fns` 4.1.0 - Date utilities
+- `class-variance-authority` 0.7.1 - CSS class variants
+- `clsx` 2.1.1 - Conditional class joining
+- `tailwind-merge` 3.5.0 - Tailwind class merging
+- `httpx` 0.27.2 - HTTP client for FastAPI backend
+- `pydantic-settings` 2.5.2 - Settings management for FastAPI
+- `slowapi` 0.1.9 - Rate limiting for FastAPI
 
-**UI & Styling:**
-- `lucide-react` ^1.8.0 - Icon library for navigation and UI elements
-- `sonner` ^2.0.7 - Toast notification system
-- `recharts` ^3.8.1 - Charting library for dashboard visualizations
-- `class-variance-authority` ^0.7.1 - Component variant management
-- `clsx` ^2.1.1 - Conditional class merging
-- `tailwind-merge` ^3.5.0 - Resolves Tailwind class conflicts
-
-**Forms & Validation:**
-- `react-hook-form` ^7.72.1 - Form state management
-- `@hookform/resolvers` ^5.2.1 - Schema validation integration
-- `zod` ^4.3.6 - Schema validation for forms and API data
-
-**Data & Utilities:**
-- `date-fns` ^4.1.0 - Date manipulation utilities
-
-### Backend (backend/requirements.txt)
-- `fastapi` 0.115.0 - Web framework
-- `uvicorn[standard]` 0.32.1 - ASGI server
-- `httpx` 0.27.2 - Async HTTP client (PocketBase API calls)
-- `pydantic-settings` 2.5.2 - Settings management from environment
-
-## Database & Storage
-
-### PocketBase (Primary Backend-as-a-Service)
-- **SDK:** `pocketbase` ^0.25.0 (JavaScript client)
-- **Configuration:**
-  - Default URL: `http://localhost:8090`
-  - Environment variable: `NEXT_PUBLIC_POCKETBASE_URL`
-- **Client singleton:** `src/lib/pocketbase.ts`
-- **Type definitions:** `src/types/pocketbase.ts`
-
-**Collections (Schema):**
-- `users` - User accounts (landlord/tenant roles)
-- `units` - Property units with status tracking
-- `tenants` - Tenant information
-- `leases` - Lease agreements
-- `payments` - Payment records
-- `expenses` - Expense tracking
-- `maintenance_requests` - Maintenance tickets
-- **Note:** Additional collections may exist in PocketBase database
-
-### No Traditional Database
-- No PostgreSQL detected (Prisma/SQLAlchemy removed)
-- No MongoDB detected
-- No Redis detected
-- All persistence via PocketBase
+**Infrastructure:**
+- `frodenas/pocketbase:0.24.0` Docker image - PocketBase database server (`docker-compose.yml`)
 
 ## Configuration
 
-### Environment (.env)
-- `NEXT_PUBLIC_POCKETBASE_URL` - PocketBase server URL
-- `.env` file present (contents not read for security)
+**Environment:**
+- Environment variables via `.env` files
+- Frontend: `NEXT_PUBLIC_POCKETBASE_URL` for PocketBase connection
+- Backend: `POCKETBASE_URL`, `BACKEND_SECRET_KEY`, `FASTAPI_PORT`
+- Configuration loaded via `pydantic-settings` in `backend/app/config.py`
 
-### Build Configuration Files
-| File | Purpose |
-|------|---------|
-| `package.json` | Frontend dependencies and npm scripts |
-| `package-lock.json` | npm lockfile |
-| `tsconfig.json` | TypeScript configuration |
-| `next.config.ts` | Next.js configuration (empty) |
-| `eslint.config.mjs` | ESLint flat config |
-| `postcss.config.mjs` | PostCSS with Tailwind plugin |
-| `backend/requirements.txt` | Python backend dependencies |
-| `backend/app/config.py` | Pydantic settings (BACKEND_ prefix) |
+**Build Files:**
+- `package.json` - Frontend dependencies and scripts
+- `backend/requirements.txt` - Backend Python dependencies
+- `tsconfig.json` - TypeScript configuration with path alias `@/*` → `./src/*`
+- `next.config.ts` - Next.js configuration with standalone output, security headers
+- `eslint.config.mjs` - ESLint configuration
+- `postcss.config.mjs` - PostCSS configuration
+- `docker-compose.yml` - Multi-container orchestration (PocketBase, Backend, Frontend)
+- `Dockerfile` - Frontend multi-stage build (deps → builder → runner)
+- `backend/Dockerfile` - Backend multi-stage build (builder → production)
 
 ## Platform Requirements
 
-### Development
-- **Frontend:** `npm run dev` → `next dev` (port 3000)
-- **Backend:** `uvicorn app.main:app` (port 8000)
-- **PocketBase:** Self-hosted binary at root (`./pocketbase`)
-  - Default port: 8090
-  - Runs locally: `./pocketbase serve`
+**Development:**
+- Node.js 20+ with npm
+- Python 3.12+ with pip/venv
+- Docker and Docker Compose (for full stack including PocketBase)
 
-### Production
-- **Frontend:** `npm run build` → `next build` + `next start`
-- **Backend:** `uvicorn` with production settings
-- **PocketBase:** Self-hosted deployment required
-- No Dockerfile detected
-- No CI/CD pipeline detected
-- No hosting platform configured (Vercel, Netlify, etc.)
-
-## Architecture Notes
-
-### Dual-Layer Backend Pattern
-The project has both a Python FastAPI layer and a JavaScript/TypeScript frontend layer:
-- **Frontend:** Uses PocketBase SDK directly for most operations (`src/lib/api.ts`, `src/lib/tenant-api.ts`)
-- **Backend (FastAPI):** Aggregation layer that fetches from PocketBase via HTTP and computes summaries
-  - Example: `/api/fastapi/dashboard` endpoint in `backend/app/routers/dashboard.py`
-  - Uses `httpx.AsyncClient` to call PocketBase REST API
-
-### No ORM Layer
-- Prisma removed (no `prisma/` directory, no `@prisma/client`)
-- SQLAlchemy present in requirements but not actively used
-- Direct PocketBase REST API calls via SDK and httpx
+**Production Deployment Target:**
+- Node.js 20 Alpine container (standalone Next.js server on port 3000)
+- Python 3.12 Slim container (Uvicorn + FastAPI on port 8000)
+- PocketBase container (frodenas/pocketbase:0.24.0 on port 8090)
+- All services orchestrated via Docker Compose
 
 ---
 

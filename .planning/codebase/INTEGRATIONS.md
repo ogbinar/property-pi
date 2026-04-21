@@ -2,207 +2,114 @@
 
 **Analysis Date:** 2026-04-21
 
-## Primary Integration: PocketBase
+## APIs & External Services
 
-### Database & Backend-as-a-Service
-- **Service:** PocketBase (self-hosted)
-- **Type:** Open-source backend with real-time database, authentication, and file storage
-- **SDK/Client:** `pocketbase` ^0.25.0 (JavaScript)
-- **Location:** Self-hosted binary at `/projects/property-pi/pocketbase`
-- **Default URL:** `http://localhost:8090`
-- **Environment Variable:** `NEXT_PUBLIC_POCKETBASE_URL`
-
-**Integration Points:**
-- Frontend SDK client: `src/lib/pocketbase.ts`
-- Type definitions: `src/types/pocketbase.ts`
-- API utilities: `src/lib/api.ts`, `src/lib/tenant-api.ts`
-- FastAPI backend proxy: `backend/app/routers/*.py` via httpx
-
-**Collections Used:**
-- `users` - User authentication and profiles (landlord/tenant roles)
-- `units` - Property unit records with status tracking
-- `tenants` - Tenant information and contact details
-- `leases` - Lease agreements linking tenants to units
-- `payments` - Payment records (rent, deposits, fees)
-- `expenses` - Expense tracking with categories
-- `maintenance_requests` - Maintenance ticket system
-- `notices` - Communications to tenants
-
-**PocketBase Features Used:**
-- **Authentication:** Built-in auth with email/password, JWT tokens
-- **Real-time subscriptions:** WebSocket-based live updates
-- **File storage:** Built-in file upload/download for attachments
-- **REST API:** Direct HTTP access from FastAPI backend
-- **Filtering:** Query filters via PocketBase API (e.g., date ranges, status)
+**Database & Backend-as-a-Service:**
+- **PocketBase** - Primary database and authentication provider
+  - SDK/Client: `pocketbase` npm package (0.25.0)
+  - Frontend URL: `NEXT_PUBLIC_POCKETBASE_URL` (default: `http://localhost:8090`)
+  - Backend URL: `POCKETBASE_URL` or `BACKEND_POCKETBASE_URL` (default: `http://localhost:8090`)
+  - Admin Auth: `BACKEND_POCKETBASE_ADMIN_TOKEN` environment variable (optional for local dev)
+  - Docker Image: `frodenas/pocketbase:0.24.0`
+  - Implementation: Direct SDK usage in frontend (`src/lib/pocketbase.ts`), HTTP client (`httpx`) in backend
 
 ## Data Storage
 
-### PocketBase (Primary)
-- **Type:** SQLite-based embedded database with REST API
-- **Connection:** Local HTTP to `http://localhost:8090`
-- **Client:** PocketBase SDK for frontend, httpx for backend
-- **Migrations:** Handled via PocketBase UI or CLI (no Alembic/Prisma migrations)
+**Databases:**
+- **PocketBase** (SQLite-based real-time backend)
+  - Connection: `NEXT_PUBLIC_POCKETBASE_URL` (frontend), `POCKETBASE_URL` (backend)
+  - Client: PocketBase JavaScript SDK (`src/lib/pocketbase.ts`)
+  - ORM: Not used - PocketBase provides direct API access
+  - Data collections: Users, Units, Tenants, Leases, Payments, Expenses, Maintenance, Notices
 
-### No Additional Storage
-- **File Storage:** PocketBase built-in (no S3, Cloudinary)
-- **Caching:** None detected (no Redis, Memcached)
-- **Search:** PocketBase built-in search (no Elasticsearch, Algolia)
+**File Storage:**
+- PocketBase file upload capability (noted in `ExpenseRecord` interface with `file: string | null`)
+- No external file storage service detected (AWS S3, Cloudinary, etc.)
+
+**Caching:**
+- None detected (PocketBase handles data caching internally)
 
 ## Authentication & Identity
 
-### PocketBase Auth
-- **Provider:** PocketBase built-in authentication
-- **Implementation:**
-  - SDK client in `src/lib/pocketbase.ts`
-  - Auth context/provider: `src/lib/AuthProvider.tsx`
-  - Type-safe records in `src/types/pocketbase.ts`
-- **Auth Flow:**
-  - Email/password authentication via PocketBase
-  - JWT tokens managed by PocketBase SDK
-  - Role-based access: `landlord` | `tenant`
+**Auth Provider:**
+- **PocketBase** - Built-in authentication system
+  - Implementation: Email/password authentication via PocketBase SDK
+  - Auth context: `src/lib/AuthProvider.tsx` wraps app with auth state
+  - Guard component: `src/components/auth/AuthGuard.tsx` protects routes
+  - User roles: `landlord` and `tenant` (defined in `UserRecord` interface)
 
-### No External Auth Providers
-- No NextAuth.js (removed from dependencies)
-- No OAuth providers (Google, GitHub, etc.)
-- No custom JWT implementation (replaced by PocketBase auth)
-- No bcryptjs (password hashing handled by PocketBase)
+## Monitoring & Observability
 
-## External APIs & Services
+**Error Tracking:**
+- None detected (no Sentry, LogRocket, or similar services)
 
-### None Detected
+**Logs:**
+- Console logging only (no structured logging framework detected)
+- FastAPI provides automatic request logging via Uvicorn
 
-No third-party API integrations are present:
-- **Payment Processing:** No Stripe, PayPal, Square
-- **Email Service:** No SendGrid, Resend, Mailgun
-- **SMS/Notifications:** No Twilio, Firebase Cloud Messaging
-- **Analytics:** No Google Analytics, Plausible, Mixpanel
-- **Monitoring:** No Sentry, LogRocket, Datadog
-- **File Storage:** No AWS S3, Cloudinary, Firebase Storage
-- **Maps:** No Google Maps, Mapbox
+## CI/CD & Deployment
 
-All functionality is self-contained within:
-- Next.js frontend
-- FastAPI backend (aggregation layer)
-- PocketBase database/auth
+**Hosting:**
+- Docker-based deployment (multi-stage builds)
+- Docker Compose orchestration (`docker-compose.yml`)
+- No cloud provider detected (AWS, Vercel, Heroku, etc.)
 
-## Internal Integration Points
-
-### Frontend → PocketBase (Direct SDK)
-API utilities using PocketBase SDK directly:
-- `src/lib/api.ts` - Main API client with CRUD operations
-  - Functions: `fetchDashboardData()`, `createExpense()`, `updateExpense()`, `deleteExpense()`, etc.
-  - Uses `pb.collection(...).create()`, `.update()`, `.delete()`, `.getList()`, `.getFirstListItem()`
-- `src/lib/tenant-api.ts` - Tenant-specific operations
-  - Uses `pb` client for tenant-facing API calls
-- Type-safe record interfaces in `src/types/pocketbase.ts`
-
-### Frontend → FastAPI Backend (HTTP)
-Dashboard data aggregation:
-- FastAPI endpoint: `/api/fastapi/dashboard` in `backend/app/routers/dashboard.py`
-- Fetches from PocketBase via httpx:
-  - Units: `/api/collections/units/records`
-  - Payments: `/api/collections/payments/records` with date filters
-  - Expenses: `/api/collections/expenses/records` with date filters
-  - Leases: `/api/collections/leases/records`
-- Returns aggregated summary (occupancy rate, revenue, expenses, expirations)
-
-### FastAPI → PocketBase (HTTP API)
-Backend aggregation layer:
-- Config: `backend/app/config.py` with `pocketbase_url` setting
-- HTTP client: `httpx.AsyncClient` for async PocketBase API calls
-- Filter syntax: PocketBase query language (e.g., `date >= "2026-01-01"`)
-
-## Webhooks & Callbacks
-
-### Incoming Webhooks
-- **None detected** - No webhook endpoints configured
-
-### Outgoing Webhooks
-- **None detected** - No outbound webhook calls
+**CI Pipeline:**
+- None detected (no GitHub Actions, GitLab CI, Jenkins, etc.)
 
 ## Environment Configuration
 
-### Required Environment Variables
+**Required env vars:**
 
-**Frontend (.env):**
-- `NEXT_PUBLIC_POCKETBASE_URL` - PocketBase server URL (default: `http://localhost:8090`)
+*Frontend (Next.js):*
+- `NEXT_PUBLIC_POCKETBASE_URL` - PocketBase API URL (must be publicly accessible)
+- `NEXT_PUBLIC_API_URL` - Backend API URL (set in docker-compose)
 
-**Backend (backend/.env via pydantic-settings):**
-- `BACKEND_POCKETBASE_URL` - PocketBase server URL (default: `http://localhost:8090`)
-- `BACKEND_ADMIN_TOKEN` - Admin token for PocketBase (if using admin API)
-- `BACKEND_FASTAPI_PORT` - FastAPI server port (default: 8000)
+*Backend (FastAPI):*
+- `POCKETBASE_URL` - PocketBase API URL for server-to-server communication
+- `BACKEND_SECRET_KEY` - Secret key for backend operations (default: `property-pi-secret-key`)
+- `FASTAPI_PORT` - Backend server port (default: 8000)
+- `BACKEND_POCKETBASE_ADMIN_TOKEN` - Optional admin token for elevated privileges
 
-**Note:** Prefix `BACKEND_` for backend-specific variables (per `config.py`)
+**Secrets location:**
+- Environment variables via `.env` files (not committed to git)
+- `.env.example` and `.env.production.example` provide templates
+- Secrets stored in runtime environment, not in code
 
-### Secrets Location
-- `.env` file at root (frontend)
-- Backend uses pydantic-settings with `.env` file
-- No secrets manager detected (AWS Secrets Manager, HashiCorp Vault)
-- No encrypted secrets file (.env.production.local, etc.)
+## Webhooks & Callbacks
 
-## Data Flow Summary
+**Incoming:**
+- None detected (no webhook endpoints configured)
 
-```
-┌──────────────┐
-│   Browser    │
-│  (React UI)  │
-└──────┬───────┘
-       │
-       │ PocketBase SDK
-       ▼
-┌─────────────────────────────────────────┐
-│           PocketBase                    │
-│  ┌─────────────────────────────────┐    │
-│  │  Database (SQLite)              │    │
-│  │  Authentication (JWT)           │    │
-│  │  File Storage                   │    │
-│  │  Real-time Subscriptions        │    │
-│  └─────────────────────────────────┘    │
-└─────────────────────────────────────────┘
-       ▲
-       │ httpx HTTP Client
-       │ (FastAPI backend)
-       │
-┌──────┴───────┐
-│  FastAPI     │
-│  (port 8000) │
-│ Aggregation  │
-│   Layer      │
-└──────────────┘
-```
+**Outgoing:**
+- None detected (no external webhook calls)
 
-## Integration Patterns
+## Rate Limiting
 
-### Direct SDK Pattern (Frontend)
-```typescript
-// src/lib/pocketbase.ts
-import PocketBase from 'pocketbase'
-const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://localhost:8090')
+**Provider:**
+- **SlowAPI** - Rate limiting for FastAPI backend
+  - Client: `slowapi` 0.1.9
+  - Implementation: `Limiter` with `get_remote_address` key function
+  - Applied to: All backend routes via middleware in `backend/app/main.py`
+  - Response: 429 status with "Rate limit exceeded" message
 
-// src/lib/api.ts
-const records = await pb.collection('units').getList(1, 50, {
-  filter: 'status = "occupied"'
-})
-```
+## Security Headers
 
-### HTTP Proxy Pattern (Backend)
-```python
-# backend/app/routers/dashboard.py
-async with httpx.AsyncClient() as client:
-    units_resp = await client.get(
-        f"{settings.pocketbase_url}/api/collections/units/records",
-        params={"perPage": "100"}
-    )
-```
+**Implemented via Next.js config (`next.config.ts`):**
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `X-XSS-Protection: 0`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `Permissions-Policy: camera=(), microphone=(), geolocation=()`
 
-## Migration Notes
+## CORS Configuration
 
-### Removed Integrations
-- **Prisma ORM:** Previously used, now removed (no `prisma/` directory)
-- **PostgreSQL:** No longer the database (replaced by PocketBase SQLite)
-- **NextAuth.js:** Previously used for auth, now replaced by PocketBase auth
-- **bcryptjs:** Previously used for password hashing, now handled by PocketBase
-- **SQLAlchemy/Alembic:** Present in requirements.txt but not actively used
+**FastAPI Backend:**
+- Allowed origins: `http://localhost:3000` (Next.js dev server)
+- Credentials: Allowed
+- Methods: All (`*`)
+- Headers: All (`*`)
+- Location: `backend/app/main.py`
 
 ---
 
