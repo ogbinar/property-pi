@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Hybrid PocketBase + FastAPI Migration
 status: in-progress
-last_updated: "2026-04-21T13:00:00.000Z"
+last_updated: "2026-04-21T13:30:00.000Z"
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 5
-  completed_plans: 3
-  percent: 60
+  completed_plans: 4
+  percent: 80
 ---
 
 # State
@@ -23,7 +23,7 @@ progress:
 | 1 | Cleanup & Foundation | ✅ completed | Prisma/NextAuth removed; PocketBase SDK integrated; `.env` consolidated; README + DEPLOYMENT.md created |
 | 2 | Authentication | ✅ completed | AuthProvider with PocketBase; login page; dashboard protection; user info in header; logout implemented |
 | 3 | Core Data Layer Swap | ✅ completed | All pages wired to PocketBase SDK; FastAPI aggregation backend ready; build passes with zero errors |
-| 4 | Tenant Portal | planned | Plans exist at `.planning/phases/04/04-01-PLAN.md`, `.planning/phases/04/04-02-PLAN.md` |
+| 4 | Tenant Portal | ✅ completed | Tenant portal page + components; landlord can generate/share tenant access links; token regeneration with invalidation |
 | 5 | Polish & Deploy | planned | Plan exists at `.planning/phases/05/05-PLAN.md` |
 
 ### Phase 1 Completion Summary
