@@ -19,6 +19,7 @@ export interface UnitRecord {
   number: string
   floor: number
   area: number
+  type?: string
   rent: number
   deposit: number
   status: 'vacant' | 'occupied' | 'maintenance' | 'under_renovation'
@@ -96,6 +97,7 @@ export interface MaintenanceRecord {
   description: string
   priority: 'low' | 'medium' | 'high' | 'urgent'
   status: 'open' | 'in_progress' | 'completed' | 'cancelled'
+  cost?: number
   createdAt: string
   updatedAt: string
 }

@@ -11,15 +11,15 @@ import { Modal } from '@/components/ui/modal'
 import { deleteUnit, updateUnit, getUnit } from '@/lib/api'
 
 interface UnitData {
-  id: string
-  unitNumber: string
-  type: string
-  status: string
-  rentAmount: string
-  securityDeposit: string
-  createdAt: string
-  updatedAt: string
-}
+   id: string
+   unitNumber: string
+   type: string
+   status: string
+   rentAmount: string
+   securityDeposit: string
+   created_at: string
+   updatedAt: string
+ }
 
 export default function EditUnitPage({
   params,
@@ -39,12 +39,13 @@ export default function EditUnitPage({
         const { id } = await params
         const { getUnit } = await import('@/lib/api')
         const data = await getUnit(id)
-        setUnit({
-          ...data,
-          unitNumber: data.unit_number,
-          rentAmount: String(data.rent_amount),
-          securityDeposit: String(data.security_deposit),
-        })
+setUnit({
+           ...data,
+           unitNumber: data.unit_number,
+           rentAmount: String(data.rent_amount),
+           securityDeposit: String(data.security_deposit),
+           updatedAt: data.created_at,
+         })
       } catch (error) {
         console.error('Failed to fetch unit:', error)
         toast.error('Failed to load unit data')

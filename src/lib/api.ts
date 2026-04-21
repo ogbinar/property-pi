@@ -16,6 +16,26 @@ import type {
   MaintenanceRecord,
 } from '@/types/pocketbase'
 
+// Typed helpers
+async function getUnitsRaw(): Promise<UnitRecord[]> {
+  return pb.collection('units').getFullList<UnitRecord>()
+}
+async function getTenantsRaw(): Promise<TenantRecord[]> {
+  return pb.collection('tenants').getFullList<TenantRecord>()
+}
+async function getLeasesRaw(): Promise<LeaseRecord[]> {
+  return pb.collection('leases').getFullList<LeaseRecord>()
+}
+async function getPaymentsRaw(): Promise<PaymentRecord[]> {
+  return pb.collection('payments').getFullList<PaymentRecord>()
+}
+async function getExpensesRaw(): Promise<ExpenseRecord[]> {
+  return pb.collection('expenses').getFullList<ExpenseRecord>()
+}
+async function getMaintenanceRaw(): Promise<MaintenanceRecord[]> {
+  return pb.collection('maintenance').getFullList<MaintenanceRecord>()
+}
+
 // =====================
 // Helpers
 // =====================
@@ -56,13 +76,9 @@ export interface UnitWithRelations extends Unit {
 }
 
 export async function getUnits(q?: string): Promise<UnitWithRelations[]> {
-  const records = await pb.collection('units').getFullList()
+  const records = await getUnitsRaw()
 
-  // Fetch expanded data for each unit (tenants, leases)
-  const units: UnitWithRelations[] = records.map((u: UnitRecord) => {
-    const tenant = u.tenant as unknown as TenantRecord | undefined
-    const lease = u.lease as unknown as LeaseRecord | undefined
-
+  const units: UnitWithRelations[] = records.map((u) => {
     return {
       id: u.id,
       unit_number: u.number,
@@ -71,19 +87,8 @@ export async function getUnits(q?: string): Promise<UnitWithRelations[]> {
       rent_amount: u.rent || 0,
       security_deposit: u.deposit || 0,
       created_at: u.createdAt,
-      current_tenant: tenant ? {
-        id: tenant.id,
-        first_name: tenant.firstName || '',
-        last_name: tenant.lastName || '',
-        email: tenant.email || '',
-      } : null,
-      active_lease: lease ? {
-        id: lease.id,
-        start_date: lease.startDate,
-        end_date: lease.endDate,
-        rent_amount: lease.monthlyRent || 0,
-        status: getStatusMap(lease.status || 'active'),
-      } : null,
+      current_tenant: null,
+      active_lease: null,
     }
   })
 
@@ -101,7 +106,9 @@ export async function getUnits(q?: string): Promise<UnitWithRelations[]> {
 }
 
 export async function getUnit(id: string): Promise<UnitWithRelations> {
-  const u = await pb.collection('units').getFirst({ filter: `id="${id}"` })
+  const records = await getUnitsRaw()
+  const u = records.find((r) => r.id === id)
+  if (!u) throw new Error('Unit not found')
   return mapUnit(u)
 }
 
@@ -135,7 +142,7 @@ export async function createUnit(data: CreateUnitData): Promise<Unit> {
     status: 'vacant',
     features: '',
     description: '',
-  })
+  }) as unknown as UnitRecord
   return mapUnit(u)
 }
 
@@ -152,7 +159,7 @@ export async function updateUnit(id: string, data: UpdateUnitData): Promise<Unit
     ...(data.status && { status: data.status.toLowerCase() }),
     ...(data.rent_amount !== undefined && { rent: data.rent_amount }),
     ...(data.security_deposit !== undefined && { deposit: data.security_deposit }),
-  })
+  }) as unknown as UnitRecord
   return mapUnit(u)
 }
 
@@ -181,9 +188,9 @@ export interface TenantWithRelations extends Tenant {
 }
 
 export async function getTenants(q?: string): Promise<TenantWithRelations[]> {
-  const records = await pb.collection('tenants').getFullList()
+  const records = await getTenantsRaw()
 
-  let tenants: TenantWithRelations[] = records.map((t: TenantRecord) => ({
+  let tenants: TenantWithRelations[] = records.map((t) => ({
     id: t.id,
     first_name: t.firstName || '',
     last_name: t.lastName || '',
@@ -211,7 +218,9 @@ export async function getTenants(q?: string): Promise<TenantWithRelations[]> {
 }
 
 export async function getTenant(id: string): Promise<TenantWithRelations> {
-  const t = await pb.collection('tenants').getFirst({ filter: `id="${id}"` })
+  const records = await getTenantsRaw()
+  const t = records.find((r) => r.id === id)
+  if (!t) throw new Error('Tenant not found')
   return mapTenant(t)
 }
 
@@ -250,7 +259,7 @@ export async function createTenant(data: CreateTenantData): Promise<Tenant> {
     moveOutDate: null,
     status: 'active',
     notes: data.emergency_contact || '',
-  })
+  }) as unknown as TenantRecord
   return mapTenant(t)
 }
 
@@ -271,7 +280,7 @@ export async function updateTenant(id: string, data: UpdateTenantData): Promise<
     ...(data.phone !== undefined && { phone: data.phone }),
     ...(data.emergency_contact !== undefined && { notes: data.emergency_contact }),
     ...(data.unit_id !== undefined && { unit: data.unit_id }),
-  })
+  }) as unknown as TenantRecord
   return mapTenant(t)
 }
 
@@ -302,9 +311,9 @@ export interface LeaseWithRelations extends Lease {
 }
 
 export async function getLeases(status?: string): Promise<LeaseWithRelations[]> {
-  const records = await pb.collection('leases').getFullList()
+  const records = await pb.collection('leases').getFullList() as unknown as LeaseRecord[]
 
-  let leases: LeaseWithRelations[] = records.map((l: LeaseRecord) => ({
+  let leases: LeaseWithRelations[] = records.map((l) => ({
     id: l.id,
     start_date: l.startDate,
     end_date: l.endDate,
@@ -329,7 +338,9 @@ export async function getLeases(status?: string): Promise<LeaseWithRelations[]> 
 }
 
 export async function getLease(id: string): Promise<LeaseWithRelations> {
-  const l = await pb.collection('leases').getFirst({ filter: `id="${id}"` })
+  const records = await getLeasesRaw()
+  const l = records.find((r) => r.id === id)
+  if (!l) throw new Error('Lease not found')
   return mapLease(l)
 }
 
@@ -373,7 +384,7 @@ export async function createLease(data: CreateLeaseData, files?: File[]): Promis
   if (files && files.length > 0) {
     payload['tenantAccess'] = files // PocketBase file upload
   }
-  const l = await pb.collection('leases').create(payload)
+  const l = await pb.collection('leases').create(payload) as unknown as LeaseRecord
   return mapLease(l)
 }
 
@@ -390,7 +401,7 @@ export async function updateLease(id: string, data: UpdateLeaseData): Promise<Le
     ...(data.end_date && { endDate: data.end_date }),
     ...(data.rent_amount !== undefined && { monthlyRent: data.rent_amount }),
     ...(data.status && { status: data.status.toLowerCase() }),
-  })
+  }) as unknown as LeaseRecord
   return mapLease(l)
 }
 
@@ -431,11 +442,10 @@ export async function getMonthRent(month: number, year: number): Promise<MonthRe
   const startDate = `${year}-${String(month).padStart(2, '0')}-01`
   const endDate = `${year}-${String(month).padStart(2, '0')}-31`
 
-  const records = await pb.collection('payments').getFullList({
-    filter: `date >= "${startDate}" && date <= "${endDate}"`,
-  })
+  const records = await getPaymentsRaw()
+  const filtered = records.filter((p) => p.date >= startDate && p.date <= endDate)
 
-  const payments: Payment[] = records.map((p: PaymentRecord) => ({
+  const payments: Payment[] = filtered.map((p) => ({
     id: p.id,
     amount: p.amount || 0,
     date: p.date,
@@ -471,9 +481,8 @@ export interface GenerateRentData {
 
 export async function generateRent(data: GenerateRentData): Promise<Payment[]> {
   // Get all active leases
-  const leases = await pb.collection('leases').getFullList({
-    filter: "status == 'active'",
-  })
+  const allLeases = await getLeasesRaw()
+  const leases = allLeases.filter((l) => l.status === 'active')
 
   const payments: Payment[] = []
 
@@ -494,7 +503,7 @@ export async function generateRent(data: GenerateRentData): Promise<Payment[]> {
       status: 'pending',
       paymentMethod: '',
       notes: '',
-    })
+    }) as unknown as PaymentRecord
     payments.push({
       id: p.id,
       amount: p.amount || 0,
@@ -531,7 +540,7 @@ export async function markPaid(unitId: string, data: MarkPaidData): Promise<Paym
   const p = await pb.collection('payments').update(records[0].id, {
     status: 'paid',
     paymentMethod: data.method || 'cash',
-  })
+  }) as unknown as PaymentRecord
 
   return {
     id: p.id,
@@ -567,9 +576,9 @@ export async function getExpenses(filters?: {
   month?: number
   year?: number
 }): Promise<Expense[]> {
-  const records = await pb.collection('expenses').getFullList()
+  const records = await pb.collection('expenses').getFullList() as unknown as ExpenseRecord[]
 
-  let expenses: Expense[] = records.map((e: ExpenseRecord) => ({
+  let expenses: Expense[] = records.map((e) => ({
     id: e.id,
     amount: e.amount || 0,
     category: e.category || 'Other',
@@ -601,7 +610,9 @@ export async function getExpenses(filters?: {
 }
 
 export async function getExpense(id: string): Promise<Expense> {
-  const e = await pb.collection('expenses').getFirst({ filter: `id="${id}"` })
+  const records = await getExpensesRaw()
+  const e = records.find((r) => r.id === id)
+  if (!e) throw new Error('Expense not found')
   return mapExpense(e)
 }
 
@@ -639,7 +650,7 @@ export async function createExpense(data: CreateExpenseData, file?: File): Promi
   if (file) {
     payload['file'] = file
   }
-  const e = await pb.collection('expenses').create(payload)
+  const e = await pb.collection('expenses').create(payload) as unknown as ExpenseRecord
   return mapExpense(e)
 }
 
@@ -659,7 +670,7 @@ export async function updateExpense(id: string, data: UpdateExpenseData): Promis
     ...(data.description && { description: data.description }),
     ...(data.date && { date: data.date }),
     ...(data.unit_id !== undefined && { unit: data.unit_id }),
-  })
+  }) as unknown as ExpenseRecord
   return mapExpense(e)
 }
 
@@ -687,9 +698,9 @@ export async function getMaintenance(filters?: {
   priority?: string
   unit_id?: string
 }): Promise<MaintenanceRequest[]> {
-  const records = await pb.collection('maintenance').getFullList()
+  const records = await pb.collection('maintenance').getFullList() as unknown as MaintenanceRecord[]
 
-  let requests: MaintenanceRequest[] = records.map((m: MaintenanceRecord) => ({
+  let requests: MaintenanceRequest[] = records.map((m) => ({
     id: m.id,
     title: m.title || '',
     description: m.description || '',
@@ -717,7 +728,9 @@ export async function getMaintenance(filters?: {
 }
 
 export async function getMaintenanceRequest(id: string): Promise<MaintenanceRequest> {
-  const m = await pb.collection('maintenance').getFirst({ filter: `id="${id}"` })
+  const records = await getMaintenanceRaw()
+  const m = records.find((r) => r.id === id)
+  if (!m) throw new Error('Maintenance request not found')
   return mapMaintenance(m)
 }
 
@@ -728,7 +741,7 @@ function mapMaintenance(m: MaintenanceRecord): MaintenanceRequest {
     description: m.description || '',
     priority: m.priority || 'medium',
     status: getStatusMap(m.status || 'open'),
-    cost: null,
+    cost: m.cost ?? null,
     unit_id: m.unit || '',
     created_at: m.createdAt,
   }
@@ -749,7 +762,7 @@ export async function createMaintenance(data: CreateMaintenanceData): Promise<Ma
     priority: data.priority || 'medium',
     unit: data.unit_id,
     status: 'open',
-  })
+  }) as unknown as MaintenanceRecord
   return mapMaintenance(m)
 }
 
@@ -768,7 +781,7 @@ export async function updateMaintenance(id: string, data: UpdateMaintenanceData)
     ...(data.priority && { priority: data.priority }),
     ...(data.status && { status: data.status.toLowerCase() }),
     ...(data.cost !== undefined && { cost: data.cost }),
-  })
+  }) as unknown as MaintenanceRecord
   return mapMaintenance(m)
 }
 
@@ -825,12 +838,10 @@ export interface Dashboard {
 
 export async function getDashboard(): Promise<Dashboard> {
   // Fetch all data from PocketBase
-  const [units, payments, expenses, leases] = await Promise.all([
-    pb.collection('units').getFullList(),
-    pb.collection('payments').getFullList(),
-    pb.collection('expenses').getFullList(),
-    pb.collection('leases').getFullList(),
-  ])
+  const units = await getUnitsRaw()
+  const payments = await getPaymentsRaw()
+  const expenses = await getExpensesRaw()
+  const leases = await getLeasesRaw()
 
   // Compute unit counts
   const unit_counts: UnitCounts = {
@@ -838,7 +849,7 @@ export async function getDashboard(): Promise<Dashboard> {
     occupied: units.filter((u) => u.status === 'occupied').length,
     vacant: units.filter((u) => u.status === 'vacant').length,
     maintenance: units.filter((u) => u.status === 'maintenance').length,
-    under_renovation: units.filter((u) => u.status === 'under_renovation' || u.status === 'underRenovation').length,
+    under_renovation: units.filter((u) => u.status === 'under_renovation').length,
   }
 
   // Occupancy rate
