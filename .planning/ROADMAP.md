@@ -112,20 +112,10 @@ Goal: Landlord can see unit status and rent arrears in < 5 seconds
 
 **Duration:** Est. 3-4 days
 
-### Tasks
+### Plans
 
-- [ ] **4.1** Add `tenantAccess` field to leases collection (text, stores token)
-- [ ] **4.2** Create tenant portal page (`src/app/tenant/portal/page.tsx`)
-- [ ] **4.3** Implement token validation against lease records
-- [ ] **4.4** Build tenant dashboard layout (sidebar with lease, payments, maintenance, notices)
-- [ ] **4.5** Display lease details (dates, rent, status)
-- [ ] **4.6** Display payment history for tenant's unit
-- [ ] **4.7** Display maintenance request status
-- [ ] **4.8** Display notices sent to tenant's unit
-- [ ] **4.9** Allow tenant to submit new maintenance requests
-- [ ] **4.10** Add "Share Tenant Link" button to lease edit page
-- [ ] **4.11** Implement token generation (cryptographically random, stored in lease)
-- [ ] **4.12** Implement token regeneration (invalidates old link)
+- [ ] **04-01** Tenant portal page, layout, sidebar, header, and all read-only display cards + maintenance request form
+- [ ] **04-02** Landlord "Share Tenant Link" button on lease detail page with generate/regenerate functionality
 
 **Success Criteria:**
 - [ ] Tenant can access portal via shared link (no login required)
