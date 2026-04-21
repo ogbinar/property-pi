@@ -1,0 +1,13 @@
+node_modules
+.next
+pb_data
+.git
+.gitignore
+backend/.venv
+backend/__pycache__
+**/*.pyc
+**/*.pyo
+**/__pycache__
+*.md
+.Dockerfile
+.dockerignore

@@ -1,0 +1,38 @@
+services:
+  pb:
+    image: frodenas/pocketbase:0.24.0
+    ports:
+      - "8090:8090"
+    volumes:
+      - pb_data:/pb_data
+    environment:
+      PB_HTTP_ENABLE: "true"
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      POCKETBASE_URL: http://pb:8090
+      BACKEND_SECRET_KEY: ${BACKEND_SECRET_KEY:-property-pi-secret-key}
+    depends_on:
+      - pb
+    restart: unless-stopped
+
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_POCKETBASE_URL: http://localhost:8090
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      - backend
+      - pb
+    restart: unless-stopped
+
+volumes:
+  pb_data:
