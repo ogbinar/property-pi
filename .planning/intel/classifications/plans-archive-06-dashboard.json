@@ -1,0 +1,32 @@
+{
+  "source_path": "/projects/property-pi/plans/archive/06-dashboard.md",
+  "type": "PLAN",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Dashboard Plan",
+  "summary": "Plan for dashboard with aggregated metrics: unit status, revenue, occupancy, activity feed, and lease expirations.",
+  "scope": [
+    "Dashboard",
+    "Metrics aggregation",
+    "UI components",
+    "API routes"
+  ],
+  "cross_refs": [
+    "PLAN-PHASE-1.md",
+    "TASK-1.6-SUMMARY.md"
+  ],
+  "locked": false,
+  "precedence": 10,
+  "notes": "Superseded by ARCHITECTURE-DECISION.md - implementation used Prisma which is now obsolete",
+  "key_points": [
+    "GET /api/dashboard endpoint for aggregated data",
+    "Unit Status Grid with color-coded cards",
+    "Revenue card with collected vs expected",
+    "Occupancy rate with percentage and color coding",
+    "Activity feed with last 5 events",
+    "Expirations card with 60-day lookahead",
+    "Implemented in TASK-1.6-SUMMARY.md"
+  ],
+  "superseded_by": "ARCHITECTURE-DECISION.md",
+  "conflicts_with": "ARCHITECTURE-DECISION.md (Prisma replaced with PocketBase)"
+}

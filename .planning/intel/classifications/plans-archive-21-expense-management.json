@@ -1,0 +1,29 @@
+{
+  "source_path": "/projects/property-pi/plans/archive/21-expense-management.md",
+  "type": "PLAN",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Expense Management Plan",
+  "summary": "Plan for expense logging with categories, receipt uploads, and reporting (Phase 2+).",
+  "scope": [
+    "Expense management",
+    "Categories",
+    "Receipt uploads",
+    "Reporting"
+  ],
+  "cross_refs": [
+    "PLAN-PHASE-1.md",
+    "SPEC.md"
+  ],
+  "locked": false,
+  "precedence": 10,
+  "notes": "Superseded by ARCHITECTURE-DECISION.md - implementation used Prisma which is now obsolete",
+  "key_points": [
+    "Categorized expenses: Repairs, Utilities, Taxes, Insurance",
+    "Receipt upload/attachment",
+    "Expense CRUD operations",
+    "Financial reporting integration"
+  ],
+  "superseded_by": "ARCHITECTURE-DECISION.md",
+  "conflicts_with": "ARCHITECTURE-DECISION.md (Prisma replaced with PocketBase)"
+}

@@ -1,0 +1,72 @@
+{
+  "source_path": "/projects/property-pi/ARCHITECTURE-DECISION.md",
+  "type": "ADR",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Architecture Decision: PocketBase + FastAPI Hybrid",
+  "summary": "Establishes PocketBase for auth/data/storage and FastAPI for reporting/automation as the definitive architecture, superseding all Phase 1-2 plans.",
+  "scope": [
+    "PocketBase",
+    "FastAPI",
+    "Next.js frontend",
+    "Authentication",
+    "Data layer",
+    "File storage",
+    "Deployment"
+  ],
+  "cross_refs": [
+    "plans/01-setup-infrastructure.md",
+    "plans/00-schema-refactoring.md",
+    "plans/99-fix-for-running.md",
+    "plans/02-unit-management.md",
+    "plans/03-tenant-management.md",
+    "plans/04-lease-management.md",
+    "plans/05-rent-tracking.md",
+    "plans/06-dashboard.md",
+    "plans/07-data-seeding.md",
+    "plans/21-expense-management.md",
+    "plans/22-maintenance-tracking.md",
+    "plans/23-enhanced-dashboard.md",
+    "plans/24-file-upload-integration.md",
+    ".planning/phases/02/02-PLAN.md",
+    ".planning/research/STACK.md",
+    "ROADMAP.md",
+    "src/lib/pocketbase.ts",
+    "src/lib/AuthProvider.tsx"
+  ],
+  "locked": true,
+  "precedence": 1,
+  "notes": "",
+  "key_points": [
+    "PocketBase handles auth, database (SQLite), and file storage via JS SDK",
+    "FastAPI handles reporting, automation, and aggregation only - NOT CRUD or auth",
+    "PocketBase email/password auth is the single auth approach (supersedes FastAPI token auth and NextAuth)",
+    "Tenant portal uses shared link tokens, not PocketBase auth accounts",
+    "7 PocketBase collections map to 9 Prisma models (RentAdjustment and ContactLog become JSON fields)",
+    "All landlord collections require @request.auth.id != '' authentication rules",
+    "Next.js is frontend-only with zero server-side logic (no Prisma, no NextAuth)",
+    "10 key decisions (D-01 through D-10) established as confirmed architecture"
+  ],
+  "superseded_by": null,
+  "supersedes": [
+    "plans/01-setup-infrastructure.md",
+    "plans/00-schema-refactoring.md",
+    "plans/99-fix-for-running.md",
+    "plans/02-unit-management.md",
+    "plans/03-tenant-management.md",
+    "plans/04-lease-management.md",
+    "plans/05-rent-tracking.md",
+    "plans/06-dashboard.md",
+    "plans/07-data-seeding.md",
+    "plans/21-expense-management.md",
+    "plans/22-maintenance-tracking.md",
+    "plans/23-enhanced-dashboard.md",
+    "plans/24-file-upload-integration.md",
+    ".planning/phases/02/02-PLAN.md",
+    ".planning/research/STACK.md"
+  ],
+  "conflicts_with": [
+    ".planning/research/STACK.md (suggested removing FastAPI - corrected to keep for reporting)",
+    "src/lib/AuthProvider.tsx (currently uses FastAPI token auth - must be rewritten to PocketBase)"
+  ]
+}

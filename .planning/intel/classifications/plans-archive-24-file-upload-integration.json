@@ -1,0 +1,29 @@
+{
+  "source_path": "/projects/property-pi/plans/archive/24-file-upload-integration.md",
+  "type": "PLAN",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "File Upload Integration Plan",
+  "summary": "Plan for file uploads for lease documents and expense receipts (Phase 3+).",
+  "scope": [
+    "File uploads",
+    "Document storage",
+    "Lease documents",
+    "Expense receipts"
+  ],
+  "cross_refs": [
+    "PLAN-PHASE-1.md",
+    "SPEC.md"
+  ],
+  "locked": false,
+  "precedence": 10,
+  "notes": "Superseded by ARCHITECTURE-DECISION.md - storage approach changed to PocketBase file fields",
+  "key_points": [
+    "File upload for lease PDFs",
+    "Receipt upload for expenses",
+    "Supabase Storage or AWS S3 integration",
+    "String[] replaced by file fields"
+  ],
+  "superseded_by": "ARCHITECTURE-DECISION.md",
+  "conflicts_with": "ARCHITECTURE-DECISION.md (PocketBase file storage replaces S3/Supabase)"
+}

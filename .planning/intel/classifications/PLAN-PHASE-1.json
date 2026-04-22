@@ -1,0 +1,44 @@
+{
+  "source_path": "/projects/property-pi/PLAN-PHASE-1.md",
+  "type": "PLAN",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Property-Pi — Phase 1 Sub-Plan",
+  "summary": "Detailed sub-plan for Phase 1 MVP covering setup, unit/tenant/lease management, rent tracking, and dashboard implementation.",
+  "scope": [
+    "Project setup",
+    "Infrastructure",
+    "Unit management",
+    "Tenant management",
+    "Lease management",
+    "Rent tracking",
+    "Dashboard",
+    "Data seeding"
+  ],
+  "cross_refs": [
+    "SPEC.md",
+    "plans/archive/01-setup-infrastructure.md",
+    "plans/archive/02-unit-management.md",
+    "plans/archive/03-tenant-management.md",
+    "plans/archive/04-lease-management.md",
+    "plans/archive/05-rent-tracking.md",
+    "plans/archive/06-dashboard.md",
+    "plans/archive/07-data-seeding.md"
+  ],
+  "locked": false,
+  "precedence": 5,
+  "notes": "Superseded by ARCHITECTURE-DECISION.md - plan assumes Prisma/PostgreSQL/NextAuth stack which is now obsolete",
+  "key_points": [
+    "Phase 1 broken into 7 sub-tasks: setup, unit mgmt, tenant mgmt, lease mgmt, rent tracking, dashboard, data seeding",
+    "Each task has detailed checklist with API routes, pages, and components",
+    "Original stack: Prisma + PostgreSQL + NextAuth (superseded)",
+    "1.2 Unit Management: CRUD with visual card grid, status tracking, API routes",
+    "1.3 Tenant Management: CRUD with search, profile views, payment history",
+    "1.4 Lease Management: CRUD with lifecycle status (active/expired/terminated/renewal_pending)",
+    "1.5 Rent Tracking: Monthly generation, mark-paid workflow, overdue indicators",
+    "1.6 Dashboard: Aggregated metrics via /api/dashboard endpoint",
+    "1.7 Data Seeding: prisma/seed.ts with realistic demo data"
+  ],
+  "superseded_by": "ARCHITECTURE-DECISION.md",
+  "conflicts_with": "ARCHITECTURE-DECISION.md (entire data layer and auth approach changed)"
+}

@@ -1,0 +1,33 @@
+{
+  "source_path": "/projects/property-pi/SPEC.md",
+  "type": "SPEC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Project Specification: Property-Pi (5-Unit Rental Manager)",
+  "summary": "Defines Property-Pi as a lightweight property management app for small landlords with core features and technical stack.",
+  "scope": [
+    "Unit management",
+    "Lease management",
+    "Financial management",
+    "Tenant profiles",
+    "Communication",
+    "Dashboard",
+    "Technical stack"
+  ],
+  "cross_refs": [
+    "ROADMAP.md",
+    "ARCHITECTURE-DECISION.md"
+  ],
+  "locked": false,
+  "precedence": 2,
+  "notes": "",
+  "key_points": [
+    "Target user: small-scale landlords managing ~5 units",
+    "Core features: Unit/Lease management, Financial tracking, Communication",
+    "Original tech stack proposed: Next.js, PostgreSQL/Prisma, NextAuth (now superseded by ARCHITECTURE-DECISION.md)",
+    "Three-phase roadmap: MVP (Phase 1), Maintenance & Expenses (Phase 2), Automation & Documents (Phase 3)",
+    "Success metrics: 5-second unit status view, clear rent tracking, monthly profit visibility"
+  ],
+  "superseded_by": "ARCHITECTURE-DECISION.md",
+  "conflicts_with": "ARCHITECTURE-DECISION.md (tech stack changed from Prisma/PostgreSQL to PocketBase/FastAPI)"
+}

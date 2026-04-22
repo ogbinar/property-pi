@@ -25,7 +25,7 @@ interface Lease {
   }
 }
 
-function mapLeaseToPage(lease: { id: string; start_date: string; end_date: string; rent_amount: number; status: string; tenant: string; unit: string }): Lease {
+function mapLeaseToPage(lease: { id: string; start_date: string; end_date: string; rent_amount: number; status: string; tenant_id: string; unit_id: string }): Lease {
   const statusMap: Record<string, 'ACTIVE' | 'EXPIRED' | 'TERMINATED' | 'RENEWAL_PENDING'> = {
     'ACTIVE': 'ACTIVE',
     'active': 'ACTIVE',

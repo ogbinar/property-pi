@@ -1,0 +1,29 @@
+{
+  "source_path": "/projects/property-pi/plans/archive/03-tenant-management.md",
+  "type": "PLAN",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Tenant Management Plan",
+  "summary": "Plan for implementing tenant CRUD with search, profiles, and linked lease/payment history.",
+  "scope": [
+    "Tenant management",
+    "CRUD operations",
+    "Search functionality",
+    "API routes"
+  ],
+  "cross_refs": [
+    "PLAN-PHASE-1.md",
+    "TASK-1.3-SUMMARY.md"
+  ],
+  "locked": false,
+  "precedence": 10,
+  "notes": "Superseded by ARCHITECTURE-DECISION.md - implementation used Prisma which is now obsolete",
+  "key_points": [
+    "Tenant table with search by name/email/phone",
+    "Profile views with linked lease and payment history",
+    "CRUD API routes with validation",
+    "Implemented in TASK-1.3-SUMMARY.md"
+  ],
+  "superseded_by": "ARCHITECTURE-DECISION.md",
+  "conflicts_with": "ARCHITECTURE-DECISION.md (Prisma replaced with PocketBase)"
+}

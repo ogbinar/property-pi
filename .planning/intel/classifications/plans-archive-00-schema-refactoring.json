@@ -1,0 +1,28 @@
+{
+  "source_path": "/projects/property-pi/plans/archive/00-schema-refactoring.md",
+  "type": "PLAN",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Schema Refactoring Plan",
+  "summary": "Plan for Prisma schema refactoring and database migrations (superseded by ARCHITECTURE-DECISION.md).",
+  "scope": [
+    "Prisma schema",
+    "Database migrations",
+    "Data models"
+  ],
+  "cross_refs": [
+    "PLAN-PHASE-1.md",
+    "SPEC.md"
+  ],
+  "locked": false,
+  "precedence": 10,
+  "notes": "Superseded by ARCHITECTURE-DECISION.md - entire Prisma/PostgreSQL approach replaced",
+  "key_points": [
+    "Prisma schema design for property management",
+    "9 models: User, Unit, Tenant, Lease, Payment, Expense, MaintenanceRequest, RentAdjustment, ContactLog",
+    "Migrations via Prisma db push",
+    "Relations: Unit→Tenant→Lease→Payment"
+  ],
+  "superseded_by": "ARCHITECTURE-DECISION.md",
+  "conflicts_with": "ARCHITECTURE-DECISION.md (Prisma replaced with PocketBase collections)"
+}

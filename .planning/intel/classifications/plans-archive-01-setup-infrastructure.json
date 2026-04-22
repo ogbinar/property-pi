@@ -1,0 +1,33 @@
+{
+  "source_path": "/projects/property-pi/plans/archive/01-setup-infrastructure.md",
+  "type": "PLAN",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Section 1.1 — Project Setup & Infrastructure",
+  "summary": "Detailed plan for Phase 1.1: installing dependencies, initializing Prisma/PostgreSQL, setting up NextAuth, creating layout shell and UI components.",
+  "scope": [
+    "Project setup",
+    "Dependencies",
+    "Database initialization",
+    "Authentication",
+    "Layout shell",
+    "UI components"
+  ],
+  "cross_refs": [
+    "PLAN-PHASE-1.md",
+    "SPEC.md"
+  ],
+  "locked": false,
+  "precedence": 10,
+  "notes": "Superseded by ARCHITECTURE-DECISION.md - uses Prisma/PostgreSQL/NextAuth stack which is now obsolete",
+  "key_points": [
+    "Task 1.1.1: Install next-auth, date-fns, lucide-react, zod, react-hook-form, recharts",
+    "Task 1.1.2: Initialize Prisma with PostgreSQL, create 6 tables (Unit, Tenant, Lease, Payment, Expense, MaintenanceRequest)",
+    "Task 1.1.3: NextAuth with credentials provider, login page, middleware protection",
+    "Task 1.1.4: Dashboard layout shell with sidebar, header, responsive design",
+    "Task 1.1.5: 8 shared UI components (Button, Card, Badge, Input, Select, Modal, Table, EmptyState)",
+    "All tasks marked complete in summary checklist"
+  ],
+  "superseded_by": "ARCHITECTURE-DECISION.md",
+  "conflicts_with": "ARCHITECTURE-DECISION.md (Prisma/PostgreSQL/NextAuth replaced with PocketBase/FastAPI)"
+}

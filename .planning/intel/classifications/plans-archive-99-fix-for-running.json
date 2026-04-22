@@ -1,0 +1,26 @@
+{
+  "source_path": "/projects/property-pi/plans/archive/99-fix-for-running.md",
+  "type": "PLAN",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Fix for Running Plan",
+  "summary": "Emergency fix plan for Prisma-based routes and missing endpoints (superseded by ARCHITECTURE-DECISION.md).",
+  "scope": [
+    "Bug fixes",
+    "Prisma routes",
+    "Missing endpoints"
+  ],
+  "cross_refs": [
+    "PLAN-PHASE-1.md"
+  ],
+  "locked": false,
+  "precedence": 10,
+  "notes": "Superseded by ARCHITECTURE-DECISION.md - entire Prisma stack replaced, fixes no longer relevant",
+  "key_points": [
+    "Fixes for Prisma-based API routes",
+    "Missing endpoint corrections",
+    "Entirely wrong stack per ARCHITECTURE-DECISION.md"
+  ],
+  "superseded_by": "ARCHITECTURE-DECISION.md",
+  "conflicts_with": "ARCHITECTURE-DECISION.md (entire stack replaced)"
+}

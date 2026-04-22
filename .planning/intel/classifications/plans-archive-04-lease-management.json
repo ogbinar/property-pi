@@ -1,0 +1,28 @@
+{
+  "source_path": "/projects/property-pi/plans/archive/04-lease-management.md",
+  "type": "PLAN",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Lease Management Plan",
+  "summary": "Plan for implementing lease CRUD with lifecycle status tracking (active/expired/terminated/renewal_pending).",
+  "scope": [
+    "Lease management",
+    "Lifecycle tracking",
+    "CRUD operations",
+    "Status workflows"
+  ],
+  "cross_refs": [
+    "PLAN-PHASE-1.md"
+  ],
+  "locked": false,
+  "precedence": 10,
+  "notes": "Superseded by ARCHITECTURE-DECISION.md - implementation used Prisma which is now obsolete",
+  "key_points": [
+    "Lease CRUD with tenant and unit selection",
+    "Status badges: ACTIVE, EXPIRED, TERMINATED, RENEWAL_PENDING",
+    "Lease detail with document links (Phase 3)",
+    "Renew and terminate workflows"
+  ],
+  "superseded_by": "ARCHITECTURE-DECISION.md",
+  "conflicts_with": "ARCHITECTURE-DECISION.md (Prisma replaced with PocketBase)"
+}

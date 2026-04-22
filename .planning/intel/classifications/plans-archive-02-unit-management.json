@@ -1,0 +1,30 @@
+{
+  "source_path": "/projects/property-pi/plans/archive/02-unit-management.md",
+  "type": "PLAN",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Unit Management Plan",
+  "summary": "Plan for implementing unit CRUD with visual card grid, status tracking, and detail views.",
+  "scope": [
+    "Unit management",
+    "CRUD operations",
+    "API routes",
+    "UI components"
+  ],
+  "cross_refs": [
+    "PLAN-PHASE-1.md",
+    "TASK-1.2-SUMMARY.md"
+  ],
+  "locked": false,
+  "precedence": 10,
+  "notes": "Superseded by ARCHITECTURE-DECISION.md - implementation used Prisma which is now obsolete",
+  "key_points": [
+    "Visual card grid layout for units",
+    "Status tracking: Occupied, Vacant, Maintenance, Under Renovation",
+    "API routes for CRUD operations",
+    "Unit detail with tenant, lease, payment info",
+    "Implemented in TASK-1.2-SUMMARY.md"
+  ],
+  "superseded_by": "ARCHITECTURE-DECISION.md",
+  "conflicts_with": "ARCHITECTURE-DECISION.md (Prisma replaced with PocketBase)"
+}

@@ -1,0 +1,29 @@
+{
+  "source_path": "/projects/property-pi/plans/archive/05-rent-tracking.md",
+  "type": "PLAN",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Rent Tracking Plan",
+  "summary": "Plan for monthly rent generation, payment tracking, and overdue detection.",
+  "scope": [
+    "Rent tracking",
+    "Payment generation",
+    "Overdue detection",
+    "API routes"
+  ],
+  "cross_refs": [
+    "PLAN-PHASE-1.md"
+  ],
+  "locked": false,
+  "precedence": 10,
+  "notes": "Superseded by ARCHITECTURE-DECISION.md - implementation used Prisma which is now obsolete",
+  "key_points": [
+    "Monthly rent table with status badges (PAID, PENDING, OVERDUE, PARTIAL)",
+    "Bulk rent generation for all occupied units",
+    "Mark-paid workflow with payment method tracking",
+    "Auto-mark overdue if past due date",
+    "Month/year navigation"
+  ],
+  "superseded_by": "ARCHITECTURE-DECISION.md",
+  "conflicts_with": "ARCHITECTURE-DECISION.md (Prisma replaced with PocketBase)"
+}

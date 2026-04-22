@@ -1,0 +1,29 @@
+{
+  "source_path": "/projects/property-pi/plans/archive/23-enhanced-dashboard.md",
+  "type": "PLAN",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Enhanced Dashboard Plan",
+  "summary": "Plan for enhanced dashboard with financial summaries, charts, and advanced metrics (Phase 2+).",
+  "scope": [
+    "Enhanced dashboard",
+    "Financial summaries",
+    "Charts",
+    "Advanced metrics"
+  ],
+  "cross_refs": [
+    "PLAN-PHASE-1.md",
+    "SPEC.md"
+  ],
+  "locked": false,
+  "precedence": 10,
+  "notes": "Superseded by ARCHITECTURE-DECISION.md - implementation used Prisma which is now obsolete",
+  "key_points": [
+    "Enhanced financial summaries",
+    "Recharts charts for revenue visualization",
+    "Net profit calculation",
+    "Time-range filtering"
+  ],
+  "superseded_by": "ARCHITECTURE-DECISION.md",
+  "conflicts_with": "ARCHITECTURE-DECISION.md (Prisma replaced with PocketBase)"
+}
