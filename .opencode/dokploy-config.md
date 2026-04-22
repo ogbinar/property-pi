@@ -8,7 +8,12 @@
 
 **Status:** ✅ Configured
 
-**Note:** This API key provides authenticated access to the Dokploy instance for deployment operations. API endpoint structure requires further investigation - dashboard access recommended for initial setup.
+**API Access:** 
+- Swagger UI available at `https://dokploy.ogbinar.com/swagger`
+- Requires session authentication (not direct API key auth)
+- Use dashboard for initial deployment setup
+
+**Note:** The API key appears to be for dashboard access. Direct API calls require session tokens obtained through login. Dashboard deployment recommended for initial setup.
 
 ## Deployment Configuration
 
