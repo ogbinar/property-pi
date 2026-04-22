@@ -1,15 +1,15 @@
 # Requirements Index
 
-Synthesized from PRDs and SPECs in CLASSIFICATIONS_DIR
+Synthesized from PRDs, SPECs, and ARCHITECTURE-DECISION.md in CLASSIFICATIONS_DIR
 
-**Note:** The original SPEC.md defines the project scope but no formal PRD documents were classified. Requirements are extracted from SPEC.md and aligned with existing `.planning/REQUIREMENTS.md`.
+**Note:** No standalone PRD documents were classified in this ingest. All requirements are derived from the existing `.planning/REQUIREMENTS.md` (REQ-01 through REQ-15) which was carried forward from prior ingestion. The SPEC.md and ARCHITECTURE-DECISION.md confirm these requirements remain valid.
 
 ---
 
 ## REQ-01: Strip Legacy Backend Stack
 
-**Source:** `/projects/property-pi/SPEC.md` (Phase 1 MVP)  
-**Derived From:** `.planning/REQUIREMENTS.md` REQ-01
+**Source:** `/projects/property-pi/SPEC.md`, `.planning/REQUIREMENTS.md`  
+**Phase:** Phase 1
 
 ### Description
 Remove all monolithic backend dependencies from the Next.js codebase: NextAuth, Prisma client, bcryptjs, next-auth types, middleware.ts, and the entire `src/app/api/` directory. The frontend becomes a zero-server-side-logic application.
@@ -23,14 +23,12 @@ Remove all monolithic backend dependencies from the Next.js codebase: NextAuth, 
 - `npx tsc --noEmit` passes with zero errors
 - `npm run build` succeeds
 
-### Scope
-Project setup, Infrastructure cleanup
-
 ---
 
 ## REQ-02: PocketBase Setup & Schema
 
-**Source:** `.planning/REQUIREMENTS.md` REQ-02
+**Source:** `/projects/property-pi/SPEC.md`, `.planning/REQUIREMENTS.md`  
+**Phase:** Phase 2
 
 ### Description
 PocketBase instance configured with SQLite for local development. Collections created to mirror all Prisma models: `users` (auth), `units`, `tenants`, `leases`, `payments`, `expenses`, `maintenance`, `notices`. `RentAdjustment` and `ContactLog` stored as JSON arrays on parent records (`units.rentHistory`, `tenants.contactLog`). File fields replace `String[] documents` and `receiptUrl` strings.
@@ -44,14 +42,12 @@ PocketBase instance configured with SQLite for local development. Collections cr
 - Document fields → PocketBase file fields
 - API rules configured (all landlord collections require `@request.auth.id != ''`)
 
-### Scope
-PocketBase, Database schema
-
 ---
 
 ## REQ-03: PocketBase Auth Integration
 
-**Source:** `.planning/REQUIREMENTS.md` REQ-03
+**Source:** `/projects/property-pi/SPEC.md`, `.planning/REQUIREMENTS.md`  
+**Phase:** Phase 2
 
 ### Description
 Next.js integrates PocketBase JS SDK for auth. `pb.authStore.token` stored in localStorage. Auth context provider replaces NextAuth `useSession()`. Dashboard routes protected by checking `pb.authStore.isValid`. Single PocketBase user account created for the landlord (no self-registration — set up manually during deployment).
@@ -64,14 +60,12 @@ Next.js integrates PocketBase JS SDK for auth. `pb.authStore.token` stored in lo
 - Logout clears token and redirects to login
 - Auth token sent automatically with all PocketBase SDK requests
 
-### Scope
-Authentication
-
 ---
 
 ## REQ-04: Unified API Proxy Layer
 
-**Source:** `.planning/REQUIREMENTS.md` REQ-04
+**Source:** `/projects/property-pi/SPEC.md`, `.planning/REQUIREMENTS.md`  
+**Phase:** Phase 3
 
 ### Description
 Next.js API routes act as a unified proxy to both PocketBase and FastAPI. This provides a single interface for the frontend, avoids CORS issues between Vercel and hosted backends, and centralizes auth token forwarding. Proxy routes forward requests to PocketBase Admin API and FastAPI endpoints transparently.
@@ -83,14 +77,12 @@ Next.js API routes act as a unified proxy to both PocketBase and FastAPI. This p
 - Proxy layer transparent — frontend code doesn't need backend URLs
 - All existing page components work through proxy
 
-### Scope
-API layer, Integration
-
 ---
 
 ## REQ-05: FastAPI Backend
 
-**Source:** `.planning/REQUIREMENTS.md` REQ-05
+**Source:** `/projects/property-pi/SPEC.md`, `.planning/REQUIREMENTS.md`  
+**Phase:** Phase 3
 
 ### Description
 FastAPI backend provides endpoints that PocketBase doesn't handle natively: dashboard aggregation queries, rent automation (monthly generation, overdue marking, lease expiry detection), expense reporting, and file processing. FastAPI communicates with PocketBase via PocketBase Admin API (not direct DB access).
@@ -105,14 +97,12 @@ FastAPI backend provides endpoints that PocketBase doesn't handle natively: dash
 - Health check endpoint at `/health`
 - CORS configured for Next.js
 
-### Scope
-FastAPI, Reporting, Automation
-
 ---
 
 ## REQ-06: Connect UI to Data Layer
 
-**Source:** `.planning/REQUIREMENTS.md` REQ-06
+**Source:** `/projects/property-pi/SPEC.md`, `.planning/REQUIREMENTS.md`  
+**Phase:** Phase 3
 
 ### Description
 All existing dashboard pages (units, tenants, leases, rent, expenses, maintenance) replace Prisma API calls with PocketBase SDK calls through the unified proxy layer. Data shapes must match existing component expectations.
@@ -128,14 +118,12 @@ All existing dashboard pages (units, tenants, leases, rent, expenses, maintenanc
 - All forms validate and submit correctly
 - File uploads (receipts, lease documents) work via PocketBase
 
-### Scope
-UI integration, Data layer
-
 ---
 
 ## REQ-07: Full Tenant Portal
 
-**Source:** `.planning/REQUIREMENTS.md` REQ-07
+**Source:** `/projects/property-pi/SPEC.md`, `.planning/REQUIREMENTS.md`  
+**Phase:** Phase 4
 
 ### Description
 New tenant portal pages under `src/app/tenant/`. Tenants see: lease details (dates, rent, status), payment history for their unit, maintenance request status, and notices sent to their unit. Accessed via `/tenant/portal?token=xxx` where the token is a unique identifier derived from the lease/unit combination. No PocketBase tenant accounts — landlord shares the link.
@@ -148,14 +136,12 @@ New tenant portal pages under `src/app/tenant/`. Tenants see: lease details (dat
 - Tenant cannot access landlord pages
 - Token-based access works without PocketBase authentication
 
-### Scope
-Tenant portal, Shared link access
-
 ---
 
 ## REQ-08: Tenant Access Tokens
 
-**Source:** `.planning/REQUIREMENTS.md` REQ-08
+**Source:** `/projects/property-pi/SPEC.md`, `.planning/REQUIREMENTS.md`  
+**Phase:** Phase 4
 
 ### Description
 When creating/updating a lease, landlord can generate a unique access token for the tenant. The link format is `/tenant/portal?token={leaseId}:{sharedSecret}` where the shared secret is a deterministic hash. Landlord can share this link via email/text.
@@ -167,14 +153,12 @@ When creating/updating a lease, landlord can generate a unique access token for 
 - Token can be regenerated (invalidating old link)
 - Tenant portal validates token matches lease record
 
-### Scope
-Tenant portal, Token management
-
 ---
 
 ## REQ-09: Monthly Rent Generation
 
-**Source:** `.planning/REQUIREMENTS.md` REQ-09
+**Source:** `/projects/property-pi/SPEC.md`, `.planning/REQUIREMENTS.md`  
+**Phase:** Phase 3
 
 ### Description
 FastAPI endpoint (`POST /api/fastapi/rent/generate`) creates PENDING payment records for all units with active leases. Can be triggered manually or via scheduled cron job. Only generates payments for units not already having a payment for the target month.
@@ -187,14 +171,12 @@ FastAPI endpoint (`POST /api/fastapi/rent/generate`) creates PENDING payment rec
 - Skips units already having payment for that month
 - Returns list of created payments
 
-### Scope
-Automation, Rent tracking
-
 ---
 
 ## REQ-10: Auto-Mark Overdue
 
-**Source:** `.planning/REQUIREMENTS.md` REQ-10
+**Source:** `/projects/property-pi/SPEC.md`, `.planning/REQUIREMENTS.md`  
+**Phase:** Phase 3
 
 ### Description
 FastAPI endpoint (`POST /api/fastapi/rent/mark-overdue`) scans all PENDING payments where `dueDate < now()` and marks them as OVERDUE. Runs via cron or manually triggered from dashboard.
@@ -204,14 +186,12 @@ FastAPI endpoint (`POST /api/fastapi/rent/mark-overdue`) scans all PENDING payme
 - Dashboard shows overdue count in revenue summary
 - Overdue payments highlighted in rent page
 
-### Scope
-Automation, Rent tracking
-
 ---
 
 ## REQ-11: Lease Expiry Alerts
 
-**Source:** `.planning/REQUIREMENTS.md` REQ-11
+**Source:** `/projects/property-pi/SPEC.md`, `.planning/REQUIREMENTS.md`  
+**Phase:** Phase 3
 
 ### Description
 FastAPI endpoint (`GET /api/fastapi/leases/expiring`) returns leases ending within 60 days, sorted by urgency: critical (≤15 days), warning (≤30 days), upcoming (≤60 days). Dashboard displays these in the expirations widget.
@@ -222,14 +202,12 @@ FastAPI endpoint (`GET /api/fastapi/leases/expiring`) returns leases ending with
 - Dashboard expirations widget displays urgency-colored alerts
 - Includes tenant name and unit number
 
-### Scope
-Automation, Lease management
-
 ---
 
 ## REQ-12: Document Upload & Storage
 
-**Source:** `.planning/REQUIREMENTS.md` REQ-12
+**Source:** `/projects/property-pi/SPEC.md`, `.planning/REQUIREMENTS.md`  
+**Phase:** Phase 3
 
 ### Description
 Lease document uploads and expense receipt uploads use PocketBase file fields (not URL strings). Files stored in PocketBase's `uploads/` directory. Existing Prisma `documents: String[]` and `receiptUrl: String?` replaced with PocketBase file fields.
@@ -242,17 +220,15 @@ Lease document uploads and expense receipt uploads use PocketBase file fields (n
 - File upload uses FormData (not JSON)
 - File URLs displayed in tenant portal and landlord UI
 
-### Scope
-File storage, Documents
-
 ---
 
 ## REQ-13: Production Deployment
 
-**Source:** `.planning/REQUIREMENTS.md` REQ-13
+**Source:** `/projects/property-pi/SPEC.md`, `.planning/REQUIREMENTS.md`  
+**Phase:** Phase 5
 
 ### Description
-PocketBase + FastAPI hosted together, Next.js on Vercel. Environment variables configured: `POCKETBASE_URL`, `FASTAPI_URL`, `NEXTAUTH_SECRET` (removed — replaced by PocketBase).
+PocketBase + FastAPI hosted together, Next.js on Vercel. Environment variables configured: `POCKETBASE_URL`, `FASTAPI_URL`.
 
 ### Acceptance Criteria
 - PocketBase deployed and accessible
@@ -263,14 +239,12 @@ PocketBase + FastAPI hosted together, Next.js on Vercel. Environment variables c
 - File storage accessible from production
 - All CRUD operations work in production
 
-### Scope
-Deployment, Infrastructure
-
 ---
 
 ## REQ-14: Performance
 
-**Source:** `.planning/REQUIREMENTS.md` REQ-14
+**Source:** `/projects/property-pi/SPEC.md`, `.planning/REQUIREMENTS.md`  
+**Phase:** Phase 5
 
 ### Description
 Dashboard loads in under 5 seconds on production.
@@ -280,14 +254,12 @@ Dashboard loads in under 5 seconds on production.
 - API proxy adds < 100ms overhead
 - PocketBase queries use indexes where applicable
 
-### Scope
-Non-functional, Performance
-
 ---
 
 ## REQ-15: Security
 
-**Source:** `.planning/REQUIREMENTS.md` REQ-15
+**Source:** `/projects/property-pi/SPEC.md`, `.planning/REQUIREMENTS.md`  
+**Phase:** Phase 5
 
 ### Description
 All landlord operations require authentication. Tenant portal uses single-use token.
@@ -299,10 +271,7 @@ All landlord operations require authentication. Tenant portal uses single-use to
 - `.env` file in `.gitignore`
 - Token not guessable (uses cryptographically random secret)
 
-### Scope
-Non-functional, Security
-
 ---
 
-*Generated: 2026-04-21 via /gsd-ingest-docs (MERGE mode)*  
-*Total requirements: 15*
+*Generated: 2026-04-22 via /gsd-doc-synthesizer (MERGE mode)*  
+*Total requirements: 15 (carried forward from prior ingestion, no changes in this cycle)*

@@ -1,0 +1,13 @@
+{
+  "source_path": "/projects/property-pi/DEPLOYMENT.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Deployment Guide",
+  "summary": "Step-by-step guide for deploying Property-Pi to production using Railway, fly.io, and Vercel.",
+  "scope": ["Railway", "fly.io", "Vercel", "PocketBase", "FastAPI", "Next.js Frontend"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

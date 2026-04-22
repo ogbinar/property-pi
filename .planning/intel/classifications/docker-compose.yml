@@ -1,0 +1,13 @@
+{
+  "source_path": "/projects/property-pi/docker-compose.yml",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "docker-compose.yml",
+  "summary": "Docker Compose configuration defining three services: PocketBase (pb), backend API, and Next.js app with associated volumes.",
+  "scope": ["PocketBase", "backend API", "Next.js app", "Docker Compose"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

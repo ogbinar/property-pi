@@ -6,7 +6,7 @@ Synthesized from DOCs in CLASSIFICATIONS_DIR
 
 ## Topic: Task Execution Summaries
 
-**Source:** `/projects/property-pi/TASK-1.2-SUMMARY.md`
+**Sources:** `/projects/property-pi/TASK-1.2-SUMMARY.md`, `/projects/property-pi/TASK-1.3-SUMMARY.md`, `/projects/property-pi/TASK-1.6-SUMMARY.md`
 
 ### Notes
 
@@ -19,12 +19,6 @@ Task 1.2 — Unit Management (Complete):
 - Verified: tsc --noEmit, npm run lint, dev server starts
 - **Note:** Implementation likely used Prisma (superseded by PocketBase)
 
----
-
-**Source:** `/projects/property-pi/TASK-1.3-SUMMARY.md`
-
-### Notes
-
 Task 1.3 — Tenant Management (Complete):
 - Full CRUD for tenants with profile views and linked lease/payment history completed
 - 5 API routes: POST/GET /api/tenants, GET/PATCH/DELETE /api/tenants/[id]
@@ -33,12 +27,6 @@ Task 1.3 — Tenant Management (Complete):
 - Features: debounced search, Zod validation, duplicate detection, delete protection
 - Verified: tsc --noEmit, npm run lint, dev server starts
 - **Note:** Implementation likely used Prisma (superseded by PocketBase)
-
----
-
-**Source:** `/projects/property-pi/TASK-1.6-SUMMARY.md`
-
-### Notes
 
 Task 1.6 — Dashboard (Complete):
 - Dashboard with all important property management data at a glance completed
@@ -51,9 +39,9 @@ Task 1.6 — Dashboard (Complete):
 
 ---
 
-## Topic: Archived Plans
+## Topic: Archived Plans (Superseded)
 
-**Source:** `plans/archive/*.md` (all archived plans)
+**Sources:** `plans/archive/*.md` (14 files)
 
 ### Notes
 
@@ -102,5 +90,30 @@ Property-Pi is a lightweight, specialized property management application for sm
 
 ---
 
-*Generated: 2026-04-21 via /gsd-ingest-docs (MERGE mode)*  
-*Total context topics: 3*
+## Topic: Deployment Guides (New)
+
+**Sources:** `/projects/property-pi/DEPLOYMENT.md`, `/projects/property-pi/DEPLOYMENT-DOCKPLOY.md`, `docker-compose.yml`, `docker-compose.dokploy.yml`, `.opencode/dokploy-config.md`, `.opencode/dokploy-deployment-checklist.md`, `.opencode/dokploy-deployment-template.md`, `.opencode/dokploy-prop-deployment.md`, `.opencode/github-push-workflow.md`
+
+### Notes
+
+New ingestion added 9 deployment-related DOCs covering two deployment approaches:
+
+**Docker Compose (legacy):**
+- `docker-compose.yml` — Three services: PocketBase (pb), backend API, Next.js app with volumes
+- Used for local development and Railway/Vercel deployment guides (`DEPLOYMENT.md`)
+
+**Dokploy PaaS:**
+- `DEPLOYMENT-DOCKPLOY.md` — Step-by-step guide for deploying to Dokploy PaaS
+- `docker-compose.dokploy.yml` — Dokploy-specific compose with PocketBase, FastAPI, Next.js services and health checks
+- `.opencode/dokploy-config.md` — Instance setup, environment variables, deployment steps
+- `.opencode/dokploy-deployment-checklist.md` — Configuration, verification, troubleshooting checklist
+- `.opencode/dokploy-deployment-template.md` — Reusable template for GitHub repo deployments to Dokploy
+- `.opencode/dokploy-prop-deployment.md` — Runbook for Property-Pi on Dokploy (SSL/HTTPS, deployment steps)
+- `.opencode/github-push-workflow.md` — CLI guide for pushing code to GitHub
+
+**Scope overlap:** The Dokploy docs and DEPLOYMENT.md cover the same project but different platforms. Both point to `docker-compose.dokploy.yml`. These are complementary deployment context documents, not conflicting requirements.
+
+---
+
+*Generated: 2026-04-22 via /gsd-doc-synthesizer (MERGE mode)*  
+*Total context topics: 4*

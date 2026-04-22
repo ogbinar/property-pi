@@ -1,0 +1,13 @@
+{
+  "source_path": "/projects/property-pi/.opencode/github-push-workflow.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "GitHub Deployment Workflow",
+  "summary": "Procedural guide for pushing code to GitHub, covering remote setup, authentication, best practices, and troubleshooting.",
+  "scope": ["github", "git", "deployment", "cli"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

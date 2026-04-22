@@ -1,0 +1,12 @@
+{
+  "source_path": "/projects/property-pi/.opencode/dokploy-prop-deployment.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Dokploy Deployment Configuration for Property-Pi",
+  "summary": "Step-by-step guide and runbook for deploying the Property-Pi application using Dokploy, including configuration, setup steps, and troubleshooting.",
+  "scope": ["Dokploy", "deployment", "Property-Pi", "PocketBase", "environment variables", "SSL/HTTPS"],
+  "cross_refs": ["https://docs.dokploy.com", "https://github.com/ogbinar/property-pi", "docker-compose.dokploy.yml", "Dockerfile"],
+  "locked": false,
+  "precedence": null
+}

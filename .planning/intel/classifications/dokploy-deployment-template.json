@@ -1,0 +1,13 @@
+{
+  "source_path": "/projects/property-pi/.opencode/dokploy-deployment-template.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Dokploy Deployment Guide - Generic Template",
+  "summary": "A reusable template guide for deploying GitHub repositories to Dokploy using Docker Compose, including checklists and smoke tests.",
+  "scope": ["Dokploy", "Docker Compose", "deployment", "containerization"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

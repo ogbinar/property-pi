@@ -4,7 +4,7 @@ Synthesized from ADRs in CLASSIFICATIONS_DIR
 
 ---
 
-## ADR: Architecture Decision: PocketBase + FastAPI Hybrid
+## ADR: Architecture Decision — PocketBase + FastAPI Hybrid
 
 **Source:** `/projects/property-pi/ARCHITECTURE-DECISION.md`  
 **Status:** LOCKED  
@@ -32,19 +32,11 @@ PocketBase handles auth, database (SQLite), and file storage via JS SDK. FastAPI
 ### Supersedes
 
 This ADR explicitly supersedes:
-- `plans/01-setup-infrastructure.md`
-- `plans/00-schema-refactoring.md`
-- `plans/99-fix-for-running.md`
-- `plans/02-unit-management.md`
-- `plans/03-tenant-management.md`
-- `plans/04-lease-management.md`
-- `plans/05-rent-tracking.md`
-- `plans/06-dashboard.md`
-- `plans/07-data-seeding.md`
-- `plans/21-expense-management.md`
-- `plans/22-maintenance-tracking.md`
-- `plans/23-enhanced-dashboard.md`
-- `plans/24-file-upload-integration.md`
+- `plans/01-setup-infrastructure.md` (Prisma/PostgreSQL setup)
+- `plans/00-schema-refactoring.md` (Prisma schema design)
+- `plans/99-fix-for-running.md` (Prisma bug fixes)
+- `plans/02-unit-management.md` through `plans/07-data-seeding.md` (all Phase 1 sub-plans)
+- `plans/21-expense-management.md` through `plans/24-file-upload-integration.md` (Phase 2 plans)
 - `.planning/phases/02/02-PLAN.md`
 - `.planning/research/STACK.md`
 
@@ -55,4 +47,5 @@ This ADR explicitly supersedes:
 
 ---
 
-*Generated: 2026-04-21 via /gsd-ingest-docs (MERGE mode)*
+*Generated: 2026-04-22 via /gsd-doc-synthesizer (MERGE mode)*  
+*Total decisions: 1 (with 10 sub-decisions), all LOCKED*
