@@ -5,39 +5,39 @@ A lightweight rental property management application for small-scale landlords. 
 ## Features
 
 - **Landlord Dashboard**: Overview of all units, occupancy rate, monthly revenue, recent activity
-- **Unit Management**: Track unit status (occupied, vacant, maintenance, renovation)
-- **Tenant Management**: Tenant profiles, contact information, lease history
-- **Lease Management**: Create, renew, and terminate leases with status tracking
+- **Unit Management**: Track unit status (occupied, vacant, maintenance, renovation), rent history
+- **Tenant Management**: Tenant profiles, contact information, lease history, contact log
+- **Lease Management**: Create, renew, and terminate leases with status tracking and shared-link tokens
 - **Rent Tracking**: Monthly rent generation, payment recording, overdue indicators
-- **Expense Tracking**: Record and categorize property expenses
+- **Expense Tracking**: Record and categorize property expenses, receipt uploads
 - **Maintenance Requests**: Track and manage maintenance tickets
 - **Tenant Portal**: Shared-link access for tenants to view their lease, payment history, and maintenance status
+- **Notices**: Send digital notices to tenants or specific units
 
 ## Architecture
 
-**Hybrid Backend Approach:**
-- **PocketBase** (Go/SQLite): Primary data storage, authentication, file storage, real-time updates
-- **FastAPI** (Python): Aggregation layer for complex queries, reporting, and automation
-- **Next.js** (TypeScript): Frontend UI with App Router
+**Two-Service Architecture:**
+- **Next.js** (TypeScript): Thin frontend client with App Router, Server Actions for authenticated API calls
+- **FastAPI** (Python): REST API backend with SQLite, JWT auth, file uploads, rate limiting
+- **SQLite**: Single-file database shared by the FastAPI backend
 
 **Why this approach?**
-- PocketBase provides instant CRUD, auth, and file storage out of the box
-- FastAPI handles complex aggregations (dashboard stats, rent calculations) that would be inefficient in PocketBase
-- Next.js API routes serve as a unified proxy to both backends
+- Simple deployment: just Next.js + FastAPI + SQLite (no separate database server)
+- FastAPI handles complex aggregations (dashboard stats, rent calculations) efficiently
+- Next.js provides a modern, responsive UI with server-side rendering
+- SQLite eliminates infrastructure complexity for small portfolios
 
 ## Tech Stack
 
-- **Frontend**: Next.js 16, React 19, TypeScript, Tailwind CSS 4
-- **Backend**: PocketBase (BaaS), FastAPI (Python)
-- **Database**: SQLite (via PocketBase)
-- **Authentication**: PocketBase email/password
-- **State Management**: PocketBase SDK reactive auth store
+- **Frontend**: Next.js 14+, React 19, TypeScript, Tailwind CSS 4, shadcn/ui
+- **Backend**: FastAPI (Python 3.10+), SQLAlchemy, SQLite
+- **Authentication**: Custom JWT (HS256) with bcrypt password hashing, cookie-based sessions
+- **File Storage**: Local filesystem (served via FastAPI static files)
 
 ## Prerequisites
 
 - **Node.js** 18+ (for Next.js frontend)
 - **Python** 3.10+ (for FastAPI backend)
-- **PocketBase** binary (download from [pocketbase.io](https://pocketbase.io))
 
 ## Getting Started
 
@@ -55,68 +55,44 @@ pip install -r requirements.txt
 cd ..
 ```
 
-### 2. Set Up PocketBase
-
-```bash
-# Download PocketBase from https://pocketbase.io/docs/
-# Place the `pocketbase` binary in the project root
-
-# Initialize PocketBase (creates pb_data directory)
-./pocketbase migrate
-
-# Start PocketBase server
-./pocketbase serve
-```
-
-### 3. Configure Environment Variables
+### 2. Configure Environment Variables
 
 ```bash
 # Copy the example environment file
 cp .env.example .env
 
 # Edit .env with your configuration
-# - NEXT_PUBLIC_POCKETBASE_URL: Your PocketBase URL (http://localhost:8090 for dev)
-# - BACKEND_POCKETBASE_URL: PocketBase URL for backend (same as above for dev)
-# - BACKEND_POCKETBASE_ADMIN_TOKEN: Admin token for server-to-server calls (optional for dev)
-# - BACKEND_FASTAPI_PORT: FastAPI server port (default: 8000)
 ```
 
-### 4. Set Up PocketBase Collections
+### 3. Run Development Servers
 
-1. Open PocketBase Admin UI: http://localhost:8090/_/
-2. Create the following collections (or import from schema):
-   - `users` - Landlord accounts
-   - `units` - Property units
-   - `tenants` - Tenant information
-   - `leases` - Lease agreements
-   - `payments` - Payment records
-   - `expenses` - Expense tracking
-   - `maintenance_requests` - Maintenance tickets
-
-### 5. Run Development Servers
-
-**Terminal 1 - PocketBase:**
-```bash
-./pocketbase serve
-```
-
-**Terminal 2 - Frontend:**
-```bash
-npm run dev
-```
-
-**Terminal 3 - Backend:**
+**Terminal 1 - Backend (FastAPI):**
 ```bash
 cd backend
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 uvicorn app.main:app --reload --port 8000
 ```
 
-### 6. Access the Application
+**Terminal 2 - Frontend (Next.js):**
+```bash
+npm run dev
+```
+
+### 4. Access the Application
 
 - **Frontend**: http://localhost:3000
-- **PocketBase Admin**: http://localhost:8090/_/
 - **FastAPI Docs**: http://localhost:8000/docs
+- **Health Check**: http://localhost:8000/api/health
+
+### 5. First-Time Setup
+
+The database is created automatically on first backend startup. Register your first landlord account via the login page or:
+
+```bash
+curl -X POST http://localhost:8000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Admin", "email": "admin@example.com", "password": "password123"}'
+```
 
 ## Project Structure
 
@@ -125,45 +101,68 @@ property-pi/
 ├── src/                      # Next.js frontend
 │   ├── app/                  # App Router pages and layouts
 │   │   ├── (dashboard)/      # Landlord dashboard routes
-│   │   ├── (auth)/           # Authentication routes
-│   │   └── tenant/           # Tenant portal routes
+│   │   ├── login/            # Login page
+│   │   ├── tenant/           # Tenant portal routes
+│   │   └── actions/          # Server Actions (auth, CRUD)
 │   ├── components/           # React components
-│   │   ├── ui/               # Reusable UI components
-│   │   ├── auth/             # Authentication components
+│   │   ├── ui/               # Reusable UI components (shadcn/ui)
 │   │   └── ...               # Feature-specific components
 │   └── lib/                  # Utilities and API clients
-│       ├── pocketbase.ts     # PocketBase SDK client
-│       └── api.ts            # Frontend API functions
+│       ├── api-client.ts     # Generic API client with cookie auth
+│       ├── api-types.ts      # TypeScript types (mirrored from backend)
+│       └── auth-token.ts     # Server-side token extraction from cookies
 ├── backend/                  # FastAPI backend
 │   ├── app/
-│   │   ├── routers/          # API route handlers
+│   │   ├── routers/          # API route handlers (units, tenants, leases, etc.)
 │   │   ├── config.py         # Environment configuration
+│   │   ├── models.py         # SQLAlchemy models
+│   │   ├── schemas.py        # Pydantic schemas
+│   │   ├── auth.py           # JWT creation/verification, bcrypt
+│   │   ├── database.py       # SQLite connection
 │   │   └── main.py           # FastAPI application
 │   └── requirements.txt      # Python dependencies
+├── uploads/                  # Uploaded files (receipts, documents)
 ├── .env.example              # Environment variable template
 ├── package.json              # Frontend dependencies
-└── pocketbase                # PocketBase binary
+└── docker-compose.yml        # 2-service deployment (Next.js + FastAPI)
 ```
 
 ## Development
 
-### Creating New Collections in PocketBase
-
-1. Add collection via Admin UI or CLI
-2. Update `src/types/pocketbase.ts` with new type definitions
-3. Add API functions in `src/lib/api.ts`
-4. Create components and pages as needed
-
-### Adding Backend Endpoints
+### Adding New API Endpoints
 
 1. Create new router in `backend/app/routers/`
 2. Register router in `backend/app/main.py`
-3. Use `httpx` to call PocketBase Admin API
-4. Add type hints with Pydantic models
+3. Add Pydantic schemas in `backend/app/schemas.py`
+4. Add TypeScript types in `src/lib/api-types.ts`
+5. Add Server Action in `src/app/actions/`
+6. Update frontend pages/components
+
+### File Uploads
+
+Files uploaded via `POST /api/upload` are stored in the `uploads/` directory and served at `/uploads/{filename}`.
+
+### Tenant Portal
+
+Tenants access the portal via a shared link with a token: `http://localhost:3000/tenant/portal?leaseId={id}&token={tenant_access}`. The token is generated via the "Generate Share Link" button on the lease detail page.
 
 ## Deployment
 
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for deployment instructions to Vercel (frontend), Railway/fly.io (backend + PocketBase).
+### Docker Compose
+
+```bash
+docker compose up --build
+```
+
+This starts both the Next.js frontend and FastAPI backend with SQLite.
+
+### Production Considerations
+
+- Set `SECRET_KEY` (or `JWT_SECRET`) to a strong random value
+- Set `ALLOWED_ORIGINS` to your production domain
+- Use `ACCESS_TOKEN_EXPIRE_MINUTES` to control session duration
+- Consider using a reverse proxy (nginx, Caddy) for HTTPS termination
+- Back up `property_pi.db` regularly
 
 ## License
 

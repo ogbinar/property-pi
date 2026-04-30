@@ -1,13 +1,14 @@
 'use client'
 
-import type { MaintenanceRecord } from '@/types/pocketbase'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table } from '@/components/ui/table'
 import { EmptyState } from '@/components/ui/empty-state'
 
+import type { MaintenanceRequestOut } from '@/lib/api-types'
+
 interface MaintenanceStatusCardProps {
-  requests: MaintenanceRecord[]
+  requests: MaintenanceRequestOut[]
 }
 
 export function MaintenanceStatusCard({ requests }: MaintenanceStatusCardProps) {
@@ -41,7 +42,7 @@ export function MaintenanceStatusCard({ requests }: MaintenanceStatusCardProps) 
     {
       key: 'priority' as const,
       label: 'Priority',
-      render: (_: unknown, item: MaintenanceRecord) => (
+      render: (_: unknown, item: MaintenanceRequestOut) => (
         <Badge
           variant={
             (priorityColorMap[item.priority] || 'default') as
@@ -60,7 +61,7 @@ export function MaintenanceStatusCard({ requests }: MaintenanceStatusCardProps) 
     {
       key: 'status' as const,
       label: 'Status',
-      render: (_: unknown, item: MaintenanceRecord) => (
+      render: (_: unknown, item: MaintenanceRequestOut) => (
         <Badge
           variant={
             (statusColorMap[item.status] || 'warning') as
@@ -77,10 +78,10 @@ export function MaintenanceStatusCard({ requests }: MaintenanceStatusCardProps) 
       ),
     },
     {
-      key: 'createdAt' as const,
+      key: 'created_at' as const,
       label: 'Date',
-      render: (_: unknown, item: MaintenanceRecord) =>
-        new Date(item.createdAt).toLocaleDateString('en-US', {
+      render: (_: unknown, item: MaintenanceRequestOut) =>
+        new Date(item.created_at).toLocaleDateString('en-US', {
           year: 'numeric',
           month: 'short',
           day: 'numeric',
@@ -90,7 +91,7 @@ export function MaintenanceStatusCard({ requests }: MaintenanceStatusCardProps) 
 
   return (
     <Card title="Maintenance Requests">
-      <Table<MaintenanceRecord> columns={columns} data={requests} />
+      <Table<MaintenanceRequestOut> columns={columns} data={requests} />
     </Card>
   )
 }

@@ -1,7 +1,4 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import {
   ArrowLeft,
   Edit,
@@ -17,7 +14,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
-import { getUnit, getExpenses, getMaintenance } from '@/lib/api'
+import { apiRequest } from '@/lib/api-client'
+import type { UnitOut, ExpenseOut, MaintenanceRequestOut } from '@/lib/api-types'
 
 interface UnitData {
   id: string
@@ -79,77 +77,51 @@ const statusColors: Record<string, string> = {
   UNDER_RENOVATION: 'info',
 }
 
-export default function UnitDetailPage({
+export default async function UnitDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>
 }) {
-  const router = useRouter()
-  const [unit, setUnit] = useState<UnitData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { id } = await params
+  const unitData = await apiRequest<UnitOut>(`/api/units/${id}`)
 
-  useEffect(() => {
-    async function fetchUnit() {
-      setLoading(true)
-      try {
-        const { id } = await params
-        const unit = await getUnit(id)
+  const [maintenance, expenses] = await Promise.all([
+    apiRequest<MaintenanceRequestOut[]>('/api/maintenance'),
+    apiRequest<ExpenseOut[]>('/api/expenses'),
+  ])
 
-        const [maintenance, expenses] = await Promise.all([
-          getMaintenance({ unit_id: id }),
-          getExpenses({ unit_id: id }),
-        ])
+  const filteredMaint = maintenance.filter((m) => m.unit_id === id)
+  const filteredExpenses = expenses.filter((e) => e.unit_id === id)
 
-setUnit({
-           ...unit,
-           unitNumber: unit.unit_number,
-           rentAmount: String(unit.rent_amount),
-           securityDeposit: String(unit.security_deposit),
-           createdAt: unit.created_at,
-           updatedAt: unit.created_at,
-           currentTenant: unit.current_tenant
-             ? {
-                 ...unit.current_tenant,
-                 firstName: unit.current_tenant.first_name,
-                 lastName: unit.current_tenant.last_name,
-                 phone: '',
-                 lease: null,
-               }
-             : null,
-           activeLease: unit.active_lease
-             ? {
-                 ...unit.active_lease,
-                 startDate: unit.active_lease.start_date,
-                 endDate: unit.active_lease.end_date,
-                 rentAmount: String(unit.active_lease.rent_amount),
-                 tenant: null,
-               }
-             : null,
-           recentPayments: [],
-           recentMaintenance: maintenance.map((m) => ({
-             id: m.id,
-             title: m.title,
-             status: m.status,
-             priority: m.priority,
-             createdAt: m.created_at,
-           })),
-           recentExpenses: expenses.map((e) => ({
-             id: e.id,
-             amount: String(e.amount),
-             category: e.category,
-             description: e.description,
-             date: e.date,
-           })),
-         })
-      } catch (error) {
-        console.error('Failed to fetch unit:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
+  const unit: UnitData = {
+    ...unitData,
+    unitNumber: unitData.unit_number,
+    rentAmount: String(unitData.rent_amount),
+    securityDeposit: String(unitData.security_deposit),
+    createdAt: unitData.created_at,
+    updatedAt: unitData.created_at,
+    currentTenant: null,
+    activeLease: null,
+    recentPayments: [],
+    recentMaintenance: filteredMaint.map((m) => ({
+      id: m.id,
+      title: m.title,
+      status: m.status,
+      priority: m.priority,
+      createdAt: m.created_at,
+    })),
+    recentExpenses: filteredExpenses.map((e) => ({
+      id: e.id,
+      amount: String(e.amount),
+      category: e.category,
+      description: e.description,
+      date: e.date,
+    })),
+  }
 
-    fetchUnit()
-  }, [params])
+  if (!unit) {
+    notFound()
+  }
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('en-PH', {
@@ -167,7 +139,7 @@ setUnit({
     }).format(parseFloat(amount))
   }
 
-  const statusVariant = (statusColors[unit?.status || ''] ||
+  const statusVariant = (statusColors[unit.status || ''] ||
     'neutral') as 'success' | 'neutral' | 'warning' | 'info'
 
   const paymentStatusColors: Record<string, string> = {
@@ -177,40 +149,17 @@ setUnit({
     PARTIAL: 'info',
   }
 
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="h-10 w-40 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded-xl animate-pulse" />
-          <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded-xl animate-pulse" />
-        </div>
-      </div>
-    )
-  }
-
-  if (!unit) {
-    return (
-      <EmptyState
-        title="Unit not found"
-        description="The unit you're looking for doesn't exist or has been removed."
-        actionLabel="Back to Units"
-        onAction={() => router.push('/units')}
-      />
-    )
-  }
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.push('/units')}
+          <a
+            href="/units"
             className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
           >
             <ArrowLeft className="w-5 h-5" />
-          </button>
+          </a>
           <div>
             <div className="flex items-center gap-3">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -224,17 +173,18 @@ setUnit({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button onClick={() => router.push(`/units/${unit.id}/edit`)}>
-            <Edit className="w-4 h-4 mr-2" />
-            Edit Unit
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() => router.push(`/leases/new?unitId=${unit.id}`)}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Create Lease
-          </Button>
+          <a href={`/units/${unit.id}/edit`}>
+            <Button>
+              <Edit className="w-4 h-4 mr-2" />
+              Edit Unit
+            </Button>
+          </a>
+          <a href={`/leases/new?unitId=${unit.id}`}>
+            <Button variant="secondary">
+              <Plus className="w-4 h-4 mr-2" />
+              Create Lease
+            </Button>
+          </a>
         </div>
       </div>
 
@@ -278,15 +228,16 @@ setUnit({
           title="Current Tenant"
           action={
             !unit.currentTenant && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => router.push('/tenants/new')}
-              >
-                <Plus className="w-4 h-4 mr-1" />
-                Assign
-              </Button>
-            )
+               <a href="/tenants/new">
+                 <Button
+                   size="sm"
+                   variant="outline"
+                 >
+                   <Plus className="w-4 h-4 mr-1" />
+                   Assign
+                 </Button>
+               </a>
+             )
           }
         >
           {unit.currentTenant ? (
@@ -345,7 +296,7 @@ setUnit({
               title="No tenant"
               description="This unit is currently vacant."
               actionLabel="Assign Tenant"
-              onAction={() => router.push('/tenants/new')}
+              href="/tenants/new"
               icon={<User className="w-6 h-6 text-gray-400" />}
             />
           )}
@@ -355,16 +306,17 @@ setUnit({
         <Card
           title="Active Lease"
           action={
-            !unit.activeLease && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => router.push(`/leases/new?unitId=${unit.id}`)}
-              >
-                <Plus className="w-4 h-4 mr-1" />
-                Create
-              </Button>
-            )
+           !unit.activeLease && (
+               <a href={`/leases/new?unitId=${unit.id}`}>
+                 <Button
+                   size="sm"
+                   variant="outline"
+                 >
+                   <Plus className="w-4 h-4 mr-1" />
+                   Create
+                 </Button>
+               </a>
+             )
           }
         >
           {unit.activeLease ? (
@@ -406,7 +358,7 @@ setUnit({
               title="No active lease"
               description="Create a lease to track rental terms."
               actionLabel="Create Lease"
-              onAction={() => router.push(`/leases/new?unitId=${unit.id}`)}
+              href={`/leases/new?unitId=${unit.id}`}
               icon={<FileText className="w-6 h-6 text-gray-400" />}
             />
           )}
@@ -417,14 +369,15 @@ setUnit({
       <Card
         title="Recent Maintenance"
         action={
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => router.push(`/maintenance/new?unitId=${unit.id}`)}
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            New Request
-          </Button>
+          <a href={`/maintenance/new?unitId=${unit.id}`}>
+            <Button
+              size="sm"
+              variant="outline"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              New Request
+            </Button>
+          </a>
         }
       >
         {unit.recentMaintenance.length > 0 ? (
@@ -476,14 +429,15 @@ setUnit({
       <Card
         title="Recent Expenses"
         action={
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => router.push(`/expenses/new?unitId=${unit.id}`)}
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            Add Expense
-          </Button>
+          <a href={`/expenses/new?unitId=${unit.id}`}>
+            <Button
+              size="sm"
+              variant="outline"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Add Expense
+            </Button>
+          </a>
         }
       >
         {unit.recentExpenses.length > 0 ? (
@@ -523,14 +477,15 @@ setUnit({
       <Card
         title="Recent Payments"
         action={
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => router.push(`/rent?unitId=${unit.id}`)}
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            Add Payment
-          </Button>
+          <a href={`/rent?unitId=${unit.id}`}>
+            <Button
+              size="sm"
+              variant="outline"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Add Payment
+            </Button>
+          </a>
         }
       >
         {unit.recentPayments.length > 0 ? (

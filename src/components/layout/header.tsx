@@ -1,16 +1,18 @@
-'use client'
-
 import { Bell, User } from 'lucide-react'
-import { useAuth } from '@/lib/AuthProvider'
-import { LogoutButton } from '@/components/auth/LogoutButton'
+import { signOut } from '@/app/actions/auth-actions'
+
+export interface SessionUser {
+  id: string
+  email: string
+  name: string
+}
 
 interface HeaderProps {
   title: string
+  user?: SessionUser | null
 }
 
-export function Header({ title }: HeaderProps) {
-  const { user } = useAuth()
-
+export function Header({ title, user }: HeaderProps) {
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
       <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -29,7 +31,11 @@ export function Header({ title }: HeaderProps) {
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:block">
             {user?.email || 'User'}
           </span>
-          <LogoutButton />
+          <form action={signOut}>
+            <button type="submit" className="text-sm text-red-600 hover:underline">
+              Sign out
+            </button>
+          </form>
         </div>
       </div>
     </header>

@@ -6,10 +6,11 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
 import { useState } from 'react'
-import { TenantWithRelations } from '@/lib/api'
+import { deleteTenantFormAction } from '@/app/actions/tenant-actions'
+import type { TenantOut } from '@/lib/api-types'
 
 interface TenantTableProps {
-  tenants: TenantWithRelations[]
+  tenants: TenantOut[]
 }
 
 export function TenantTable({ tenants }: TenantTableProps) {
@@ -70,19 +71,14 @@ export function TenantTable({ tenants }: TenantTableProps) {
                   {tenant.phone || '—'}
                 </td>
                 <td className="py-3 px-4">
-                  {tenant.unit ? (
-                    <Link
-                      href={`/units/${tenant.unit.id}`}
-                      className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-                    >
-                      {tenant.unit.unit_number}
-                    </Link>
+                  {tenant.unit_id ? (
+                    <span className="text-sm text-gray-400">Assigned</span>
                   ) : (
                     <span className="text-sm text-gray-400">Unassigned</span>
                   )}
                 </td>
                 <td className="py-3 px-4">
-                  {tenant.active_lease ? (
+                  {tenant.unit_id ? (
                     <Badge variant="success">Active</Badge>
                   ) : (
                     <Badge variant="neutral">No lease</Badge>
@@ -100,6 +96,17 @@ export function TenantTable({ tenants }: TenantTableProps) {
                         <Pencil className="w-4 h-4" />
                       </Button>
                     </Link>
+                    <form>
+                      <button
+                        type="submit"
+                        onClick={() => setDeleteId(tenant.id)}
+                        className="p-1"
+                      >
+                        <Button size="sm" variant="ghost" className="p-1">
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        </Button>
+                      </button>
+                    </form>
                   </div>
                 </td>
               </tr>
@@ -107,6 +114,31 @@ export function TenantTable({ tenants }: TenantTableProps) {
           </tbody>
         </table>
       </div>
+
+      <Modal
+        isOpen={!!deleteId}
+        title="Delete Tenant"
+        onClose={() => setDeleteId(null)}
+        actions={
+          <>
+            <Button variant="outline" onClick={() => setDeleteId(null)}>
+              Cancel
+            </Button>
+           {deleteId && (
+              <form action={deleteTenantFormAction}>
+                <input name="id" value={deleteId} hidden />
+                <Button variant="danger" type="submit">
+                  Delete
+                </Button>
+              </form>
+            )}
+          </>
+        }
+      >
+        <p className="text-gray-600 dark:text-gray-400">
+          Are you sure you want to delete this tenant? This action cannot be undone.
+        </p>
+      </Modal>
     </>
   )
 }

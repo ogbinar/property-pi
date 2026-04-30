@@ -1,35 +1,29 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { ExpenseForm, ExpenseFormData } from '@/components/expenses/expense-form'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { createExpenseAction } from '@/app/actions/expense-actions'
 
 export default function NewExpensePage() {
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = async (data: ExpenseFormData) => {
-    setIsLoading(true)
+  async function handleSubmit(data: ExpenseFormData) {
     try {
-      const res = await fetch('/api/expenses', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+      await createExpenseAction({
+        amount: Number(data.amount),
+        category: data.category,
+        description: data.description,
+        date: data.date,
+        unit_id: data.unitId || undefined,
+        receipt_url: data.receiptUrl || undefined,
       })
-
-      if (!res.ok) {
-        const result = await res.json()
-        throw new Error(result.error || 'Failed to create expense')
-      }
-
-      router.push('/expenses')
+      toast.success('Expense created successfully')
       router.refresh()
     } catch (error) {
-      console.error('Failed to create expense:', error)
-    } finally {
-      setIsLoading(false)
+      toast.error(error instanceof Error ? error.message : 'Failed to create expense')
     }
   }
 
@@ -51,7 +45,7 @@ export default function NewExpensePage() {
         <ExpenseForm
           submitLabel="Create Expense"
           onSubmit={handleSubmit}
-          isLoading={isLoading}
+          isLoading={false}
           onCancel={() => router.back()}
         />
       </Card>

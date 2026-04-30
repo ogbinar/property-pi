@@ -3,23 +3,16 @@
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { TenantForm, type TenantFormData } from '@/components/tenants/tenant-form'
-import { createTenant } from '@/lib/api'
+import { createTenantAction } from '@/app/actions/tenant-actions'
 
 export default function NewTenantPage() {
   const router = useRouter()
 
-  const handleSubmit = async (data: TenantFormData) => {
+  async function handleSubmit(data: TenantFormData) {
     try {
-      const tenant = await createTenant({
-        first_name: data.firstName,
-        last_name: data.lastName,
-        email: data.email,
-        phone: data.phone || undefined,
-        emergency_contact: data.emergencyContact || undefined,
-        unit_id: data.unitId || undefined,
-      })
+      await createTenantAction(data)
       toast.success('Tenant created successfully')
-      router.push(`/tenants/${tenant.id}`)
+      router.refresh()
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to create tenant')
     }

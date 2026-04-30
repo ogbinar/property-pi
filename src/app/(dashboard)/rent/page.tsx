@@ -7,7 +7,7 @@ import { RentTable } from '@/components/rent/rent-table'
 import { RentSummary } from '@/components/rent/rent-summary'
 import { MonthPicker } from '@/components/rent/month-picker'
 import { toast } from 'sonner'
-import { getMonthRent, generateRent, markPaid, Payment } from '@/lib/api'
+import { getMonthRentAction, generateRentAction, markPaidAction, markOverdueAction } from '@/app/actions/payment-actions'
 
 interface RentRecord {
   id: string
@@ -44,17 +44,18 @@ export default function RentPage() {
   const [data, setData] = useState<RentData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [isMarkingOverdue, setIsMarkingOverdue] = useState(false)
 
   const loadData = useCallback(async (date: Date) => {
     setIsLoading(true)
     try {
       const month = date.getMonth() + 1
       const year = date.getFullYear()
-      const result = await getMonthRent(month, year)
+      const result = await getMonthRentAction(month, year)
       setData({
         month,
         year,
-        payments: result.payments.map((p: Payment) => ({
+        payments: result.payments.map((p) => ({
           id: p.id,
           unitId: p.unit_id,
           amount: p.amount,
@@ -92,8 +93,8 @@ export default function RentPage() {
     try {
       const month = currentDate.getMonth() + 1
       const year = currentDate.getFullYear()
-      const payments = await generateRent({ month, year })
-      toast.success(`Generated ${payments.length} rent records`)
+      const result = await generateRentAction({ month, year })
+      toast.success(`Generated ${result.created} rent records`)
       await loadData(currentDate)
     } catch {
       toast.error('Failed to generate rent records')
@@ -102,13 +103,24 @@ export default function RentPage() {
     }
   }
 
-  const handleMarkPaid = async (unitId: string) => {
+  const handleMarkOverdue = async () => {
+    setIsMarkingOverdue(true)
     try {
-      await markPaid(unitId, {
-        amount: 0,
-        method: 'TRANSFER',
-        date: new Date().toISOString().split('T')[0],
-      })
+      const month = currentDate.getMonth() + 1
+      const year = currentDate.getFullYear()
+      const result = await markOverdueAction(month, year)
+      toast.success(`Pending payments marked as overdue`)
+      await loadData(currentDate)
+    } catch {
+      toast.error('Failed to mark payments as overdue')
+    } finally {
+      setIsMarkingOverdue(false)
+    }
+  }
+
+  const handleMarkPaid = async (paymentId: string) => {
+    try {
+      await markPaidAction(paymentId)
       toast.success('Marked as paid')
       await loadData(currentDate)
     } catch {
@@ -153,33 +165,42 @@ export default function RentPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1">
-            <Button variant="secondary" size="sm" onClick={handlePrevMonth}>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
+           <div className="flex items-center gap-1">
+              <Button variant="secondary" size="sm" onClick={handlePrevMonth}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </Button>
+              <MonthPicker value={currentDate} onChange={handleMonthChange} />
+              <Button variant="secondary" size="sm" onClick={handleNextMonth}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Button>
+            </div>
+            <Button variant="outline" size="sm" onClick={handleToday}>
+              Today
             </Button>
-            <MonthPicker value={currentDate} onChange={handleMonthChange} />
-            <Button variant="secondary" size="sm" onClick={handleNextMonth}>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+            <Button
+              id="mark-overdue-btn"
+              variant="outline"
+              size="sm"
+              onClick={handleMarkOverdue}
+              isLoading={isMarkingOverdue}
+            >
+              Mark Overdue
+            </Button>
+            <Button
+              id="generate-rent-btn"
+              variant="primary"
+              size="sm"
+              onClick={handleGenerateRent}
+              isLoading={isGenerating}
+            >
+              Generate Rent
             </Button>
           </div>
-          <Button variant="outline" size="sm" onClick={handleToday}>
-            Today
-          </Button>
-          <Button
-            id="generate-rent-btn"
-            variant="primary"
-            size="sm"
-            onClick={handleGenerateRent}
-            isLoading={isGenerating}
-          >
-            Generate Rent
-          </Button>
-        </div>
-      </div>
+       </div>
 
       {/* Month Title */}
       <Card className="px-6 py-4">

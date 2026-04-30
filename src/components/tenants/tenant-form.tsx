@@ -7,18 +7,18 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 const tenantSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
+  first_name: z.string().min(1, 'First name is required'),
+  last_name: z.string().min(1, 'Last name is required'),
   email: z.string().email('Invalid email address'),
   phone: z.string().optional(),
-  emergencyContact: z.string().optional(),
-  unitId: z.string().optional(),
+  emergency_contact: z.string().optional(),
+  unit_id: z.string().optional(),
 })
 
 export type TenantFormData = z.infer<typeof tenantSchema>
 
 interface TenantFormProps {
-  defaultValues?: Partial<TenantFormData>
+  defaultValues?: TenantFormData
   onSubmit: (data: TenantFormData) => Promise<void>
   submitLabel?: string
   cancelLabel?: string
@@ -36,7 +36,7 @@ export function TenantForm({
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<TenantFormData>({
+  } = useForm({
     resolver: zodResolver(tenantSchema),
     defaultValues,
   })
@@ -44,18 +44,18 @@ export function TenantForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Input
-          label="First Name"
-          error={errors.firstName?.message}
-          {...register('firstName')}
-          placeholder="Juan"
-        />
-        <Input
-          label="Last Name"
-          error={errors.lastName?.message}
-          {...register('lastName')}
-          placeholder="Dela Cruz"
-        />
+     <Input
+        label="First Name"
+        error={errors.first_name?.message}
+        {...register('first_name')}
+        placeholder="Juan"
+      />
+      <Input
+        label="Last Name"
+        error={errors.last_name?.message}
+        {...register('last_name')}
+        placeholder="Dela Cruz"
+      />
       </div>
 
       <Input
@@ -75,15 +75,15 @@ export function TenantForm({
 
       <Input
         label="Emergency Contact"
-        error={errors.emergencyContact?.message}
-        {...register('emergencyContact')}
+        error={errors.emergency_contact?.message}
+        {...register('emergency_contact')}
         placeholder="Jane Dela Cruz — 09189876543"
       />
 
       <Input
         label="Unit ID (optional)"
-        error={errors.unitId?.message}
-        {...register('unitId')}
+        error={errors.unit_id?.message}
+        {...register('unit_id')}
         placeholder="unit-123"
       />
 

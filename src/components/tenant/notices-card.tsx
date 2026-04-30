@@ -1,13 +1,14 @@
 'use client'
 
-import type { NoticeRecord } from '@/types/pocketbase'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table } from '@/components/ui/table'
 import { EmptyState } from '@/components/ui/empty-state'
 
+import type { NoticeOut } from '@/lib/api-types'
+
 interface NoticesCardProps {
-  notices: NoticeRecord[]
+  notices: NoticeOut[]
 }
 
 export function NoticesCard({ notices }: NoticesCardProps) {
@@ -41,7 +42,7 @@ export function NoticesCard({ notices }: NoticesCardProps) {
     {
       key: 'type' as const,
       label: 'Type',
-      render: (_: unknown, item: NoticeRecord) => (
+      render: (_: unknown, item: NoticeOut) => (
         <Badge
           variant={
             (typeColorMap[item.type] || 'default') as
@@ -60,7 +61,7 @@ export function NoticesCard({ notices }: NoticesCardProps) {
     {
       key: 'status' as const,
       label: 'Status',
-      render: (_: unknown, item: NoticeRecord) => (
+      render: (_: unknown, item: NoticeOut) => (
         <Badge
           variant={
             (statusColorMap[item.status] || 'default') as
@@ -77,10 +78,10 @@ export function NoticesCard({ notices }: NoticesCardProps) {
       ),
     },
     {
-      key: 'createdAt' as const,
+      key: 'created_at' as const,
       label: 'Date',
-      render: (_: unknown, item: NoticeRecord) =>
-        new Date(item.createdAt).toLocaleDateString('en-US', {
+      render: (_: unknown, item: NoticeOut) =>
+        new Date(item.created_at).toLocaleDateString('en-US', {
           year: 'numeric',
           month: 'short',
           day: 'numeric',
@@ -90,7 +91,7 @@ export function NoticesCard({ notices }: NoticesCardProps) {
 
   return (
     <Card title="Notices">
-      <Table<NoticeRecord> columns={columns} data={notices} />
+      <Table<NoticeOut> columns={columns} data={notices} />
     </Card>
   )
 }

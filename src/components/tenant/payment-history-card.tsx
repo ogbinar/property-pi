@@ -1,13 +1,14 @@
 'use client'
 
-import type { PaymentRecord } from '@/types/pocketbase'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table } from '@/components/ui/table'
 import { EmptyState } from '@/components/ui/empty-state'
 
+import type { PaymentOut } from '@/lib/api-types'
+
 interface PaymentHistoryCardProps {
-  payments: PaymentRecord[]
+  payments: PaymentOut[]
 }
 
 export function PaymentHistoryCard({ payments }: PaymentHistoryCardProps) {
@@ -34,29 +35,29 @@ export function PaymentHistoryCard({ payments }: PaymentHistoryCardProps) {
     {
       key: 'amount' as const,
       label: 'Amount',
-      render: (_: unknown, item: PaymentRecord) =>
+      render: (_: unknown, item: PaymentOut) =>
         `₱${item.amount.toLocaleString()}`,
     },
-    { key: 'dueDate' as const, label: 'Due Date' },
+    { key: 'due_date' as const, label: 'Due Date' },
     {
       key: 'status' as const,
       label: 'Status',
-      render: (_: unknown, item: PaymentRecord) => (
+      render: (_: unknown, item: PaymentOut) => (
         <Badge variant={(statusColorMap[item.status] || 'default') as 'success' | 'warning' | 'error' | 'default' | 'info' | 'neutral'}>
           {item.status}
         </Badge>
       ),
     },
     {
-      key: 'paymentMethod' as const,
+      key: 'payment_method' as const,
       label: 'Method',
-      render: (_: unknown, item: PaymentRecord) => item.paymentMethod || 'N/A',
+      render: (_: unknown, item: PaymentOut) => item.payment_method || 'N/A',
     },
   ]
 
   return (
     <Card title="Payment History">
-      <Table<PaymentRecord> columns={columns} data={payments} />
+      <Table<PaymentOut> columns={columns} data={payments} />
     </Card>
   )
 }

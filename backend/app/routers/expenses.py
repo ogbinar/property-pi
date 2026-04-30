@@ -1,65 +1,88 @@
-"""Expense reporting endpoint with category breakdown and net profit."""
+from fastapi import APIRouter, Depends, Query, status
+from sqlalchemy.orm import Session
 
-from datetime import datetime, timedelta
+from app.database import get_db
+from app.errors import find_or_404
+from app.models import Expense
+from app.schemas import ExpenseCreate, ExpenseUpdate, ExpenseOut
+from app.auth import get_current_user
 
-from fastapi import APIRouter
-from pydantic import BaseModel
-import httpx
-from app.config import settings
-
-router = APIRouter()
-
-
-class ExpenseReportResponse(BaseModel):
-    total: float
-    net_profit: float
-    by_category: dict
+router = APIRouter(prefix="/api/expenses", tags=["expenses"])
 
 
-@router.get("/api/fastapi/expenses/report")
-async def expense_report(
-    category: str = None,
-    unit_id: str = None,
-    month: int = None,
-    year: int = None,
+def _expense_to_out(expense: Expense) -> dict:
+    return {
+        "id": expense.id,
+        "unit_id": expense.unit_id,
+        "amount": float(expense.amount),
+        "category": expense.category or "Other",
+        "description": expense.description or "",
+        "date": expense.date,
+        "status": expense.status,
+        "receipt_url": expense.file_url,
+        "created_at": expense.created_at or "",
+    }
+
+
+@router.get("/", response_model=list[ExpenseOut])
+@router.get("", response_model=list[ExpenseOut])
+async def get_expenses(
+    category: str | None = Query(None),
+    unit_id: str | None = Query(None),
+    db: Session = Depends(get_db),
+    _current_user: dict = Depends(get_current_user),
 ):
-    """Expense report with category breakdown and net profit."""
-    async with httpx.AsyncClient() as client:
-        filter_parts = []
-        if category:
-            filter_parts.append(f'category == "{category}"')
+    query = db.query(Expense)
+    if category:
+        query = query.filter(Expense.category == category)
+    if unit_id:
+        query = query.filter(Expense.unit_id == unit_id)
+    expenses = query.order_by(Expense.date.desc()).all()
+    return [_expense_to_out(e) for e in expenses]
 
-        if month and year:
-            month_start = f"{year}-{month:02d}-01"
-            next_month = (datetime(year, month, 1) + timedelta(days=32)).replace(day=1)
-            filter_parts.append(
-                f'date >= "{month_start}" && date < "{next_month.strftime("%Y-%m-%d")}"'
-            )
 
-        filter_str = " && ".join(filter_parts) if filter_parts else "1 == 1"
+@router.get("/{expense_id}", response_model=ExpenseOut)
+async def get_expense(expense_id: str, db: Session = Depends(get_db), _current_user: dict = Depends(get_current_user)):
+    expense = find_or_404(db, Expense, expense_id)
+    return _expense_to_out(expense)
 
-        expenses_resp = await client.get(
-            f"{settings.pocketbase_url}/api/collections/expenses/records",
-            params={"filter": filter_str},
-        )
-        expenses = expenses_resp.json()
 
-        # Fetch revenue to calculate net profit
-        payments_resp = await client.get(
-            f"{settings.pocketbase_url}/api/collections/payments/records",
-            params={"filter": "status == 'paid'"},
-        )
-        payments = payments_resp.json()
-        revenue = sum(p.get("amount", 0) for p in payments)
+@router.post("/", response_model=ExpenseOut, status_code=status.HTTP_201_CREATED)
+async def create_expense(payload: ExpenseCreate, db: Session = Depends(get_db), _current_user: dict = Depends(get_current_user)):
+    expense = Expense(
+        amount=payload.amount,
+        category=payload.category,
+        description=payload.description,
+        date=payload.date,
+        file_url=payload.receipt_url,
+        unit_id=payload.unit_id,
+    )
+    db.add(expense)
+    db.commit()
+    db.refresh(expense)
+    return _expense_to_out(expense)
 
-        total = sum(e.get("amount", 0) for e in expenses)
-        by_category: dict[str, float] = {}
-        for e in expenses:
-            cat = e.get("category", "Other")
-            by_category[cat] = by_category.get(cat, 0) + e.get("amount", 0)
 
-        return {
-            "total": total,
-            "net_profit": revenue - total,
-            "by_category": by_category,
-        }
+@router.put("/{expense_id}", response_model=ExpenseOut)
+async def update_expense(expense_id: str, payload: ExpenseUpdate, db: Session = Depends(get_db), _current_user: dict = Depends(get_current_user)):
+    expense = find_or_404(db, Expense, expense_id)
+
+    update_data = payload.model_dump(exclude_unset=True)
+    field_map = {
+        "receipt_url": "file_url",
+    }
+    for field, value in update_data.items():
+        model_field = field_map.get(field, field)
+        if value is not None:
+            setattr(expense, model_field, value)
+
+    db.commit()
+    db.refresh(expense)
+    return _expense_to_out(expense)
+
+
+@router.delete("/{expense_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_expense(expense_id: str, db: Session = Depends(get_db), _current_user: dict = Depends(get_current_user)):
+    expense = find_or_404(db, Expense, expense_id)
+    db.delete(expense)
+    db.commit()

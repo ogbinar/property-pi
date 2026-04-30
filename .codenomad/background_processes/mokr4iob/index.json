@@ -1,0 +1,41 @@
+[
+  {
+    "id": "proc_2026-04-30T0959_7bc47f",
+    "workspaceId": "mokr4iob",
+    "title": "FastAPI Backend",
+    "command": "cd /projects/property-pi/backend && python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8002",
+    "cwd": "/projects/property-pi",
+    "status": "stopped",
+    "pid": 3741363,
+    "startedAt": "2026-04-30T09:59:39.684Z",
+    "outputSizeBytes": 7237,
+    "terminalReason": "user_stopped",
+    "stoppedAt": "2026-04-30T10:02:13.578Z"
+  },
+  {
+    "id": "proc_2026-04-30T1003_8cc1fc",
+    "workspaceId": "mokr4iob",
+    "title": "FastAPI Backend",
+    "command": "cd /projects/property-pi/backend && python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8002",
+    "cwd": "/projects/property-pi",
+    "status": "stopped",
+    "pid": 3744445,
+    "startedAt": "2026-04-30T10:03:55.660Z",
+    "outputSizeBytes": 707,
+    "terminalReason": "user_stopped",
+    "stoppedAt": "2026-04-30T10:04:30.147Z"
+  },
+  {
+    "id": "proc_2026-04-30T1005_894e6a",
+    "workspaceId": "mokr4iob",
+    "title": "FastAPI Backend",
+    "command": "cd /projects/property-pi/backend && python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8002",
+    "cwd": "/projects/property-pi",
+    "status": "stopped",
+    "pid": 3745766,
+    "startedAt": "2026-04-30T10:05:10.318Z",
+    "outputSizeBytes": 1023,
+    "terminalReason": "user_stopped",
+    "stoppedAt": "2026-04-30T10:05:52.516Z"
+  }
+]

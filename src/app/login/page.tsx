@@ -1,22 +1,16 @@
 'use client'
 
-import { useAuth } from '@/lib/AuthProvider'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Building2, Loader2 } from 'lucide-react'
+import { signIn } from '@/app/actions/auth-actions'
 
 export default function LoginPage() {
-  const { signIn, user } = useAuth()
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-
-  if (user) {
-    router.push('/')
-    return null
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -25,7 +19,6 @@ export default function LoginPage() {
 
     try {
       await signIn(email, password)
-      router.push('/')
       router.refresh()
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Login failed'

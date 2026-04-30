@@ -19,7 +19,7 @@ interface RentRecord {
 
 interface RentTableProps {
   records: RentRecord[]
-  onMarkPaid: (unitId: string) => void
+  onMarkPaid: (paymentId: string) => void
   isLoading: boolean
 }
 
@@ -133,7 +133,7 @@ export function RentTable({ records, onMarkPaid, isLoading }: RentTableProps) {
                     <Button
                       variant="primary"
                       size="sm"
-                      onClick={() => onMarkPaid(record.unitId)}
+                      onClick={() => onMarkPaid(record.id)}
                     >
                       Mark Paid
                     </Button>

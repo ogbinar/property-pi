@@ -1,15 +1,12 @@
-'use client'
-
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
+import { getLeasesAction } from '@/app/actions/lease-actions'
+import type { LeaseOut } from '@/lib/api-types'
 import { LeaseTable } from '@/components/leases/lease-table'
 import { LeaseFilters } from '@/components/leases/lease-filters'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { toast } from 'sonner'
-import { getLeases, updateLease } from '@/lib/api'
+import Link from 'next/link'
 
-interface Lease {
+interface PageLease {
   id: string
   startDate: string
   endDate: string
@@ -25,7 +22,7 @@ interface Lease {
   }
 }
 
-function mapLeaseToPage(lease: { id: string; start_date: string; end_date: string; rent_amount: number; status: string; tenant_id: string; unit_id: string }): Lease {
+function mapToPageLease(lease: LeaseOut, relations?: { tenant?: { first_name?: string; last_name?: string }; unit?: { unit_number?: string; type?: string } }): PageLease {
   const statusMap: Record<string, 'ACTIVE' | 'EXPIRED' | 'TERMINATED' | 'RENEWAL_PENDING'> = {
     'ACTIVE': 'ACTIVE',
     'active': 'ACTIVE',
@@ -40,50 +37,31 @@ function mapLeaseToPage(lease: { id: string; start_date: string; end_date: strin
     id: lease.id,
     startDate: lease.start_date,
     endDate: lease.end_date,
-    rentAmount: lease.rent_amount,
+    rentAmount: lease.monthly_rent,
     status: statusMap[lease.status] || 'ACTIVE',
-    tenant: { firstName: '', lastName: '' },
-    unit: { unitNumber: '', type: '' },
+    tenant: {
+      firstName: relations?.tenant?.first_name || '',
+      lastName: relations?.tenant?.last_name || '',
+    },
+    unit: {
+      unitNumber: relations?.unit?.unit_number || '',
+      type: relations?.unit?.type || '',
+    },
   }
 }
 
-export default function LeasesPage() {
-  const [leases, setLeases] = useState<Lease[]>([])
-  const [loading, setLoading] = useState(true)
-  const [statusFilter, setStatusFilter] = useState('')
-  const [refreshKey, setRefreshKey] = useState(0)
+async function getLeasesWithStatus(status?: string): Promise<PageLease[]> {
+  const leases = await getLeasesAction(status)
+  return leases.map((l) => mapToPageLease(l))
+}
 
-  useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    getLeases(statusFilter || undefined)
-      .then((data) => {
-        if (!cancelled) {
-          setLeases(data.map(mapLeaseToPage))
-          setLoading(false)
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          toast.error('Failed to load leases')
-          setLoading(false)
-        }
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [statusFilter, refreshKey])
-
-  const handleTerminate = async (id: string) => {
-    try {
-      await updateLease(id, { status: 'TERMINATED' })
-      toast.success('Lease terminated successfully')
-      setRefreshKey((k) => k + 1)
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to terminate lease'
-      toast.error(message)
-    }
-  }
+export default async function LeasesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>
+}) {
+  const status = (await searchParams).status || ''
+  const leases = await getLeasesWithStatus(status)
 
   return (
     <div className="space-y-6">
@@ -105,12 +83,12 @@ export default function LeasesPage() {
       </div>
 
       <Card className="p-0">
-        {loading ? (
+        {leases.length === 0 ? (
           <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-            Loading leases...
+            No leases found.
           </div>
         ) : (
-          <LeaseTable leases={leases} onTerminate={handleTerminate} />
+          <LeaseTable leases={leases} />
         )}
       </Card>
     </div>

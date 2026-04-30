@@ -1,12 +1,11 @@
-'use client'
-
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { LeaseForm } from '@/components/leases/lease-form'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { toast } from 'sonner'
+import { getTenantsAction } from '@/app/actions/tenant-actions'
+import { getUnitsAction } from '@/app/actions/unit-actions'
+import type { TenantOut } from '@/lib/api-types'
+import type { UnitOut } from '@/lib/api-types'
+import { LeaseFormClient } from './lease-form-client'
 
 interface Tenant {
   id: string
@@ -23,74 +22,28 @@ interface Unit {
   status: string
 }
 
-export default function NewLeasePage() {
-  const router = useRouter()
-  const [tenants, setTenants] = useState<Tenant[]>([])
-  const [units, setUnits] = useState<Unit[]>([])
-  const [loading, setLoading] = useState(true)
-
-  const fetchTenants = async () => {
-    const res = await fetch('/api/tenants')
-    const data = await res.json()
-    setTenants(data.tenants)
+function mapTenant(t: TenantOut): Tenant {
+  return {
+    id: t.id,
+    firstName: t.first_name,
+    lastName: t.last_name,
+    phone: t.phone || null,
   }
+}
 
-  const fetchUnits = async () => {
-    const res = await fetch('/api/units')
-    const data = await res.json()
-    setUnits(data.units)
+function mapUnit(u: UnitOut): Unit {
+  return {
+    id: u.id,
+    unitNumber: u.unit_number,
+    type: u.type,
+    rentAmount: u.rent_amount,
+    status: u.status,
   }
+}
 
-  useEffect(() => {
-    let cancelled = false
-    Promise.all([fetchTenants(), fetchUnits()]).finally(() => {
-      if (!cancelled) setLoading(false)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  const handleSubmit = async (data: {
-    tenantId: string
-    unitId: string
-    startDate: string
-    endDate: string
-    rentAmount: string
-  }) => {
-    try {
-      const res = await fetch('/api/leases', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...data,
-          rentAmount: Number(data.rentAmount),
-        }),
-      })
-      if (!res.ok) {
-        const error = await res.json()
-        if (res.status === 409) {
-          toast.error(error.error || 'Unit already has an active lease')
-          return
-        }
-        throw new Error(error.error || 'Failed to create lease')
-      }
-      toast.success('Lease created successfully')
-      const lease = await res.json()
-      router.push(`/leases/${lease.id}`)
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to create lease'
-      toast.error(message)
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-        Loading...
-      </div>
-    )
-  }
+export default async function NewLeasePage() {
+  const tenants = await getTenantsAction()
+  const units = await getUnitsAction()
 
   return (
     <div className="space-y-6">
@@ -109,12 +62,7 @@ export default function NewLeasePage() {
       </div>
 
       <Card className="p-6">
-        <LeaseForm
-          tenants={tenants}
-          units={units}
-          onSubmit={handleSubmit}
-          submitLabel="Create Lease"
-        />
+        <LeaseFormClient tenants={tenants.map(mapTenant)} units={units.map(mapUnit)} />
       </Card>
     </div>
   )

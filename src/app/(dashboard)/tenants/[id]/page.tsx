@@ -1,128 +1,38 @@
-'use client'
-
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Pencil, FileText, Building2, Mail, Phone, Wrench } from 'lucide-react'
+import { ArrowLeft, Pencil, FileText, Building2, Mail, Phone } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { Table } from '@/components/ui/table'
-import { getTenant, getMaintenance } from '@/lib/api'
+import { apiRequest } from '@/lib/api-client'
+import type { TenantOut, LeaseOut, PaymentOut, MaintenanceRequestOut } from '@/lib/api-types'
 
-interface Tenant {
-  id: string
-  firstName: string
-  lastName: string
-  email: string
-  phone: string | null
-  emergencyContact: string | null
-  createdAt: string
-  unit: { id: string; unitNumber: string } | null
-  leases: Array<{
-    id: string
-    startDate: string
-    endDate: string
-    rentAmount: number
-    status: string
-    unit: { unitNumber: string }
-  }>
-  payments: Array<{
-    id: string
-    amount: number
-    date: string
-    status: string
-    method: string | null
-  }>
-  maintenanceRequests: Array<{
-    id: string
-    title: string
-    status: string
-    priority: string
-    createdAt: string
-  }>
-}
-
-export default function TenantDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
-  const [tenant, setTenant] = useState<Tenant | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    async function loadTenant() {
-      try {
-        const { id } = await params
-        const data = await getTenant(id)
-        // Fetch maintenance requests for the tenant's unit
-        let maintenanceRequests: Array<{
-          id: string
-          title: string
-          status: string
-          priority: string
-          createdAt: string
-        }> = []
-        if (data.unit_id) {
-          const maint = await getMaintenance({ unit_id: data.unit_id })
-          maintenanceRequests = maint.map((m) => ({
-            id: m.id,
-            title: m.title,
-            status: m.status,
-            priority: m.priority,
-            createdAt: m.created_at,
-          }))
-        }
-        setTenant({
-          id: data.id,
-          firstName: data.first_name,
-          lastName: data.last_name,
-          email: data.email,
-          phone: data.phone || null,
-          emergencyContact: data.emergency_contact || null,
-          createdAt: data.created_at,
-          unit: data.unit_id ? { id: data.unit_id, unitNumber: '' } : null,
-          leases: [],
-          payments: [],
-          maintenanceRequests,
-        })
-      } catch (error) {
-        console.error('Failed to load tenant:', error)
-      } finally {
-        setLoading(false)
+export default async function TenantDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const tenant = await apiRequest<TenantOut>(`/api/tenants/${id}`)
+  const allLeases = await apiRequest<LeaseOut[]>('/api/leases')
+  const activeLeaseRaw = allLeases.find((l) => l.tenant_id === id && l.status === 'ACTIVE')
+  const activeLease = activeLeaseRaw
+    ? {
+        ...activeLeaseRaw,
+        unit_number: activeLeaseRaw.unit_id,
+        monthlyRent: activeLeaseRaw.monthly_rent,
       }
-    }
-    loadTenant()
-  }, [params])
-
-  if (loading) {
-    return (
-      <div className="text-center py-12">
-        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
-      </div>
-    )
-  }
-
-  if (!tenant) {
-    return (
-      <div className="text-center py-12">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-          Tenant not found
-        </h2>
-        <Link href="/tenants">
-          <Button variant="outline" className="mt-4">
-            <ArrowLeft className="w-4 h-4 mr-1" />
-            Back to Tenants
-          </Button>
-        </Link>
-      </div>
-    )
-  }
-
-  const activeLease = tenant.leases.find((l) => l.status === 'ACTIVE')
-  const totalPaid = tenant.payments
-    .filter((p) => p.status === 'PAID')
-    .reduce((sum, p) => sum + p.amount, 0)
+    : null
+  const allPayments = await apiRequest<PaymentOut[]>('/api/payments')
+  const payments = allPayments
+    .filter((p) => p.lease_id === activeLeaseRaw?.id)
+    .map((p) => ({
+      ...p,
+      paymentMethod: p.payment_method,
+    }))
+  const allMaintenance = await apiRequest<MaintenanceRequestOut[]>('/api/maintenance')
+  const maintenanceRequests = allMaintenance
+    .filter((m) => m.tenant_id === id)
+    .map((m) => ({
+      ...m,
+      createdAt: m.created_at,
+    }))
 
   const formatPeso = (amount: number) => {
     return new Intl.NumberFormat('fil-PH', {
@@ -140,6 +50,10 @@ export default function TenantDetailPage({
     })
   }
 
+  const totalPaid = payments
+    .filter((p) => p.status === 'paid')
+    .reduce((sum, p) => sum + p.amount, 0)
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -152,10 +66,10 @@ export default function TenantDetailPage({
           </Link>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {tenant.firstName} {tenant.lastName}
+              {tenant.first_name} {tenant.last_name}
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Tenant since {formatDate(tenant.createdAt)}
+              Tenant since {formatDate(tenant.created_at)}
             </p>
           </div>
         </div>
@@ -174,8 +88,8 @@ export default function TenantDetailPage({
               </Button>
             </Link>
           )}
-          {tenant.unit && (
-            <Link href={`/units/${tenant.unit.id}`}>
+          {tenant.unit_id && (
+            <Link href={`/units/${tenant.unit_id}`}>
               <Button size="sm" variant="outline">
                 <Building2 className="w-4 h-4 mr-1" />
                 View Unit
@@ -212,13 +126,13 @@ export default function TenantDetailPage({
               <span className="text-gray-400">Not provided</span>
             )}
           </div>
-          {tenant.emergencyContact && (
+          {tenant.emergency_contact && (
             <div className="md:col-span-2">
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Emergency Contact
               </p>
               <p className="text-gray-900 dark:text-white">
-                {tenant.emergencyContact}
+                {tenant.emergency_contact}
               </p>
             </div>
           )}
@@ -232,13 +146,13 @@ export default function TenantDetailPage({
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Unit</p>
               <p className="font-medium text-gray-900 dark:text-white">
-                {activeLease.unit.unitNumber}
+                {activeLease.unit_number}
               </p>
             </div>
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Rent</p>
               <p className="font-medium text-gray-900 dark:text-white">
-                {formatPeso(activeLease.rentAmount)}/month
+                {formatPeso(activeLease.monthlyRent)}/month
               </p>
             </div>
             <div>
@@ -246,8 +160,8 @@ export default function TenantDetailPage({
                 Lease Period
               </p>
               <p className="font-medium text-gray-900 dark:text-white">
-                {formatDate(activeLease.startDate)} —{' '}
-                {formatDate(activeLease.endDate)}
+                {formatDate(activeLease.start_date)} —{' '}
+                {formatDate(activeLease.end_date)}
               </p>
             </div>
             <div className="md:col-span-3">
@@ -262,14 +176,14 @@ export default function TenantDetailPage({
       </Card>
 
       {/* Maintenance Requests */}
-      {tenant.unit && (
+      {tenant.unit_id && (
         <Card
           title="Maintenance Requests"
-          subtitle={`${tenant.maintenanceRequests.length} request${tenant.maintenanceRequests.length !== 1 ? 's' : ''}`}
+          subtitle={`${maintenanceRequests.length} request${maintenanceRequests.length !== 1 ? 's' : ''}`}
         >
-          {tenant.maintenanceRequests.length > 0 ? (
+          {maintenanceRequests.length > 0 ? (
             <div className="space-y-3">
-              {tenant.maintenanceRequests.map((req) => (
+              {maintenanceRequests.map((req) => (
                 <Link
                   key={req.id}
                   href={`/maintenance/${req.id}/edit`}
@@ -289,9 +203,9 @@ export default function TenantDetailPage({
                   </div>
                   <Badge
                     variant={
-                      req.status === 'COMPLETED'
+                      req.status === 'completed'
                         ? 'success'
-                        : req.status === 'IN_PROGRESS'
+                        : req.status === 'in_progress'
                           ? 'warning'
                           : 'info'
                     }
@@ -314,30 +228,30 @@ export default function TenantDetailPage({
         title="Payment History"
         subtitle={`Last 10 payments • Total paid: ${formatPeso(totalPaid)}`}
       >
-        {tenant.payments.length > 0 ? (
+        {payments.length > 0 ? (
           <Table
             columns={[
               {
                 key: 'date',
                 label: 'Date',
-                render: (_value, item: (typeof tenant.payments)[0]) =>
+                render: (_value, item: (typeof payments)[0]) =>
                   formatDate(item.date),
               },
               {
                 key: 'amount',
                 label: 'Amount',
-                render: (_value, item: (typeof tenant.payments)[0]) =>
+                render: (_value, item: (typeof payments)[0]) =>
                   formatPeso(item.amount),
               },
               {
                 key: 'status',
                 label: 'Status',
-                render: (_value, item: (typeof tenant.payments)[0]) => (
+                render: (_value, item: (typeof payments)[0]) => (
                   <Badge
                     variant={
-                      item.status === 'PAID'
+                      item.status === 'paid'
                         ? 'success'
-                        : item.status === 'PENDING'
+                        : item.status === 'pending'
                           ? 'warning'
                           : 'error'
                     }
@@ -347,13 +261,13 @@ export default function TenantDetailPage({
                 ),
               },
               {
-                key: 'method',
+                key: 'paymentMethod',
                 label: 'Method',
-                render: (_value, item: (typeof tenant.payments)[0]) =>
-                  item.method || '—',
+                render: (_value, item: (typeof payments)[0]) =>
+                  item.paymentMethod || '—',
               },
             ]}
-            data={tenant.payments}
+            data={payments.slice(0, 10)}
           />
         ) : (
           <p className="text-gray-500 dark:text-gray-400 text-center py-4">

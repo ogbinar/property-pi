@@ -1,5 +1,3 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
 /node_modules
 /.pnp
@@ -32,7 +30,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env
-# .env.example should be committed
+!.env.example
 
 # vercel
 .vercel
@@ -41,10 +39,22 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-/src/generated/prisma
-
-# PocketBase
-/pb_data
-
-# FastAPI
+# Backend
+/property_pi.db
+backend/property_pi.db
+backend/.venv/
+backend/tests_test.db
 .env-fastapi
+
+# Uploads
+/uploads
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

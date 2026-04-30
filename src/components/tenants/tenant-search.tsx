@@ -2,30 +2,38 @@
 
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
-import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 
-interface TenantSearchProps {
-  onSearch: (search: string) => void
-}
+const searchSchema = z.object({
+  q: z.string().optional(),
+})
 
-export function TenantSearch({ onSearch }: TenantSearchProps) {
-  const [q, setQ] = useState('')
+type SearchFormData = z.infer<typeof searchSchema>
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      onSearch(q)
-    }, 300)
+export function TenantSearch() {
+  const router = useRouter()
+  const { register, handleSubmit } = useForm<SearchFormData>({
+    resolver: zodResolver(searchSchema),
+  })
 
-    return () => clearTimeout(timer)
-  }, [q, onSearch])
+  const onSubmit = (data: SearchFormData) => {
+    const q = data.q?.trim()
+    if (q) {
+      router.push(`/tenants?q=${encodeURIComponent(q)}`)
+    } else {
+      router.push('/tenants')
+    }
+  }
 
   return (
-    <Input
-      label=""
-      placeholder="Search tenants by name, email, or phone..."
-      value={q}
-      onChange={(e) => setQ(e.target.value)}
-      className="max-w-md"
-    />
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Input
+        label=""
+        placeholder="Search tenants by name, email, or phone..."
+        {...register('q')}
+      />
+    </form>
   )
 }

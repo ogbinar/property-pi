@@ -1,11 +1,11 @@
 'use client'
 
-import type { LeaseRecord } from '@/types/pocketbase'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import type { TenantPortalLease } from '@/lib/api-types'
 
 interface LeaseDetailsCardProps {
-  lease: LeaseRecord | null
+  lease: TenantPortalLease | null
 }
 
 export function LeaseDetailsCard({ lease }: LeaseDetailsCardProps) {
@@ -25,13 +25,13 @@ export function LeaseDetailsCard({ lease }: LeaseDetailsCardProps) {
     pending: 'PENDING',
   }
 
-  const startDate = lease.startDate ? new Date(lease.startDate).toLocaleDateString('en-US', {
+  const startDate = lease.start_date ? new Date(lease.start_date).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   }) : 'N/A'
 
-  const endDate = lease.endDate ? new Date(lease.endDate).toLocaleDateString('en-US', {
+  const endDate = lease.end_date ? new Date(lease.end_date).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -41,11 +41,11 @@ export function LeaseDetailsCard({ lease }: LeaseDetailsCardProps) {
   const badgeVariant = statusColorMap[statusKey] || 'default'
   const statusDisplay = statusDisplayMap[statusKey] || 'ACTIVE'
 
-  const tenantName = (lease as unknown as { tenant?: { firstName?: string; lastName?: string } })?.tenant?.firstName
-    ? `${(lease as unknown as { tenant?: { firstName?: string; lastName?: string } })?.tenant?.firstName} ${(lease as unknown as { tenant?: { firstName?: string; lastName?: string } })?.tenant?.lastName}`
+  const tenantName = lease.tenant
+    ? `${lease.tenant.first_name} ${lease.tenant.last_name}`
     : 'Tenant'
 
-  const unitNumber = (lease as unknown as { unit?: { number?: string } })?.unit?.number || 'N/A'
+  const unitNumber = lease.unit?.unit_number || 'N/A'
 
   return (
     <Card title="Lease Details" className="w-full">
@@ -69,7 +69,7 @@ export function LeaseDetailsCard({ lease }: LeaseDetailsCardProps) {
         <div>
           <p className="text-sm text-gray-500 dark:text-gray-400">Monthly Rent</p>
           <p className="text-base font-medium text-gray-900 dark:text-white">
-            ₱{lease.monthlyRent.toLocaleString()}
+            ₱{lease.monthly_rent.toLocaleString()}
           </p>
         </div>
         <div>
@@ -81,7 +81,7 @@ export function LeaseDetailsCard({ lease }: LeaseDetailsCardProps) {
         <div>
           <p className="text-sm text-gray-500 dark:text-gray-400">Deposit</p>
           <p className="text-base font-medium text-gray-900 dark:text-white">
-            ₱{lease.depositAmount.toLocaleString()}
+            ₱{lease.deposit_amount.toLocaleString()}
           </p>
         </div>
       </div>

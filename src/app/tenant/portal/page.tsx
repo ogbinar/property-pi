@@ -1,78 +1,55 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import {
-  validateTenantToken,
-  getPaymentHistory,
-  getMaintenanceRequests,
-  getNotices,
-  createTenantMaintenanceRequest,
-} from '@/lib/tenant-api'
-import type { LeaseRecord, PaymentRecord, MaintenanceRecord, NoticeRecord } from '@/types/pocketbase'
+import { validatePortalToken, getTenantPayments, getTenantMaintenance, getTenantNotices, createTenantPortalMaintenance } from '@/app/actions/tenant-actions'
+import type { PaymentOut, MaintenanceRequestOut, NoticeOut, TenantPortalLease } from '@/lib/api-types'
 import { LeaseDetailsCard } from '@/components/tenant/lease-details-card'
 import { PaymentHistoryCard } from '@/components/tenant/payment-history-card'
 import { MaintenanceStatusCard } from '@/components/tenant/maintenance-status-card'
 import { NoticesCard } from '@/components/tenant/notices-card'
 import { MaintenanceRequestForm } from '@/components/tenant/maintenance-request-form'
-import { Badge } from '@/components/ui/badge'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { Suspense } from 'react'
 
-export default function TenantPortalPage() {
-  const searchParams = useSearchParams()
-  const router = useRouter()
+export const dynamic = 'force-dynamic'
 
-  const token = searchParams?.get('token') || ''
-  const [lease, setLease] = useState<LeaseRecord | null>(null)
-  const [payments, setPayments] = useState<PaymentRecord[]>([])
-  const [requests, setRequests] = useState<MaintenanceRecord[]>([])
-  const [notices, setNotices] = useState<NoticeRecord[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+async function TenantPortalContent({ searchParams }: { searchParams: Promise<{ token?: string; tab?: string }> }) {
+  const { token = '', tab } = await searchParams
 
-  useEffect(() => {
-    async function loadPortalData() {
-      // Parse token: {leaseId}:{secret}
-      const parts = token.split(':')
-      if (parts.length !== 2) {
-        setError('Invalid tenant link format')
-        setLoading(false)
-        return
-      }
+  const parts = token.split(':')
+  let lease: TenantPortalLease | null = null
+  let error: string | null = null
+  let secret = ''
 
-      const leaseId = parts[0]
-      const secret = parts.slice(1).join(':') // Handle edge case of colons in secret
-
-      const validated = await validateTenantToken(leaseId, secret)
-      if (!validated) {
-        setError('Invalid or expired tenant link')
-        setLoading(false)
-        return
-      }
-
-      setLease(validated)
-
-      try {
-        const [paymentsData, requestsData, noticesData] = await Promise.all([
-          getPaymentHistory(validated.id),
-          getMaintenanceRequests(validated.tenant, validated.unit),
-          getNotices(validated.tenant, validated.unit),
-        ])
-
-        setPayments(paymentsData)
-        setRequests(requestsData)
-        setNotices(noticesData)
-      } catch {
-        toast.error('Failed to load portal data')
-      }
-
-      setLoading(false)
+  if (parts.length === 2) {
+    const leaseId = parts[0]
+    secret = parts.slice(1).join(':')
+    lease = await validatePortalToken(leaseId, secret)
+    if (!lease) {
+      error = 'Invalid or expired tenant link'
     }
+  } else {
+    error = 'Invalid tenant link format'
+  }
 
-    loadPortalData()
-  }, [token])
+  let payments: PaymentOut[] = []
+  let requests: MaintenanceRequestOut[] = []
+  let notices: NoticeOut[] = []
+
+  if (lease) {
+    try {
+      const [paymentsData, requestsData, noticesData] = await Promise.all([
+        getTenantPayments(lease.id, secret),
+        getTenantMaintenance(lease.id, secret),
+        getTenantNotices(lease.id, secret),
+      ])
+
+      payments = paymentsData
+      requests = requestsData
+      notices = noticesData
+    } catch {
+      toast.error('Failed to load portal data')
+    }
+  }
 
   const handleSubmitMaintenance = async (
     title: string,
@@ -82,43 +59,30 @@ export default function TenantPortalPage() {
     if (!lease) return
 
     try {
-      await createTenantMaintenanceRequest(lease.unit, lease.tenant, title, description, priority)
+      await createTenantPortalMaintenance(lease.id, secret, {
+        title,
+        description,
+        priority,
+      })
       toast.success('Maintenance request submitted successfully')
-      // Refresh requests
-      const updated = await getMaintenanceRequests(lease.tenant, lease.unit)
-      setRequests(updated)
     } catch {
       toast.error('Failed to submit maintenance request')
     }
   }
 
-  // Invalid link error state
-  if (!loading && error) {
+  if (error) {
     return (
       <div className="max-w-4xl mx-auto">
         <EmptyState
           title="Invalid or Expired Tenant Link"
           description="This tenant portal link is invalid or has been invalidated. Please contact your landlord for a valid link."
           actionLabel="Return to Dashboard"
-          onAction={() => router.push('/')}
+          onAction={() => { if (typeof window !== 'undefined') window.location.href = '/' }}
         />
       </div>
     )
   }
 
-  // Loading state
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    )
-  }
-
-  // Get tab from URL
-  const tab = searchParams?.get('tab')
-
-  // Render lease details always
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <LeaseDetailsCard lease={lease} />
@@ -131,8 +95,8 @@ export default function TenantPortalPage() {
         <>
           <MaintenanceStatusCard requests={requests} />
           <MaintenanceRequestForm
-            unitId={lease?.unit || ''}
-            tenantId={lease?.tenant || ''}
+            unitId={lease?.unit_id || ''}
+            tenantId={lease?.tenant_id || ''}
             onSubmit={handleSubmitMaintenance}
           />
         </>
@@ -142,19 +106,30 @@ export default function TenantPortalPage() {
         <NoticesCard notices={notices} />
       )}
 
-      {/* Default: show all sections */}
       {!tab && (
         <>
           <PaymentHistoryCard payments={payments} />
           <MaintenanceStatusCard requests={requests} />
           <NoticesCard notices={notices} />
           <MaintenanceRequestForm
-            unitId={lease?.unit || ''}
-            tenantId={lease?.tenant || ''}
+            unitId={lease?.unit_id || ''}
+            tenantId={lease?.tenant_id || ''}
             onSubmit={handleSubmitMaintenance}
           />
         </>
       )}
     </div>
+  )
+}
+
+export default function TenantPortalPage({ searchParams }: { searchParams: Promise<{ token?: string; tab?: string }> }) {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    }>
+      <TenantPortalContent searchParams={searchParams} />
+    </Suspense>
   )
 }

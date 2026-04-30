@@ -239,9 +239,151 @@ All landlord operations require authentication. Tenant portal uses single-use to
 
 ---
 
+## 7. Post-v1.1 Architecture: Python Backend
+
+### REQ-16: Python FastAPI Backend
+Backend services run as independent Python FastAPI process on port 8000, replacing all Drizzle ORM + Server Actions in Next.js.
+
+**Description:** The Next.js frontend becomes a thin client that communicates exclusively with a Python FastAPI backend via HTTP REST. All business logic, data access, authentication, and aggregation move from `src/app/actions/` and `src/db/` repos to FastAPI routers. The backend uses SQLAlchemy ORM with SQLite, JWT Bearer token auth, and CORS configured for the Next.js origin.
+
+**Acceptance:**
+- [ ] FastAPI running on `localhost:8000`
+- [ ] All data operations use SQLAlchemy models (`app/models.py`)
+- [ ] Pydantic schemas enforce request/response validation (`app/schemas.py`)
+- [ ] JWT Bearer token auth via `Authorization: Bearer <token>` header
+- [ ] CORS configured to allow `http://localhost:3000`
+- [ ] OpenAPI docs available at `/docs`
+- [ ] Rate limiting via slowapi
+
+### REQ-17: Frontend Migration to API Client
+All Next.js Server Actions and Drizzle queries replaced with calls to FastAPI endpoints.
+
+**Description:** The `src/app/actions/` files are refactored to call `http://localhost:8000/api/...` via the `apiRequest` client instead of executing Server Actions that use Drizzle. SSR page components call the API directly with `fetch` instead of querying the local database. The `@/db/` directory (schema, repos, connection) is removed entirely.
+
+**Acceptance:**
+- [ ] `src/app/actions/` files call FastAPI endpoints via `apiRequest`
+- [ ] `src/db/` directory removed (no Drizzle imports remain)
+- [ ] All page components fetch data from FastAPI (SSR or client-side)
+- [ ] Auth state managed via Bearer token in `Authorization` header
+- [ ] No references to `drizzle-orm`, `@prisma/client`, or `better-sqlite3` in frontend
+- [ ] `npm run build` succeeds with zero TypeScript errors
+
+### REQ-18: Auth Cookie vs Bearer Token Strategy
+Server components authenticate by extracting the JWT from cookies and forwarding it as a Bearer token to FastAPI.
+
+**Description:** The Next.js frontend stores the JWT in an httpOnly cookie after login. Server components (SSR pages) read the cookie using `cookies().get('session')`, extract the token, and include it in `Authorization: Bearer <token>` headers when calling FastAPI. Client components use the `apiRequest` helper with explicit token passing. This avoids the need for server-side middleware and keeps auth state consistent.
+
+**Acceptance:**
+- [ ] Login flow stores JWT in `session` cookie
+- [ ] Server components read token from cookie and forward to FastAPI
+- [ ] Client components can attach token to requests
+- [ ] Logout clears cookie and redirects to login
+- [ ] Unauthenticated server requests return 401 from FastAPI → Next.js redirects to login
+
+### REQ-19: Data Model Compatibility
+SQLAlchemy models in the Python backend must be compatible with the existing frontend TypeScript types.
+
+**Description:** The SQLAlchemy models (`app/models.py`) and Pydantic schemas (`app/schemas.py`) define the same data shapes expected by the frontend TypeScript types (`src/lib/api-types.ts`). Field names use snake_case throughout the API (matching the SQLAlchemy column names). The frontend types are updated to match the API response shapes exactly.
+
+**Acceptance:**
+- [ ] All frontend TypeScript interfaces have matching Pydantic schema fields
+- [ ] No field name mismatches between API responses and frontend type expectations
+- [ ] Enum values (status, priority, role, etc.) are consistent between backend and frontend
+- [ ] Date fields use ISO 8601 string format
+- [ ] Nullable fields handled consistently (null vs undefined)
+
+### REQ-20: Database Migration Bridge
+Existing Drizzle/Swift data is accessible by the Python backend.
+
+**Description:** Since both Drizzle and SQLAlchemy use SQLite as the underlying database, the Python backend can read the existing data directly. A migration script converts any schema differences (field names, types) between the Drizzle schema definitions and the SQLAlchemy models. After migration, both ORMs can coexist during the transition period, or the Drizzle layer is fully removed.
+
+**Acceptance:**
+- [ ] Existing SQLite database is compatible with SQLAlchemy models
+- [ ] Migration script runs without data loss
+- [ ] All existing records (units, tenants, leases, payments, expenses, maintenance) accessible via FastAPI
+- [ ] No schema conflicts between Drizzle tables and SQLAlchemy models
+
+### REQ-21: Test Strategy for Python Backend
+FastAPI backend has comprehensive test coverage for all endpoints and auth.
+
+**Description:** The Python backend includes a `tests/` directory with pytest tests covering all API endpoints, auth flows, and critical business logic (rent generation, overdue marking, dashboard aggregation). Tests use in-memory SQLite databases to avoid file system dependencies.
+
+**Acceptance:**
+- [ ] `pytest` runs with zero failures
+- [ ] All CRUD endpoints tested (create, read, update, delete)
+- [ ] Auth endpoints tested (register, login, me, logout)
+- [ ] Rent generation tested with edge cases (double-generation, empty leases)
+- [ ] Dashboard aggregation tested with sample data
+- [ ] Tenant portal token validation tested
+- [ ] Error cases return proper HTTP status codes and messages
+- [ ] Test coverage ≥ 80% for backend code
+
+---
+
+## 8. Non-Functional Requirements (Post-v1.1)
+
+### REQ-22: Service Communication
+FastAPI and Next.js communicate over localhost via HTTP with JSON payloads.
+
+**Acceptance:**
+- [ ] API calls from Next.js to FastAPI complete in < 200ms locally
+- [ ] CORS headers properly configured
+- [ ] API errors return consistent JSON error format with `detail` field
+- [ ] Rate limiting prevents abuse (100 req/min per IP)
+
+### REQ-23: Deployment Architecture
+Next.js frontend and Python FastAPI backend deployed as separate services.
+
+**Acceptance:**
+- [ ] Next.js deployed on Vercel or similar
+- [ ] FastAPI deployed on Railway, fly.io, or similar
+- [ ] `NEXT_PUBLIC_API_URL` environment variable configured in frontend
+- [ ] `DATABASE_URL` environment variable configured in backend
+- [ ] Health check endpoint at `/api/fastapi/health`
+- [ ] Both services monitorable via health checks
+
+---
+
+## Requirements Traceability
+
+### Pre-v1.1 (completed in v1.0)
+| REQ-ID | Phase | Status | Notes |
+|--------|-------|--------|-------|
+| REQ-01 | Phase 1 | ✅ Done | Legacy stack stripped in v1.0 |
+| REQ-02 | Phase 2 | ✅ Done | SQLite + Drizzle schema in v1.0 |
+| REQ-03 | Phase 2 | ✅ Done | JWT auth implemented in v1.0 |
+| REQ-04 | Phase 3 | ✅ Done | Direct DB access (no proxy needed) |
+| REQ-05 | Phase 3 | ✅ Done | FastAPI used in v1.0 hybrid |
+| REQ-06 | Phase 3 | ✅ Done | All UI pages connected to Drizzle |
+| REQ-07 | Phase 4 | ✅ Done | Tenant portal page created |
+| REQ-08 | Phase 4 | ✅ Done | Tenant share-link implemented |
+| REQ-09 | Phase 3 | ✅ Done | Rent generation in payments repo |
+| REQ-10 | Phase 3 | ✅ Done | Overdue marking in payments repo |
+| REQ-11 | Phase 3 | ✅ Done | Lease expiry in dashboard |
+| REQ-12 | Phase 3 | ✅ Done | File storage via local filesystem |
+| REQ-13 | Phase 5 | ⏸ Deferred | Post-v1.1 deployment |
+| REQ-14 | Phase 5 | ✅ Done | Dashboard < 5s (single process) |
+| REQ-15 | Phase 5 | ✅ Done | JWT auth protects all routes |
+
+### Post-v1.1 (new requirements)
+| REQ-ID | Phase | Status | Notes |
+|--------|-------|--------|-------|
+| REQ-16 | Phase 1-3 | 🔴 Not Started | Python FastAPI backend foundation |
+| REQ-17 | Phase 4-5 | 🔴 Not Started | Frontend migration to API client |
+| REQ-18 | Phase 4 | 🔴 Not Started | Cookie → Bearer token auth strategy |
+| REQ-19 | Phase 1 | 🔴 Not Started | Data model compatibility alignment |
+| REQ-20 | Phase 1 | ⚠️ Partial | SQLite compatible, migration script needed |
+| REQ-21 | Phase 6 | 🔴 Not Started | Test strategy for backend |
+| REQ-22 | Phase 1 | 🔴 Not Started | Service communication setup |
+| REQ-23 | Phase 6 | 🔴 Not Started | Deployment architecture |
+
+---
+
 ## Evolution
 
 Requirements are updated at phase boundaries. Completed requirements move to "Validated" section of PROJECT.md with phase reference. New requirements discovered during implementation are added here with REQ-IDs.
 
 ---
+
 *Generated: 2026-04-21 from PROJECT.md requirements and user decisions*
+*Updated: 2026-04-30 Post-v1.1 requirements added (REQ-16 through REQ-23)*

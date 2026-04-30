@@ -1,35 +1,27 @@
-'use client'
-
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { TenantTable } from '@/components/tenants/tenant-table'
 import { TenantSearch } from '@/components/tenants/tenant-search'
-import { getTenants, TenantWithRelations } from '@/lib/api'
+import { apiRequest } from '@/lib/api-client'
+import type { TenantOut } from '@/lib/api-types'
 
-export default function TenantsPage() {
-  const [tenants, setTenants] = useState<TenantWithRelations[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [search, setSearch] = useState('')
-
-  useEffect(() => {
-    async function fetchTenants() {
-      setLoading(true)
-      try {
-        const data = await getTenants(search || undefined)
-        setTenants(data)
-        setError(null)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchTenants()
-  }, [search])
+export default async function TenantsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  const params = await searchParams
+  const tenants = await apiRequest<TenantOut[]>('/api/tenants')
+  const query = params.q
+  const filteredTenants = query
+    ? tenants.filter(
+        (t) => {
+          const q = query.toLowerCase()
+          return (
+            t.first_name.toLowerCase().includes(q) ||
+            t.last_name.toLowerCase().includes(q) ||
+            t.email.toLowerCase().includes(q)
+          )
+        },
+      )
+    : tenants
 
   return (
     <div className="space-y-6">
@@ -45,12 +37,12 @@ export default function TenantsPage() {
         </Link>
       </div>
 
-      <TenantSearch onSearch={setSearch} />
+      <TenantSearch />
 
-      {loading ? (
-        <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-      ) : error ? (
-        <div className="p-4 bg-red-50 text-red-600 rounded">{error}</div>
+      {tenants.length === 0 ? (
+        <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+          No tenants found.
+        </p>
       ) : (
         <TenantTable tenants={tenants} />
       )}

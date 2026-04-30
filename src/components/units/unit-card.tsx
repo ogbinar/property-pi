@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Building2, User, MapPin } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { UnitWithRelations } from '@/lib/api'
+import { UnitOut } from '@/lib/api-types'
 
 const statusColors: Record<string, string> = {
   OCCUPIED: 'success',
@@ -10,7 +10,7 @@ const statusColors: Record<string, string> = {
   UNDER_RENOVATION: 'info',
 }
 
-export function UnitCard({ unit }: { unit: UnitWithRelations }) {
+export function UnitCard({ unit }: { unit: UnitOut }) {
   const statusVariant = (statusColors[unit.status] || 'neutral') as
     | 'success'
     | 'neutral'
@@ -67,12 +67,10 @@ export function UnitCard({ unit }: { unit: UnitWithRelations }) {
 
         {/* Tenant info */}
         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-          {unit.current_tenant ? (
+          {unit.status === 'OCCUPIED' ? (
             <>
               <User className="w-4 h-4 text-gray-400" />
-              <span>
-                {unit.current_tenant.first_name} {unit.current_tenant.last_name}
-              </span>
+              <span>Occupied</span>
             </>
           ) : (
             <>
@@ -81,13 +79,6 @@ export function UnitCard({ unit }: { unit: UnitWithRelations }) {
             </>
           )}
         </div>
-
-        {/* Lease end date */}
-        {unit.active_lease && unit.current_tenant && (
-          <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
-            Lease ends {formatDate(unit.active_lease.end_date)}
-          </p>
-        )}
       </div>
     </Link>
   )

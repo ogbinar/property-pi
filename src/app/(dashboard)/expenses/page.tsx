@@ -1,106 +1,30 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Plus, Search, Filter, AlertCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import Link from 'next/link'
+import { Plus, Search, Filter } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { EmptyState } from '@/components/ui/empty-state'
-import { getExpenses } from '@/lib/api'
+import { getExpensesAction } from '@/app/actions/expense-actions'
+import type { Expense } from '@/app/actions/expense-actions'
 
-interface Expense {
-  id: string
-  amount: string
-  category: string
-  description: string
-  date: string
-  receiptUrl?: string
-  unit?: { unitNumber: string }
-}
-
-export default function ExpensesPage() {
-  const router = useRouter()
-  const [expenses, setExpenses] = useState<Expense[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [search, setSearch] = useState('')
-  const [categoryFilter, setCategoryFilter] = useState('')
-
-  useEffect(() => {
-    async function fetchExpenses() {
-      setLoading(true)
-      try {
-        const data = await getExpenses({
-          category: categoryFilter || undefined,
-        })
-        const mapped: Expense[] = data.map((e) => ({
-          id: e.id,
-          amount: String(e.amount),
-          category: e.category,
-          description: e.description,
-          date: e.date,
-          receiptUrl: undefined,
-        }))
-        setExpenses(mapped)
-        setError(null)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchExpenses()
-  }, [search, categoryFilter])
-
-  const filteredExpenses = expenses.filter((expense) => {
-    const matchesSearch =
-      expense.description.toLowerCase().includes(search.toLowerCase()) ||
-      expense.category.toLowerCase().includes(search.toLowerCase())
-    const matchesCategory = !categoryFilter || expense.category === categoryFilter
-    return matchesSearch && matchesCategory
-  })
-
+export default async function ExpensesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string; search?: string }>
+}) {
+  const params = await searchParams
+  const expenses = await getExpensesAction()
   const categories = [...new Set(expenses.map((e) => e.category))]
 
-  const total = filteredExpenses.reduce(
-    (sum, e) => sum + parseFloat(e.amount),
-    0
-  )
-
-  if (loading) {
+  const filteredExpenses = expenses.filter((expense) => {
+    const search = (params.search || '').toLowerCase()
+    if (!search) return true
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="h-8 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-          <div className="h-10 w-28 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-        </div>
-        <div className="h-48 bg-gray-200 dark:bg-gray-700 rounded-xl animate-pulse" />
-      </div>
+      expense.description.toLowerCase().includes(search) ||
+      expense.category.toLowerCase().includes(search)
     )
-  }
+  })
 
-  if (error) {
-    return (
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Expenses
-        </h2>
-        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
-            <p className="text-red-600 dark:text-red-400">{error}</p>
-          </div>
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-2 text-sm text-red-700 dark:text-red-300 underline"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    )
-  }
+  const total = filteredExpenses.reduce((sum, e) => sum + e.amount, 0)
+  const avg = filteredExpenses.length > 0 ? total / filteredExpenses.length : 0
 
   return (
     <div className="space-y-6">
@@ -109,10 +33,10 @@ export default function ExpensesPage() {
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
           Expenses
         </h2>
-        <Button onClick={() => router.push('/expenses/new')}>
+        <Link href="/expenses/new" className="inline-flex items-center rounded-lg bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 text-sm font-medium transition-colors">
           <Plus className="w-4 h-4 mr-2" />
           Add Expense
-        </Button>
+        </Link>
       </div>
 
       {/* Summary */}
@@ -138,31 +62,27 @@ export default function ExpensesPage() {
             Average
           </p>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">
-            ₱
-            {(filteredExpenses.length > 0
-              ? total / filteredExpenses.length
-              : 0
-            ).toLocaleString('fil-PH', { minimumFractionDigits: 2 })}
+            ₱{avg.toLocaleString('fil-PH', { minimumFractionDigits: 2 })}
           </p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <form className="flex flex-col sm:flex-row gap-3" method="get">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input
+            name="search"
             placeholder="Search expenses..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            defaultValue={params.search}
             className="pl-10"
           />
         </div>
         <div className="relative">
           <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
+            name="category"
+            defaultValue={params.category}
             className="pl-10 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white appearance-none"
           >
             <option value="">All Categories</option>
@@ -173,7 +93,7 @@ export default function ExpensesPage() {
             ))}
           </select>
         </div>
-      </div>
+      </form>
 
       {/* Expense List */}
       {filteredExpenses.length > 0 ? (
@@ -200,28 +120,20 @@ export default function ExpensesPage() {
                   <span className="text-xs text-gray-500 dark:text-gray-400">
                     {expense.category}
                   </span>
-                  {expense.unit && (
+                  {expense.unit_id && (
                     <span className="text-xs text-gray-400 dark:text-gray-500">
-                      · Unit {expense.unit.unitNumber}
+                      · Unit {expense.unit_id}
                     </span>
                   )}
                 </div>
               </div>
               <div className="flex items-center gap-4">
                 <p className="text-sm font-medium text-red-600 dark:text-red-400">
-                  ₱{parseFloat(expense.amount).toLocaleString('fil-PH', {
-                    minimumFractionDigits: 2,
-                  })}
+                  ₱{expense.amount.toLocaleString('fil-PH', { minimumFractionDigits: 2 })}
                 </p>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() =>
-                    router.push(`/expenses/${expense.id}/edit`)
-                  }
-                >
+                <Link href={`/expenses/${expense.id}/edit`} className="inline-flex items-center border border-gray-300 bg-transparent hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors">
                   Edit
-                </Button>
+                </Link>
               </div>
             </div>
           ))}
@@ -235,11 +147,7 @@ export default function ExpensesPage() {
               : 'Try adjusting your filters.'
           }
           actionLabel={expenses.length === 0 ? 'Add Expense' : undefined}
-          onAction={
-            expenses.length === 0
-              ? () => router.push('/expenses/new')
-              : undefined
-          }
+          onAction={expenses.length === 0 ? () => {} : undefined}
         />
       )}
     </div>

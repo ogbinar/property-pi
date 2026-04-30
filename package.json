@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:migrate": "cd backend && alembic upgrade head",
+    "db:revision": "cd backend && alembic revision --autogenerate -m",
+    "db:stamp": "cd backend && alembic stamp head"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
@@ -15,7 +18,6 @@
     "date-fns": "^4.1.0",
     "lucide-react": "^1.8.0",
     "next": "16.2.4",
-    "pocketbase": "^0.25.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hook-form": "^7.72.1",

@@ -1,20 +1,13 @@
-'use client'
-
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
-import { getUnits, UnitWithRelations } from '@/lib/api'
+import { getUnitsAction } from '@/app/actions/unit-actions'
+import type { UnitOut } from '@/lib/api-types'
 
-interface Unit {
-  id: string
-  unitNumber: string
-  type: string
-  status: string
-}
+interface UnitItem extends UnitOut {}
 
 const statusColors: Record<string, { bg: string; border: string; badge: 'success' | 'neutral' | 'warning' | 'info' }> = {
   OCCUPIED: {
@@ -39,45 +32,22 @@ const statusColors: Record<string, { bg: string; border: string; badge: 'success
   },
 }
 
-export function UnitStatusGrid() {
-  const [units, setUnits] = useState<Unit[]>([])
-  const [loading, setLoading] = useState(true)
+function UnitGridSkeleton() {
+  return (
+    <Card title="Unit Status Overview">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"
+          />
+        ))}
+      </div>
+    </Card>
+  )
+}
 
-  useEffect(() => {
-    async function fetchUnits() {
-      try {
-        const data = await getUnits()
-        setUnits(data.map((u: UnitWithRelations) => ({
-          id: u.id,
-          unitNumber: u.unit_number,
-          type: u.type,
-          status: u.status,
-        })))
-      } catch (error) {
-        console.error('Failed to fetch units:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchUnits()
-  }, [])
-
-  if (loading) {
-    return (
-      <Card title="Unit Status Overview">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"
-            />
-          ))}
-        </div>
-      </Card>
-    )
-  }
-
+async function UnitGridContent({ units }: { units: UnitItem[] }) {
   if (units.length === 0) {
     return (
       <Card
@@ -114,7 +84,7 @@ export function UnitStatusGrid() {
             >
               <div className="text-center">
                 <p className="text-lg font-bold text-gray-900 dark:text-white">
-                  {unit.unitNumber}
+                  {unit.unit_number}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   {unit.type}
@@ -137,4 +107,19 @@ export function UnitStatusGrid() {
       </div>
     </Card>
   )
+}
+
+export async function UnitStatusGrid() {
+  let units: UnitItem[] = []
+  try {
+    units = await getUnitsAction()
+  } catch (error) {
+    console.error('Failed to fetch units:', error)
+  }
+
+  if (units.length === 0) {
+    return <UnitGridSkeleton />
+  }
+
+  return <UnitGridContent units={units} />
 }

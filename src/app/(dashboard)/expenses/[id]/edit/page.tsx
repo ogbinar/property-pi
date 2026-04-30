@@ -1,60 +1,36 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { ExpenseForm, ExpenseFormData } from '@/components/expenses/expense-form'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Modal } from '@/components/ui/modal'
+import { updateExpenseAction, deleteExpenseAction, getExpenseAction } from '@/app/actions/expense-actions'
+import type { Expense } from '@/app/actions/expense-actions'
 
-export default function EditExpensePage({ params }: { params: { id: string } }) {
+export default function EditExpensePage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
+  const [expense, setExpense] = useState<Expense | null>(null)
   const [loading, setLoading] = useState(true)
+  const [deleteModal, setDeleteModal] = useState(false)
 
   useEffect(() => {
     async function fetchExpense() {
       try {
-        const res = await fetch(`/api/expenses/${params.id}`)
-        if (!res.ok) throw new Error('Failed to fetch expense')
-        const data = await res.json()
-
-        // Store in a hidden way for the form
-        const form = document.querySelector('#expense-form') as HTMLFormElement
-        if (form) {
-          // We'll use the form's defaultValues via a different approach
-        }
+        const { id } = await params
+        const data = await getExpenseAction(id)
+        setExpense(data as Expense)
       } catch (error) {
-        console.error('Failed to fetch expense:', error)
+        toast.error(error instanceof Error ? error.message : 'Failed to load expense')
       } finally {
         setLoading(false)
       }
     }
 
     fetchExpense()
-  }, [params.id])
-
-  const handleSubmit = async (data: ExpenseFormData) => {
-    setIsLoading(true)
-    try {
-      const res = await fetch(`/api/expenses/${params.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
-
-      if (!res.ok) {
-        const result = await res.json()
-        throw new Error(result.error || 'Failed to update expense')
-      }
-
-      router.push('/expenses')
-      router.refresh()
-    } catch (error) {
-      console.error('Failed to update expense:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  }, [params])
 
   if (loading) {
     return (
@@ -70,6 +46,57 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
     )
   }
 
+  if (!expense) {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+          Expense not found
+        </h2>
+        <Button variant="outline" className="mt-4" onClick={() => router.push('/expenses')}>
+          Back to Expenses
+        </Button>
+      </div>
+    )
+  }
+
+  async function handleSubmit(data: ExpenseFormData) {
+    try {
+      await updateExpenseAction(expense!.id, {
+        amount: Number(data.amount),
+        category: data.category,
+        description: data.description,
+        date: data.date,
+        unit_id: data.unitId || undefined,
+        receipt_url: data.receiptUrl || undefined,
+      })
+      toast.success('Expense updated successfully')
+      router.refresh()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to update expense')
+    }
+  }
+
+  async function handleDelete() {
+    if (!expense) return
+    try {
+      await deleteExpenseAction(expense.id)
+      toast.success('Expense deleted successfully')
+      router.push('/expenses')
+      router.refresh()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to delete expense')
+    }
+  }
+
+  const defaultValues = {
+    amount: String(expense.amount),
+    category: expense.category,
+    description: expense.description,
+    date: expense.date,
+    unitId: expense.unit_id || undefined,
+    receiptUrl: expense.receipt_url || undefined,
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -83,12 +110,28 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
 
       <Card>
         <ExpenseForm
+          defaultValues={defaultValues}
           submitLabel="Update Expense"
           onSubmit={handleSubmit}
-          isLoading={isLoading}
+          isLoading={false}
           onCancel={() => router.back()}
         />
       </Card>
+
+      <Modal
+        isOpen={deleteModal}
+        onClose={() => setDeleteModal(false)}
+        title="Delete Expense"
+        description="Are you sure you want to delete this expense? This action cannot be undone."
+        actions={[
+          <Button key="cancel" variant="outline" onClick={() => setDeleteModal(false)}>
+            Cancel
+          </Button>,
+          <Button key="delete" variant="danger" onClick={handleDelete}>
+            Delete
+          </Button>,
+        ]}
+      />
     </div>
   )
 }
