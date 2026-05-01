@@ -1,13 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Building2, Loader2 } from 'lucide-react'
 import { signIn } from '@/app/actions/auth-actions'
 
 export default function LoginPage() {
-  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -20,7 +18,7 @@ export default function LoginPage() {
 
     try {
       await signIn(email, password)
-      router.replace('/')
+      window.location.href = '/'
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Login failed'
       setError(message)

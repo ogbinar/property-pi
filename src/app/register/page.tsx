@@ -1,13 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Building2, Loader2 } from 'lucide-react'
 import { register } from '@/app/actions/auth-actions'
 import Link from 'next/link'
 
 export default function RegisterPage() {
-  const router = useRouter()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -21,7 +19,7 @@ export default function RegisterPage() {
 
     try {
       await register(name, email, password)
-      router.replace('/')
+      window.location.href = '/'
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Registration failed'
       setError(message)
