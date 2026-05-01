@@ -1,9 +1,9 @@
 export const dynamic = 'force-dynamic'
 
 import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/layout/sidebar'
 import { Header, SessionUser } from '@/components/layout/header'
+import LoginRedirectClient from '../login-redirect-client'
 
 async function getSession(): Promise<SessionUser | null> {
   const cookieStore = await cookies()
@@ -27,7 +27,7 @@ interface DashboardLayoutProps {
 
 export default async function DashboardLayout({ children }: DashboardLayoutProps) {
   const session = await getSession()
-  if (!session) redirect('/login')
+  if (!session) return <LoginRedirectClient />
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
