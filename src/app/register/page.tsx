@@ -21,7 +21,7 @@ export default function RegisterPage() {
 
     try {
       await register(name, email, password)
-      router.refresh()
+      router.replace('/dashboard')
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Registration failed'
       setError(message)
