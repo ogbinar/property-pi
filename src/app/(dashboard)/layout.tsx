@@ -10,7 +10,7 @@ async function getSession(): Promise<SessionUser | null> {
   const token = cookieStore.get('session')?.value
   if (!token) return null
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/me`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/auth/me`, {
       headers: { Authorization: `Bearer ${token}` },
     })
     if (!res.ok) return null
