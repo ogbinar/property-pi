@@ -7,14 +7,14 @@ async function getBackendUrl(): Promise<string> {
   if (process.env.API_URL) return process.env.API_URL
   try {
     const headerStore = await headers()
-    const host = headerStore.get('host')
+    const host = headerStore.get('host') || headerStore.get('x-forwarded-host')
     if (host) {
       const hostname = host.split(':')[0]
       const proto = headerStore.get('x-forwarded-proto') || 'http'
       return `${proto}://${hostname}`
     }
   } catch { /* ignore */ }
-  return 'http://backend:8000'
+  return ''
 }
 
 async function getSession(): Promise<SessionUser | null> {

@@ -10,19 +10,17 @@ let cachedServerBase: string | null = null
 
 async function resolveServerBase(): Promise<string> {
 	if (cachedServerBase) return cachedServerBase
-	const serverApiBase = await import('next/headers').then(m => m.headers).catch(() => null)
-	if (serverApiBase) {
-		try {
-			const headerStore = await serverApiBase()
-			const host = headerStore.get('host')
-			if (host) {
-				const hostname = host.split(':')[0]
-				cachedServerBase = `http://${hostname}:8000`
-				return cachedServerBase
-			}
-		} catch { /* ignore */ }
-	}
-	cachedServerBase = 'http://localhost:3000'
+	try {
+		const headerStore = await (await import('next/headers')).headers()
+		const host = headerStore.get('host') || headerStore.get('x-forwarded-host')
+		if (host) {
+			const hostname = host.split(':')[0]
+			const proto = headerStore.get('x-forwarded-proto') || 'http'
+			cachedServerBase = `${proto}://${hostname}`
+			return cachedServerBase
+		}
+	} catch { /* ignore */ }
+	cachedServerBase = ''
 	return cachedServerBase
 }
 
@@ -37,9 +35,6 @@ async function apiRequest<T>(
 ): Promise<T> {
 	const base = typeof window === 'undefined' ? await resolveServerBase() : API_BASE
 	let urlPath = `${base}${path}`
-	if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
-		console.log('[apiRequest] base:', base, 'path:', path, 'url:', urlPath)
-	}
 
 	if (options?.params) {
 		const sp = new URLSearchParams()
