@@ -1,4 +1,5 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || ''
+const SERVER_API_BASE = process.env.API_URL || 'http://backend:8000'
 
 function getCookie(name: string): string | null {
 	if (typeof document === 'undefined') return null
@@ -15,7 +16,8 @@ async function apiRequest<T>(
 		params?: Record<string, string>
 	},
 ): Promise<T> {
-	let urlPath = `${API_BASE}${path}`
+	const base = typeof window === 'undefined' ? SERVER_API_BASE : API_BASE
+	let urlPath = `${base}${path}`
 
 	if (options?.params) {
 		const sp = new URLSearchParams()

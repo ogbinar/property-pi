@@ -146,8 +146,8 @@ export default async function ExpensesPage({
               ? 'Start logging your property expenses.'
               : 'Try adjusting your filters.'
           }
-          actionLabel={expenses.length === 0 ? 'Add Expense' : undefined}
-          onAction={expenses.length === 0 ? () => {} : undefined}
+         actionLabel={expenses.length === 0 ? 'Add Expense' : undefined}
+           href={expenses.length === 0 ? '/expenses/new' : undefined}
         />
       )}
     </div>

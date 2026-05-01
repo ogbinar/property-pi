@@ -21,7 +21,7 @@ export default function NewExpensePage() {
         receipt_url: data.receiptUrl || undefined,
       })
       toast.success('Expense created successfully')
-      router.refresh()
+      router.push('/expenses')
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to create expense')
     }

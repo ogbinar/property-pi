@@ -81,8 +81,7 @@ export default function EditExpensePage({ params }: { params: Promise<{ id: stri
     try {
       await deleteExpenseAction(expense.id)
       toast.success('Expense deleted successfully')
-      router.push('/expenses')
-      router.refresh()
+     router.push('/expenses')
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to delete expense')
     }
@@ -117,6 +116,12 @@ export default function EditExpensePage({ params }: { params: Promise<{ id: stri
           onCancel={() => router.back()}
         />
       </Card>
+
+      <div className="flex justify-start">
+        <Button variant="danger" onClick={() => setDeleteModal(true)}>
+          Delete Expense
+        </Button>
+      </div>
 
       <Modal
         isOpen={deleteModal}

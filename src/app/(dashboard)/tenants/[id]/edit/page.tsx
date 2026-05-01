@@ -1,8 +1,8 @@
-import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Modal } from '@/components/ui/modal'
 import { TenantForm } from '@/components/tenants/tenant-form'
-import { updateTenantAction, deleteTenantFormAction, getTenantAction } from '@/app/actions/tenant-actions'
+import { updateTenantAction, getTenantAction } from '@/app/actions/tenant-actions'
+import { TenantDeleteClient } from './tenant-delete-client'
 
 interface Tenant {
   id: string
@@ -21,26 +21,32 @@ export default async function EditTenantPage({ params }: { params: Promise<{ id:
     const data = await getTenantAction(id)
     tenant = data as Tenant
   } catch {
-    redirect('/tenants')
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Tenant not found</h2>
+        <Link href="/tenants"><Button variant="outline" className="mt-4">Back to Tenants</Button></Link>
+      </div>
+    )
   }
 
   return (
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Edit Tenant
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Update tenant information.
-          </p>
+        <div className="flex items-center gap-4">
+          <Link href="/tenants"><Button variant="outline">← Back</Button></Link>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Edit Tenant
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Update tenant information.
+            </p>
+          </div>
         </div>
-        <form action={deleteTenantFormAction}>
-          <input type="hidden" name="id" value={tenant.id} />
-          <Button variant="danger" size="sm" type="submit">
-            Delete Tenant
-          </Button>
-        </form>
+        <TenantDeleteClient
+          id={tenant.id}
+          name={`${tenant.first_name} ${tenant.last_name}`}
+        />
       </div>
 
       <TenantForm
@@ -54,35 +60,12 @@ export default async function EditTenantPage({ params }: { params: Promise<{ id:
         }}
         onSubmit={async (data) => {
           await updateTenantAction(tenant.id, data)
-          redirect('/tenants')
+          window.location.href = '/tenants'
         }}
         submitLabel="Update Tenant"
         cancelLabel="Cancel"
-        onCancel={() => {}}
+        onCancel={() => window.location.href = '/tenants'}
       />
-
-      <Modal
-        isOpen={false}
-        title="Delete Tenant"
-        onClose={() => {}}
-        actions={
-          <>
-            <Button variant="outline" onClick={() => {}}>
-              Cancel
-            </Button>
-            <form action={deleteTenantFormAction}>
-              <input type="hidden" name="id" value={tenant.id} />
-              <Button variant="danger" type="submit">
-                Delete
-              </Button>
-            </form>
-          </>
-        }
-      >
-        <p className="text-gray-600 dark:text-gray-400">
-          Are you sure you want to delete {tenant.first_name} {tenant.last_name}? This action cannot be undone.
-        </p>
-      </Modal>
     </div>
   )
 }

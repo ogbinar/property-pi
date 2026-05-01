@@ -29,7 +29,6 @@ export default function NewMaintenancePage() {
       })
       toast.success('Maintenance request created successfully')
       router.push('/maintenance')
-      router.refresh()
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to create maintenance request')
     } finally {

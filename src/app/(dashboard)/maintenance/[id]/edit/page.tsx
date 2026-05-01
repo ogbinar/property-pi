@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { MaintenanceForm } from '@/components/maintenance/maintenance-form'
@@ -30,17 +30,18 @@ export default async function EditMaintenancePage({ params }: { params: Promise<
       cost: data.cost !== null ? String(data.cost) : '',
     }
   } catch {
-    redirect('/maintenance')
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Maintenance request not found</h2>
+        <Link href="/maintenance"><Button variant="outline" className="mt-4">Back to Maintenance</Button></Link>
+      </div>
+    )
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <form action={() => redirect('/maintenance')}>
-          <Button variant="outline" type="submit">
-            ← Back
-          </Button>
-        </form>
+        <Link href="/maintenance"><Button variant="outline">← Back</Button></Link>
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
           Edit Maintenance Request
         </h2>
@@ -57,11 +58,11 @@ export default async function EditMaintenancePage({ params }: { params: Promise<
               priority: data.priority === 'EMERGENCY' ? 'URGENT' : data.priority,
               cost: data.cost ? Number(data.cost) : undefined,
             })
-            redirect('/maintenance')
+            window.location.href = '/maintenance'
           }}
           isLoading={false}
           units={[]}
-          onCancel={() => {}}
+          onCancel={() => window.location.href = '/maintenance'}
         />
       </Card>
     </div>
