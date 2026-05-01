@@ -58,3 +58,4 @@ backend/tests_test.db
 # OS
 .DS_Store
 Thumbs.db
+backend/app/__pycache__/
