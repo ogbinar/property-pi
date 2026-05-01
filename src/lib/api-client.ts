@@ -18,7 +18,7 @@ async function resolveServerBase(): Promise<string> {
 	if (serverApiBase) {
 		try {
 			const headerStore = await serverApiBase()
-			const host = headerStore.get('host')
+			const host = headerStore.get('x-forwarded-host') || headerStore.get('host')
 			if (host) {
 				cachedServerBase = `http://${host}`
 				return cachedServerBase
