@@ -9,6 +9,7 @@ RUN npm run build
 FROM node:20-alpine
 WORKDIR /app
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package.json ./package.json
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 EXPOSE 5173
-CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "5173"]
+ENTRYPOINT ["/docker-entrypoint.sh"]
