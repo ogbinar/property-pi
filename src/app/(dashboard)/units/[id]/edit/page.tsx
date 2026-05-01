@@ -1,23 +1,23 @@
-import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { UnitForm, type UnitFormData } from '@/components/units/unit-form'
-import { Modal } from '@/components/ui/modal'
 import { updateUnitAction, deleteUnitAction } from '@/app/actions/unit-actions'
 import { apiRequest } from '@/lib/api-client'
 import type { UnitOut } from '@/lib/api-types'
+import { UnitDeleteClient } from '../unit-delete-client'
 
 interface UnitData {
-   id: string
-   unitNumber: string
-   type: string
-   status: string
-   rentAmount: string
-   securityDeposit: string
-   created_at: string
-   updatedAt: string
- }
+  id: string
+  unitNumber: string
+  type: string
+  status: string
+  rentAmount: string
+  securityDeposit: string
+  created_at: string
+  updatedAt: string
+}
 
 export default async function EditUnitPage({
   params,
@@ -37,13 +37,10 @@ export default async function EditUnitPage({
 
   return (
     <div className="max-w-2xl">
-      <button
-        onClick={() => redirect(`/units/${unit.id}`)}
-        className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 mb-6"
-      >
+      <Link href={`/units/${unit.id}`} className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 mb-6">
         <ArrowLeft className="w-4 h-4" />
         Back to Unit {unit.unitNumber}
-      </button>
+      </Link>
 
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
         Edit Unit {unit.unitNumber}
@@ -57,53 +54,20 @@ export default async function EditUnitPage({
             securityDeposit: unit.securityDeposit,
           }}
           submitLabel="Save Changes"
-          onSubmit={async (data: UnitFormData) => {
+          onSubmit={async (formData: UnitFormData) => {
             await updateUnitAction(unit.id, {
-              type: data.type,
-              rent_amount: Number(data.rentAmount),
-              security_deposit: Number(data.securityDeposit),
+              type: formData.type,
+              rent_amount: Number(formData.rentAmount),
+              security_deposit: Number(formData.securityDeposit),
             })
           }}
           isLoading={false}
           disabledUnitNumber={true}
-          onCancel={() => redirect(`/units/${unit.id}`)}
+          onCancel={() => { window.location.href = `/units/${unit.id}` }}
         />
       </div>
 
-      {/* Delete Section */}
-      <Card>
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Delete Unit
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              This action cannot be undone. The unit and all associated data will be permanently removed.
-            </p>
-          </div>
-          <Button variant="danger" onClick={() => deleteUnitAction(unit.id)} >
-            Delete Unit
-          </Button>
-        </div>
-      </Card>
-
-      {/* Delete Confirmation Modal */}
-      <Modal
-        isOpen={false}
-        onClose={() => {}}
-        title="Delete Unit"
-        description={`Are you sure you want to delete unit ${unit.unitNumber}? This action cannot be undone.`}
-        actions={
-          <>
-            <Button variant="secondary" onClick={() => {}}>
-              Cancel
-            </Button>
-            <Button variant="danger" isLoading={false} onClick={() => deleteUnitAction(unit.id)}>
-              Delete Unit
-            </Button>
-          </>
-        }
-      />
+      <UnitDeleteClient unitId={unit.id} unitNumber={unit.unitNumber} />
     </div>
   )
 }

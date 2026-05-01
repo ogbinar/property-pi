@@ -1,8 +1,8 @@
-import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createUnitAction } from '@/app/actions/unit-actions'
 import { UnitForm, type UnitFormData } from '@/components/units/unit-form'
 
-export default async function NewUnitPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+export default async function NewUnitPage() {
   async function handleSubmit(data: UnitFormData) {
     'use server'
     await createUnitAction({
@@ -16,12 +16,9 @@ export default async function NewUnitPage({ searchParams }: { searchParams: Prom
   return (
     <div className="max-w-2xl">
       <div className="mb-6">
-        <button
-          onClick={() => redirect('/units')}
-          className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 mb-2"
-        >
+        <Link href="/units" className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 mb-2 inline-block">
           ← Back to Units
-        </button>
+        </Link>
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
           Add New Unit
         </h2>
@@ -35,7 +32,7 @@ export default async function NewUnitPage({ searchParams }: { searchParams: Prom
           submitLabel="Create Unit"
           onSubmit={handleSubmit}
           isLoading={false}
-          onCancel={() => redirect('/units')}
+          onCancel={() => { window.location.href = '/units' }}
         />
       </div>
     </div>
