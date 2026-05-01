@@ -1,5 +1,4 @@
 import { cookies } from 'next/headers'
-import { notFound } from 'next/navigation'
 import DashboardPage from './(dashboard)/page'
 import LoginRedirectClient from './login-redirect-client'
 
