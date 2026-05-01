@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api'
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || ''
 
 function getCookie(name: string): string | null {
 	if (typeof document === 'undefined') return null

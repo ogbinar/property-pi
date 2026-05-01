@@ -7,7 +7,7 @@ RUN npm ci
 # Stage 2: Build
 FROM node:20-alpine AS builder
 WORKDIR /app
-ENV NEXT_PUBLIC_API_URL=/api
+ENV NEXT_PUBLIC_API_URL=
 COPY package.json package-lock.json* ./
 RUN npm ci
 COPY . .
