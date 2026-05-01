@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
+import { cookies } from 'next/headers'
 import { Button } from '@/components/ui/button'
 import { TenantTable } from '@/components/tenants/tenant-table'
 import { TenantSearch } from '@/components/tenants/tenant-search'
@@ -8,7 +9,9 @@ import type { TenantOut } from '@/lib/api-types'
 
 export default async function TenantsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const params = await searchParams
-  const tenants = await apiRequest<TenantOut[]>('/api/tenants')
+  const cookieStore = await cookies()
+  const token = cookieStore.get('session')?.value ?? null
+  const tenants = await apiRequest<TenantOut[]>('/api/tenants', { token })
   const query = params.q
   const filteredTenants = query
     ? tenants.filter(

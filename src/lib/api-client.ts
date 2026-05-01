@@ -66,9 +66,14 @@ async function apiRequest<T>(
 		credentials: 'include',
 	})
 
-	if (!res.ok) {
+ if (!res.ok) {
 		const data = await res.json().catch(() => ({}))
-		throw new Error(data.detail || `API error: ${res.status}`)
+		const detail = data.detail || `API error: ${res.status}`
+		const cookieNames = typeof document !== 'undefined' ? document.cookie.split(';').map(c => c.trim().split('=')[0]) : []
+		if (res.status === 401) {
+			console.warn('Auth error - cookies:', cookieNames, 'token present:', Boolean(token))
+		}
+		throw new Error(detail)
 	}
 
 	if (res.status === 204) {

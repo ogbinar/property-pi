@@ -1,4 +1,5 @@
 import { notFound, redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
 import {
   ArrowLeft,
   Edit,
@@ -83,11 +84,13 @@ export default async function UnitDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const unitData = await apiRequest<UnitOut>(`/api/units/${id}`)
+  const cookieStore = await cookies()
+  const token = cookieStore.get('session')?.value ?? null
+  const unitData = await apiRequest<UnitOut>(`/api/units/${id}`, { token })
 
   const [maintenance, expenses] = await Promise.all([
-    apiRequest<MaintenanceRequestOut[]>('/api/maintenance'),
-    apiRequest<ExpenseOut[]>('/api/expenses'),
+    apiRequest<MaintenanceRequestOut[]>('/api/maintenance', { token }),
+    apiRequest<ExpenseOut[]>('/api/expenses', { token }),
   ])
 
   const filteredMaint = maintenance.filter((m) => m.unit_id === id)

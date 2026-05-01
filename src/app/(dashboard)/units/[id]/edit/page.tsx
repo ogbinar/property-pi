@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { cookies } from 'next/headers'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -25,7 +26,9 @@ export default async function EditUnitPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const data = await apiRequest<UnitOut>(`/api/units/${id}`)
+  const cookieStore = await cookies()
+  const token = cookieStore.get('session')?.value ?? null
+  const data = await apiRequest<UnitOut>(`/api/units/${id}`, { token })
 
   const unit = {
     ...data,

@@ -16,8 +16,8 @@ const statusOptions = [
   { value: 'under_renovation', label: 'Under Renovation' },
 ]
 
-async function UnitsList({ search }: { search: string }) {
-  const units = await apiRequest<UnitOut[]>('/api/units')
+async function UnitsList({ search, token }: { search: string; token: string | null }) {
+  const units = await apiRequest<UnitOut[]>('/api/units', { token })
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -32,6 +32,8 @@ export default async function UnitsPage({ searchParams }: { searchParams: Promis
   const params = await searchParams
   const search = params.q || ''
   const statusFilter = params.status || ''
+  const cookieStore = await (await import('next/headers')).cookies()
+  const token = cookieStore.get('session')?.value ?? null
 
   return (
     <div className="space-y-6">
@@ -74,7 +76,7 @@ export default async function UnitsPage({ searchParams }: { searchParams: Promis
       </div>
 
       <Suspense fallback={<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">{Array.from({ length: 3 }).map((_, i) => (<div key={i} className="h-48 bg-gray-200 dark:bg-gray-700 rounded-xl animate-pulse" />))}</div>}>
-        <UnitsList search={search} />
+        <UnitsList search={search} token={token} />
       </Suspense>
 
       {(!search && !statusFilter) ? null : (

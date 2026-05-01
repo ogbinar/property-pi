@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { ArrowLeft, Pencil, FileText, Building2, Mail, Phone } from 'lucide-react'
+import { cookies } from 'next/headers'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
@@ -9,8 +10,10 @@ import type { TenantOut, LeaseOut, PaymentOut, MaintenanceRequestOut } from '@/l
 
 export default async function TenantDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const tenant = await apiRequest<TenantOut>(`/api/tenants/${id}`)
-  const allLeases = await apiRequest<LeaseOut[]>('/api/leases')
+  const cookieStore = await cookies()
+  const token = cookieStore.get('session')?.value ?? null
+  const tenant = await apiRequest<TenantOut>(`/api/tenants/${id}`, { token })
+  const allLeases = await apiRequest<LeaseOut[]>('/api/leases', { token })
   const activeLeaseRaw = allLeases.find((l) => l.tenant_id === id && l.status === 'ACTIVE')
   const activeLease = activeLeaseRaw
     ? {
@@ -19,14 +22,14 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
         monthlyRent: activeLeaseRaw.monthly_rent,
       }
     : null
-  const allPayments = await apiRequest<PaymentOut[]>('/api/payments')
+  const allPayments = await apiRequest<PaymentOut[]>('/api/payments', { token })
   const payments = allPayments
     .filter((p) => p.lease_id === activeLeaseRaw?.id)
     .map((p) => ({
       ...p,
       paymentMethod: p.payment_method,
     }))
-  const allMaintenance = await apiRequest<MaintenanceRequestOut[]>('/api/maintenance')
+  const allMaintenance = await apiRequest<MaintenanceRequestOut[]>('/api/maintenance', { token })
   const maintenanceRequests = allMaintenance
     .filter((m) => m.tenant_id === id)
     .map((m) => ({

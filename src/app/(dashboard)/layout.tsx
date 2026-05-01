@@ -34,7 +34,14 @@ interface DashboardLayoutProps {
 
 export default async function DashboardLayout({ children }: DashboardLayoutProps) {
   const session = await getSession()
-  if (!session) return <LoginRedirectClient />
+  if (!session) {
+    if (typeof window !== 'undefined') {
+      document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+      window.location.href = '/login'
+    } else {
+      return <LoginRedirectClient />
+    }
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
