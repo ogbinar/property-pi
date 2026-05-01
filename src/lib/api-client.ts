@@ -1,10 +1,32 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || ''
-const SERVER_API_BASE = process.env.API_URL || 'http://backend:8000'
 
 function getCookie(name: string): string | null {
 	if (typeof document === 'undefined') return null
 	const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'))
 	return match ? decodeURIComponent(match[2]) : null
+}
+
+let cachedServerBase: string | null = null
+
+async function resolveServerBase(): Promise<string> {
+	if (cachedServerBase) return cachedServerBase
+	if (process.env.API_URL) {
+		cachedServerBase = process.env.API_URL
+		return cachedServerBase
+	}
+	const serverApiBase = await import('next/headers').then(m => m.headers).catch(() => null)
+	if (serverApiBase) {
+		try {
+			const headerStore = await serverApiBase()
+			const host = headerStore.get('host')
+			if (host) {
+				cachedServerBase = `http://${host}`
+				return cachedServerBase
+			}
+		} catch { /* ignore */ }
+	}
+	cachedServerBase = 'http://localhost:3000'
+	return cachedServerBase
 }
 
 async function apiRequest<T>(
@@ -16,7 +38,7 @@ async function apiRequest<T>(
 		params?: Record<string, string>
 	},
 ): Promise<T> {
-	const base = typeof window === 'undefined' ? SERVER_API_BASE : API_BASE
+	const base = typeof window === 'undefined' ? await resolveServerBase() : API_BASE
 	let urlPath = `${base}${path}`
 
 	if (options?.params) {

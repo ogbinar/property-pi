@@ -1,16 +1,23 @@
-export const dynamic = 'force-dynamic'
-
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { Sidebar } from '@/components/layout/sidebar'
 import { Header, SessionUser } from '@/components/layout/header'
 import LoginRedirectClient from '../login-redirect-client'
+
+async function getBackendUrl(): Promise<string> {
+  if (process.env.API_URL) return process.env.API_URL
+  const headerStore = await headers()
+  const host = headerStore.get('host')
+  if (host) return `http://${host}`
+  return 'http://localhost:3000'
+}
 
 async function getSession(): Promise<SessionUser | null> {
   const cookieStore = await cookies()
   const token = cookieStore.get('session')?.value
   if (!token) return null
   try {
-    const res = await fetch(`${process.env.API_URL || 'http://backend:8000'}/api/auth/me`, {
+    const baseUrl = await getBackendUrl()
+    const res = await fetch(`${baseUrl}/api/auth/me`, {
       headers: { Authorization: `Bearer ${token}` },
     })
     if (!res.ok) return null
