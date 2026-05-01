@@ -44,7 +44,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Database migrations are managed by Alembic, not create_all
+# Initialize database tables on startup
+from app.db_init import init_db
+init_db()
 
 # Serve uploaded files statically
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "uploads")
