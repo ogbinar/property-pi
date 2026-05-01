@@ -44,9 +44,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize database tables on startup
+# Initialize database and seed default admin user
 from app.db_init import init_db
+from app.database import SessionLocal
+from app import models, auth as auth_module
 init_db()
+with SessionLocal() as db:
+    existing = db.query(models.User).filter(models.User.email == "admin@propertypi.com").first()
+    if not existing:
+        admin = models.User(
+            name="Admin",
+            email="admin@propertypi.com",
+            password_hash=auth_module.hash_password("admin123"),
+            role="landlord",
+        )
+        db.add(admin)
+        db.commit()
 
 # Serve uploaded files statically
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "uploads")
