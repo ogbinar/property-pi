@@ -39,3 +39,12 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     if user_id is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload")
     return {"id": user_id, "email": payload.get("email", ""), "name": payload.get("name", "")}
+
+
+def get_current_user_from_token(token: str) -> dict:
+    payload = decode_access_token(token)
+    user_id = payload.get("sub")
+    if user_id is None:
+        from fastapi import HTTPException, status
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload")
+    return {"id": user_id, "email": payload.get("email", ""), "name": payload.get("name", "")}

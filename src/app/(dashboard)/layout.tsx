@@ -5,6 +5,15 @@ import LoginRedirectClient from '../login-redirect-client'
 
 async function getBackendUrl(): Promise<string> {
   if (process.env.API_URL) return process.env.API_URL
+  try {
+    const headerStore = await headers()
+    const host = headerStore.get('host')
+    if (host) {
+      const hostname = host.split(':')[0]
+      const proto = headerStore.get('x-forwarded-proto') || 'http'
+      return `${proto}://${hostname}`
+    }
+  } catch { /* ignore */ }
   return 'http://backend:8000'
 }
 
@@ -14,8 +23,11 @@ async function getSession(): Promise<SessionUser | null> {
   if (!token) return null
   try {
     const baseUrl = await getBackendUrl()
-    const res = await fetch(`${baseUrl}/api/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` },
+    const res = await fetch(`${baseUrl}/api/auth/me?token=${encodeURIComponent(token)}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'X-Forwarded-Host': baseUrl,
+      },
     })
     if (!res.ok) return null
     const user = await res.json()

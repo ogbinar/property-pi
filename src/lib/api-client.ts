@@ -37,6 +37,9 @@ async function apiRequest<T>(
 ): Promise<T> {
 	const base = typeof window === 'undefined' ? await resolveServerBase() : API_BASE
 	let urlPath = `${base}${path}`
+	if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
+		console.log('[apiRequest] base:', base, 'path:', path, 'url:', urlPath)
+	}
 
 	if (options?.params) {
 		const sp = new URLSearchParams()
@@ -54,6 +57,11 @@ async function apiRequest<T>(
 	const token = options?.token || getCookie('session')
 	if (token) {
 		headers['Authorization'] = `Bearer ${token}`
+	}
+
+	if (typeof window === 'undefined' && token) {
+		const separator = urlPath.includes('?') ? '&' : '?'
+		urlPath = `${urlPath}${separator}token=${encodeURIComponent(token)}`
 	}
 
 	const res = await fetch(urlPath, {

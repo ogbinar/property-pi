@@ -39,7 +39,15 @@ async def login(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
 
 
 @router.get("/me", response_model=schemas.UserOut)
-async def get_me(current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+async def get_me(
+    token: str | None = None,
+    db: Session = Depends(get_db),
+):
+    if token:
+        current_user = auth.get_current_user_from_token(token)
+    else:
+        from app.auth import get_current_user as auth_get_current_user
+        current_user = auth_get_current_user()
     user = db.query(models.User).filter(models.User.id == current_user["id"]).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
