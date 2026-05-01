@@ -15,14 +15,15 @@ async function apiRequest<T>(
 		params?: Record<string, string>
 	},
 ): Promise<T> {
-	const url = new URL(`${API_BASE}${path}`)
+	let urlPath = `${API_BASE}${path}`
 
 	if (options?.params) {
+		const sp = new URLSearchParams()
 		for (const [key, value] of Object.entries(options.params)) {
-			if (value !== undefined && value !== null) {
-				url.searchParams.append(key, String(value))
-			}
+			if (value !== undefined && value !== null) sp.append(key, String(value))
 		}
+		const qs = sp.toString()
+		if (qs) urlPath += '?' + qs
 	}
 
 	const headers: Record<string, string> = {
@@ -34,7 +35,7 @@ async function apiRequest<T>(
 		headers['Authorization'] = `Bearer ${token}`
 	}
 
-	const res = await fetch(url.toString(), {
+	const res = await fetch(urlPath, {
 		method: options?.method || 'GET',
 		headers,
 		body: options?.body ? JSON.stringify(options.body) : undefined,
