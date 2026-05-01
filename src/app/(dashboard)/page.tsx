@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { cookies } from 'next/headers'
 import { UnitStatusGrid } from '@/components/dashboard/unit-status-grid'
 import { RevenueCard } from '@/components/dashboard/revenue-card'
 import { OccupancyCard } from '@/components/dashboard/occupancy-card'
@@ -9,7 +10,9 @@ import { apiRequest } from '@/lib/api-client'
 import type { DashboardData } from '@/lib/api-types'
 
 export default async function DashboardPage() {
-  const data = await apiRequest<DashboardData>('/api/dashboard')
+  const cookieStore = await cookies()
+  const token = cookieStore.get('session')?.value
+  const data = await apiRequest<DashboardData>('/api/dashboard', { token })
 
   const now = new Date()
   const greeting =
