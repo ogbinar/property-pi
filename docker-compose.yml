@@ -1,34 +1,56 @@
 # Property-Pi — 2-service Docker Compose
 # Frontend: Next.js (port 3000)
 # Backend: FastAPI + SQLite (port 8000)
+# Routing via Traefik on dokploy-network
 
 services:
   frontend:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "3001:3000"
     environment:
-      NEXT_PUBLIC_API_URL: http://backend:8000
+      NEXT_PUBLIC_API_URL: https://property-pi.apps.ogbinar.com
     depends_on:
       - backend
     restart: unless-stopped
+    networks:
+      - dokploy-network
+      - default
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      - traefik.http.routers.property-pi.rule=Host(`property-pi.apps.ogbinar.com`) && !PathPrefix(`/api`)
+      - traefik.http.routers.property-pi.entrypoints=websecure
+      - traefik.http.routers.property-pi.tls=true
+      - traefik.http.services.property-pi.loadbalancer.server.port=3000
 
   backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    ports:
-      - "8000:8000"
     environment:
       DATABASE_URL: sqlite:////data/property_pi.db
       SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
       ACCESS_TOKEN_EXPIRE_MINUTES: 120
-      ALLOWED_ORIGINS: http://localhost:3000,http://frontend:3000
+      ALLOWED_ORIGINS: https://property-pi.apps.ogbinar.com
     volumes:
       - backend_db_data:/data
     restart: unless-stopped
+    networks:
+      - dokploy-network
+      - default
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      - traefik.http.routers.property-pi-api.rule=Host(`property-pi.apps.ogbinar.com`) && PathPrefix(`/api`)
+      - traefik.http.routers.property-pi-api.entrypoints=websecure
+      - traefik.http.routers.property-pi-api.tls=true
+      - traefik.http.services.property-pi-api.loadbalancer.server.port=8000
 
 volumes:
   backend_db_data:
+
+networks:
+  dokploy-network:
+    external: true
+  default:
