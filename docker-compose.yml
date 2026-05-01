@@ -8,8 +8,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_API_URL: http://property-pi.apps.ogbinar.com
     depends_on:
       - backend
     restart: unless-stopped
