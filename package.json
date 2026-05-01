@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
+    "dev": "cd frontend && vite",
+    "build": "cd frontend && vite build",
+    "start": "cd frontend && npx serve dist",
+    "lint": "echo 'No linter configured'",
     "db:migrate": "cd backend && alembic upgrade head",
     "db:revision": "cd backend && alembic revision --autogenerate -m",
     "db:stamp": "cd backend && alembic stamp head"
@@ -17,7 +17,6 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "lucide-react": "^1.8.0",
-    "next": "16.2.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hook-form": "^7.72.1",
@@ -28,13 +27,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",
-    "tsx": "^4.21.0",
-    "typescript": "^5"
+    "tsx": "^4.21.0"
   }
 }

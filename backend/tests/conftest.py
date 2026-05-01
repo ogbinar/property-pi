@@ -27,15 +27,16 @@ def setup_tables():
 
 @pytest.fixture
 def db_session():
-    def override_get_db():
-        db = TestingSessionLocal()
-        try:
+    """Yields a test DB session and overrides get_db for the HTTP client."""
+    db = TestingSessionLocal()
+    try:
+        def override_get_db():
             yield db
-        finally:
-            db.close()
-    app.dependency_overrides[get_db] = override_get_db
-    yield
-    app.dependency_overrides.pop(get_db, None)
+        app.dependency_overrides[get_db] = override_get_db
+        yield db
+    finally:
+        db.close()
+        app.dependency_overrides.pop(get_db, None)
 
 
 @pytest.fixture

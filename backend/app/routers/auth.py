@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -42,12 +42,16 @@ async def login(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
 async def get_me(
     token: str | None = None,
     db: Session = Depends(get_db),
+    request: Request = None,
 ):
     if token:
         current_user = auth.get_current_user_from_token(token)
     else:
-        from app.auth import get_current_user as auth_get_current_user
-        current_user = auth_get_current_user()
+        auth_header = request.headers.get("authorization", "")
+        if auth_header.startswith("Bearer "):
+            current_user = auth.get_current_user_from_token(auth_header[7:])
+        else:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
     user = db.query(models.User).filter(models.User.id == current_user["id"]).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
