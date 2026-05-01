@@ -14,18 +14,7 @@ async function resolveServerBase(): Promise<string> {
 		cachedServerBase = process.env.API_URL
 		return cachedServerBase
 	}
-	const serverApiBase = await import('next/headers').then(m => m.headers).catch(() => null)
-	if (serverApiBase) {
-		try {
-			const headerStore = await serverApiBase()
-			const host = headerStore.get('x-forwarded-host') || headerStore.get('host')
-			if (host) {
-				cachedServerBase = `http://${host}`
-				return cachedServerBase
-			}
-		} catch { /* ignore */ }
-	}
-	cachedServerBase = 'http://localhost:3000'
+	cachedServerBase = 'http://backend:8000'
 	return cachedServerBase
 }
 

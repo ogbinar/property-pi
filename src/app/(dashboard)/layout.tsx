@@ -5,10 +5,7 @@ import LoginRedirectClient from '../login-redirect-client'
 
 async function getBackendUrl(): Promise<string> {
   if (process.env.API_URL) return process.env.API_URL
-  const headerStore = await headers()
-  const host = headerStore.get('x-forwarded-host') || headerStore.get('host')
-  if (host) return `http://${host}`
-  return 'http://localhost:3000'
+  return 'http://backend:8000'
 }
 
 async function getSession(): Promise<SessionUser | null> {
