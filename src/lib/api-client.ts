@@ -10,11 +10,19 @@ let cachedServerBase: string | null = null
 
 async function resolveServerBase(): Promise<string> {
 	if (cachedServerBase) return cachedServerBase
-	if (process.env.API_URL) {
-		cachedServerBase = process.env.API_URL
-		return cachedServerBase
+	const serverApiBase = await import('next/headers').then(m => m.headers).catch(() => null)
+	if (serverApiBase) {
+		try {
+			const headerStore = await serverApiBase()
+			const host = headerStore.get('host')
+			if (host) {
+				const hostname = host.split(':')[0]
+				cachedServerBase = `http://${hostname}:8000`
+				return cachedServerBase
+			}
+		} catch { /* ignore */ }
 	}
-	cachedServerBase = 'http://backend:8000'
+	cachedServerBase = 'http://localhost:3000'
 	return cachedServerBase
 }
 
