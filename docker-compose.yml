@@ -9,7 +9,7 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      NEXT_PUBLIC_API_URL: https://property-pi.apps.ogbinar.com
+      NEXT_PUBLIC_API_URL: http://property-pi.apps.ogbinar.com
     depends_on:
       - backend
     restart: unless-stopped
@@ -21,6 +21,7 @@ services:
       - traefik.docker.network=dokploy-network
       - traefik.http.routers.property-pi.rule=Host(`property-pi.apps.ogbinar.com`) && !PathPrefix(`/api`)
       - traefik.http.routers.property-pi.entrypoints=web
+      - traefik.http.routers.property-pi.service=property-pi
       - traefik.http.services.property-pi.loadbalancer.server.port=3000
 
   backend:
@@ -31,7 +32,7 @@ services:
       DATABASE_URL: sqlite:////data/property_pi.db
       SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
       ACCESS_TOKEN_EXPIRE_MINUTES: 120
-      ALLOWED_ORIGINS: https://property-pi.apps.ogbinar.com
+      ALLOWED_ORIGINS: http://property-pi.apps.ogbinar.com
     volumes:
       - backend_db_data:/data
     restart: unless-stopped
@@ -43,6 +44,7 @@ services:
       - traefik.docker.network=dokploy-network
       - traefik.http.routers.property-pi-api.rule=Host(`property-pi.apps.ogbinar.com`) && PathPrefix(`/api`)
       - traefik.http.routers.property-pi-api.entrypoints=web
+      - traefik.http.routers.property-pi-api.service=property-pi-api
       - traefik.http.services.property-pi-api.loadbalancer.server.port=8000
 
 volumes:
