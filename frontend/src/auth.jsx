@@ -10,7 +10,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (token) {
-      apiRequest('/api/auth/me')
+      apiRequest('/auth/me')
         .then(setUser)
         .catch(() => {
           localStorage.removeItem('token')

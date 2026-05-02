@@ -35,33 +35,35 @@ Small-scale landlords or property managers who own/manage a small number of resi
 ## 4. Technical Stack (Actual)
 
 ### Frontend
-- **Framework:** Next.js 14+ (App Router) with TypeScript
-- **UI:** React 19, Tailwind CSS 4, shadcn/ui components
-- **Auth:** Client-side `'use client'` Server Actions for login/register (JWT cookie persistence), `'use server'` Server Actions for authenticated API calls via `getServerToken()` (reads `session` cookie)
-- **Routing:** Route groups `(dashboard)` for landlord pages, `tenant/` for tenant portal, `/login` for auth
-- **Pages:** 26 routes total (5 static, 21 dynamic) — dashboard, units CRUD, tenants CRUD, leases CRUD, payments (rent), expenses CRUD, maintenance CRUD, tenant portal
+- **Framework:** React 19 + Vite (JavaScript/JSX, not TypeScript)
+- **UI:** Tailwind CSS (no shadcn/ui — custom components), Lucide React icons
+- **Routing:** React Router v7 (`react-router-dom`) with `BrowserRouter`, `ProtectedRoute`/`PublicRoute` wrappers
+- **Auth:** Client-side JWT stored in `localStorage` via `AuthContext` provider; `apiRequest()` helper injects Bearer token on each request
+- **Build:** Vite with `vite.config.js`; served on port 5173 (dev)
+- **Pages:** ~20 routes — dashboard, units CRUD, tenants CRUD, leases CRUD, payments (rent), expenses CRUD, maintenance CRUD, notices, settings, login/register
 
 ### Backend
 - **Framework:** Python 3.10+ FastAPI
 - **Database:** SQLite (single file `property_pi.db`)
 - **ORM:** SQLAlchemy (declarative models, `Base.metadata.create_all()` on startup — no migrations)
-- **Auth:** Custom JWT (HS256) with bcrypt password hashing, cookie-based session (`session` cookie, 2-hour expiry)
+- **Auth:** Custom JWT (HS256) with bcrypt password hashing, Bearer token in `Authorization` header (not cookie-based)
 - **API:** RESTful endpoints at `/api/*` with manual dict serializers (`_to_out` functions)
-- **File Uploads:** `POST /api/upload` (10MB limit, allowed extensions: pdf, jpg, jpeg, png, gif, webp, doc, docx), files served at `/uploads/{filename}`
-- **Rate Limiting:** slowapi (IP-based)
+- **File Uploads:** `POST /api/upload/` (10MB limit, allowed extensions: pdf, jpg, jpeg, png, gif, webp, doc, docx), files served at `/uploads/{filename}`
+- **Rate Limiting:** slowapi (IP-based, applied globally except auth endpoints)
 - **CORS:** Configurable via `ALLOWED_ORIGINS` env var (comma-separated)
+- **Testing:** pytest + httpx async client; 69 tests (33 original + 36 security/edge-case tests)
 
 ### Environment Variables
 ```env
 # Backend (FastAPI)
 DATABASE_URL=sqlite:///./property_pi.db        # or db_url env var
-SECRET_KEY=your-jwt-secret-here               # or jwt_secret env var
+SECRET_KEY=property-pi-jwt-secret-change-in-production   # or jwt_secret env var (WARNING: default secret!)
 ACCESS_TOKEN_EXPIRE_MINUTES=120               # or access_token_expire_minutes
-ALLOWED_ORIGINS=http://localhost:3000         # or allowed_origins (comma-separated)
+ALLOWED_ORIGINS=http://localhost:5173         # or allowed_origins (comma-separated)
 FASTAPI_PORT=8000                             # or fastapi_port
 
-# Frontend (Next.js)
-NEXT_PUBLIC_API_URL=http://localhost:8000     # Backend API base URL
+# Frontend (Vite)
+VITE_API_URL=http://localhost:8000            # Backend API base URL
 ```
 
 ## 5. Database Schema
@@ -183,7 +185,40 @@ NEXT_PUBLIC_API_URL=http://localhost:8000     # Backend API base URL
 |--------|------|-------------|
 | GET | `/api/health` | Health check |
 
-## 7. Success Metrics
+## 7. Known Issues (from code review — see REVIEW.md)
+
+### Critical
+- **SEC-001** Default JWT secret in production (`property-pi-jwt-secret-change-in-production`)
+- **SEC-002** Debug endpoint `/api/debug/headers` exposed in production
+- **SEC-003** Tenant portal tokens are static (don't expire, never rotate)
+
+### High
+- **PERF-001** No rate limiting on auth endpoints (brute-force vulnerability)
+- **COR-001** Frontend calls auth endpoints with inconsistent paths (`/auth/login` vs `/api/auth/login`)
+- **COR-002** `datetime.utcnow()` deprecated — should use `datetime.now(timezone.utc)`
+- **COR-003** Database timestamps stored as strings instead of DateTime
+- **COR-004** No input validation on tenant portal `data: dict` (should use Pydantic schema)
+
+### Medium
+- **COR-005** Date filtering in payments/dashboard uses string comparison (not date-aware)
+- **COR-006** `window.location.href` used for navigation instead of React Router
+- **COR-007** No pagination — all endpoints return full result sets
+- **COR-008** No file cleanup on upload (files accumulate indefinitely)
+- **COR-009** No email uniqueness check on tenant creation
+- **COR-010** `Notice.message` column too narrow (255 chars)
+
+### Low
+- **COR-011** No SQLAlchemy relationships defined (all queries are manual joins)
+- **COR-012** No input validation on lease generate-link (can overwrite existing token)
+- **COR-013** No email uniqueness enforcement on user registration
+- **COR-014** No backend validation on maintenance priority values
+
+## 8. Test Coverage
+- **Total tests:** 69 (33 original + 36 security/edge-case tests)
+- **Files:** `backend/tests/test_api.py` (original), `backend/tests/test_security.py` (security + edge cases)
+- **Coverage areas:** Auth, units CRUD, tenants CRUD, leases CRUD, payments, expenses, maintenance, dashboard, upload, error handling, tenant portal security, rate limiting, date handling, input validation
+
+## 9. Success Metrics
 - Ability to see the status of all units in under 5 seconds
 - Zero confusion on which tenant owes rent for the current month
 - Clear visibility into monthly net profit

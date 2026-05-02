@@ -49,17 +49,23 @@ from app.db_init import init_db
 from app.database import SessionLocal
 from app import models, auth as auth_module
 init_db()
-with SessionLocal() as db:
-    existing = db.query(models.User).filter(models.User.email == "admin@propertypi.com").first()
-    if not existing:
-        admin = models.User(
-            name="Admin",
-            email="admin@propertypi.com",
-            password_hash=auth_module.hash_password("admin123"),
-            role="landlord",
-        )
-        db.add(admin)
-        db.commit()
+
+# Create default admin only if explicitly enabled (development mode)
+CREATE_DEFAULT_ADMIN = os.environ.get("CREATE_DEFAULT_ADMIN", "false").lower() == "true"
+if CREATE_DEFAULT_ADMIN:
+    with SessionLocal() as db:
+        existing = db.query(models.User).filter(models.User.email == "admin@propertypi.com").first()
+        if not existing:
+            admin_password = os.environ.get("DEFAULT_ADMIN_PASSWORD", "admin123")
+            admin = models.User(
+                name="Admin",
+                email="admin@propertypi.com",
+                password_hash=auth_module.hash_password(admin_password),
+                role="landlord",
+            )
+            db.add(admin)
+            db.commit()
+            print(f"⚠️  Default admin created with password: {admin_password}")
 
 # Serve uploaded files statically
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "uploads")

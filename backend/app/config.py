@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List
 
 from pydantic import Field, model_validator
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
@@ -38,7 +38,19 @@ class Settings(BaseSettings):
     fastapi_port: int = 8000
     allowed_origins: str = Field(default="http://localhost:3000,http://localhost:5173", alias="ALLOWED_ORIGINS")
 
-    model_config = {"env_file": ".env", "extra": "ignore", "populate_by_name": True}
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        extra="ignore",
+        populate_by_name=True,
+    )
+
+    @property
+    def environment(self) -> str:
+        return os.environ.get("ENVIRONMENT", "development")
+
+    @property
+    def is_production(self) -> bool:
+        return self.environment == "production"
 
     @property
     def origins_list(self) -> List[str]:
@@ -46,11 +58,21 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def check_jwt_secret(self):
-        """Warn if JWT secret is still the default (not overridden by env)."""
-        jwt_secret_env = os.environ.get("JWT_SECRET") or os.environ.get("SECRET_KEY")
-        if jwt_secret_env is None and self.jwt_secret == _DEFAULT_JWT_SECRET:
+        """Validate JWT secret - error in production, warning in dev."""
+        jwt_secret_env = os.environ.get("SECRET_KEY")
+        is_default = jwt_secret_env is None and self.jwt_secret == _DEFAULT_JWT_SECRET
+        env = os.environ.get("ENVIRONMENT", "development")
+        
+        if env == "production":
+            if is_default:
+                raise RuntimeError(
+                    "Production requires non-default JWT secret. "
+                    "Set SECRET_KEY environment variable. "
+                    "Generate with: openssl rand -base64 32"
+                )
+        elif is_default:
             warnings.warn(
-                "Using default JWT secret. Set JWT_SECRET or SECRET_KEY env var for production security.",
+                "Using default JWT secret. Set SECRET_KEY for production security.",
                 RuntimeWarning,
                 stacklevel=2,
             )

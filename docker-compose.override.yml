@@ -1,0 +1,41 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: /api
+    working_dir: /app
+    command: sh -c "npm run build && npm run preview -- --host 0.0.0.0 --port 5173"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/index.html:/app/index.html
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000/api
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    working_dir: /app
+    command: uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      DATABASE_URL: sqlite:////app/property_pi.db
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-key}
+      ACCESS_TOKEN_EXPIRE_MINUTES: 120
+      ALLOWED_ORIGINS: http://localhost:5173,http://localhost:8000
+      ENVIRONMENT: development
+      CREATE_DEFAULT_ADMIN: true
+    volumes:
+      - ./backend:/app
+      - ./uploads:/app/uploads
+      - backend_db_data:/app
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+volumes:
+  backend_db_data:

@@ -15,7 +15,7 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const res = await apiRequest('/api/auth/login', {
+      const res = await apiRequest('/auth/login', {
         method: 'POST',
         body: { email, password },
       })
