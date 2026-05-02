@@ -13,14 +13,14 @@ class TestHealth:
 
 class TestAuth:
     async def test_register_and_login(self, client: httpx.AsyncClient):
-        resp = await client.post("/api/auth/register", json={
+        resp = await client.post("/auth/register", json={
             "email": "new@example.com",
             "password": "secret123",
             "name": "New User",
         })
         assert resp.status_code == 201
 
-        resp = await client.post("/api/auth/login", json={
+        resp = await client.post("/auth/login", json={
             "email": "new@example.com",
             "password": "secret123",
         })
@@ -30,12 +30,12 @@ class TestAuth:
         assert data["token_type"] == "bearer"
 
     async def test_login_wrong_password(self, client: httpx.AsyncClient):
-        await client.post("/api/auth/register", json={
+        await client.post("/auth/register", json={
             "email": "wrong@example.com",
             "password": "correct",
             "name": "Wrong",
         })
-        resp = await client.post("/api/auth/login", json={
+        resp = await client.post("/auth/login", json={
             "email": "wrong@example.com",
             "password": "wrong",
         })

@@ -13,12 +13,12 @@ class TestAuthSecurity:
 
     async def test_login_returns_access_token(self, client: httpx.AsyncClient):
         """Verify login returns proper JWT structure."""
-        await client.post("/api/auth/register", json={
+        await client.post("/auth/register", json={
             "email": "sec-test@example.com",
             "password": "SecurePass123!",
             "name": "Security Test",
         })
-        resp = await client.post("/api/auth/login", json={
+        resp = await client.post("/auth/login", json={
             "email": "sec-test@example.com",
             "password": "SecurePass123!",
         })
@@ -30,7 +30,7 @@ class TestAuthSecurity:
 
     async def test_login_nonexistent_user(self, client: httpx.AsyncClient):
         """Login with nonexistent user should return 401, not 500."""
-        resp = await client.post("/api/auth/login", json={
+        resp = await client.post("/auth/login", json={
             "email": "doesnotexist@example.com",
             "password": "password123",
         })
@@ -38,7 +38,7 @@ class TestAuthSecurity:
 
     async def test_login_empty_password(self, client: httpx.AsyncClient):
         """Login with empty password should fail gracefully."""
-        resp = await client.post("/api/auth/login", json={
+        resp = await client.post("/auth/login", json={
             "email": "any@example.com",
             "password": "",
         })
@@ -46,12 +46,12 @@ class TestAuthSecurity:
 
     async def test_register_duplicate_email(self, client: httpx.AsyncClient):
         """Registering with an existing email should return 409."""
-        await client.post("/api/auth/register", json={
+        await client.post("/auth/register", json={
             "email": "dup@example.com",
             "password": "password123",
             "name": "First",
         })
-        resp = await client.post("/api/auth/register", json={
+        resp = await client.post("/auth/register", json={
             "email": "dup@example.com",
             "password": "password456",
             "name": "Second",
@@ -60,7 +60,7 @@ class TestAuthSecurity:
 
     async def test_register_min_password_length(self, client: httpx.AsyncClient):
         """Password must be at least 6 characters (schema validation)."""
-        resp = await client.post("/api/auth/register", json={
+        resp = await client.post("/auth/register", json={
             "email": "weak@example.com",
             "password": "1",
             "name": "Weak",
@@ -68,13 +68,13 @@ class TestAuthSecurity:
         assert resp.status_code == 422  # min_length=6 violation
 
     async def test_me_endpoint_returns_user_data(self, client: httpx.AsyncClient):
-        """GET /api/auth/me should return current user info (uses Bearer header)."""
-        await client.post("/api/auth/register", json={
+        """GET /auth/me should return current user info (uses Bearer header)."""
+        await client.post("/auth/register", json={
             "email": "me-test@example.com",
             "password": "secret123",
             "name": "Me Test",
         })
-        login_resp = await client.post("/api/auth/login", json={
+        login_resp = await client.post("/auth/login", json={
             "email": "me-test@example.com",
             "password": "secret123",
         })
@@ -83,18 +83,18 @@ class TestAuthSecurity:
             transport=httpx.ASGITransport(app=app), base_url="http://test"
         ) as ac:
             ac.headers.update({"Authorization": f"Bearer {token}"})
-            resp = await ac.get("/api/auth/me")
+            resp = await ac.get("/auth/me")
             assert resp.status_code == 200
             data = resp.json()
             assert "email" in data
             assert data["email"] == "me-test@example.com"
 
     async def test_me_endpoint_without_token(self, db_session):
-        """GET /api/auth/me without auth should return 401/403."""
+        """GET /auth/me without auth should return 401/403."""
         async with httpx.AsyncClient(
             transport=httpx.ASGITransport(app=app), base_url="http://test"
         ) as ac:
-            resp = await ac.get("/api/auth/me")
+            resp = await ac.get("/auth/me")
             assert resp.status_code in (401, 403)
 
     async def test_invalid_token_returns_401(self, db_session):
@@ -103,7 +103,7 @@ class TestAuthSecurity:
             transport=httpx.ASGITransport(app=app), base_url="http://test"
         ) as ac:
             ac.headers.update({"Authorization": "Bearer invalid.token.here"})
-            resp = await ac.get("/api/auth/me")
+            resp = await ac.get("/auth/me")
             assert resp.status_code == 401
 
     async def test_expired_token_returns_401(self, db_session):
@@ -119,7 +119,7 @@ class TestAuthSecurity:
             transport=httpx.ASGITransport(app=app), base_url="http://test"
         ) as ac:
             ac.headers.update({"Authorization": f"Bearer {expired_token}"})
-            resp = await ac.get("/api/auth/me")
+            resp = await ac.get("/auth/me")
             assert resp.status_code == 401
 
 

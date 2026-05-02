@@ -53,7 +53,7 @@ class TestOnboarding:
             transport=httpx.ASGITransport(app=app), base_url="http://test"
         ) as c:
             # Register — returns Token schema (access_token, token_type)
-            resp = await c.post("/api/auth/register", json={
+            resp = await c.post("/auth/register", json={
                 "email": "onboard@example.com",
                 "password": "onboard123",
                 "name": "Onboard User",
@@ -64,7 +64,7 @@ class TestOnboarding:
             assert data["token_type"] == "bearer"
 
             # Login
-            resp = await c.post("/api/auth/login", json={
+            resp = await c.post("/auth/login", json={
                 "email": "onboard@example.com",
                 "password": "onboard123",
             })
@@ -73,7 +73,7 @@ class TestOnboarding:
             c.headers.update({"Authorization": f"Bearer {token}"})
 
             # Get profile
-            resp = await c.get("/api/auth/me")
+            resp = await c.get("/auth/me")
             assert resp.status_code == 200
             assert resp.json()["email"] == "onboard@example.com"
 
@@ -89,10 +89,10 @@ class TestOnboarding:
         async with httpx.AsyncClient(
             transport=httpx.ASGITransport(app=app), base_url="http://test"
         ) as c:
-            await c.post("/api/auth/register", json={
+            await c.post("/auth/register", json={
                 "email": "redirect@example.com", "password": "pass123", "name": "R"
             })
-            resp = await c.post("/api/auth/login", json={
+            resp = await c.post("/auth/login", json={
                 "email": "redirect@example.com", "password": "pass123"
             })
             assert resp.status_code == 200
@@ -612,10 +612,10 @@ class TestAuthSecurity:
         async with httpx.AsyncClient(
             transport=httpx.ASGITransport(app=app), base_url="http://test"
         ) as c:
-            await c.post("/api/auth/register", json={
+            await c.post("/auth/register", json={
                 "email": "dup@example.com", "password": "pass123", "name": "Dup"
             })
-            resp = await c.post("/api/auth/register", json={
+            resp = await c.post("/auth/register", json={
                 "email": "dup@example.com", "password": "pass456", "name": "Dup2"
             })
             assert resp.status_code == 409
@@ -624,7 +624,7 @@ class TestAuthSecurity:
         async with httpx.AsyncClient(
             transport=httpx.ASGITransport(app=app), base_url="http://test"
         ) as c:
-            resp = await c.post("/api/auth/login", json={
+            resp = await c.post("/auth/login", json={
                 "email": "noone@example.com", "password": "pass123"
             })
             assert resp.status_code == 401
@@ -638,7 +638,7 @@ class TestAuthSecurity:
                 "/api/units/", "/api/units/", "/api/tenants/",
                 "/api/leases/", "/api/payments/", "/api/expenses/",
                 "/api/maintenance/", "/api/dashboard",
-                "/api/auth/me",
+                "/auth/me",
             ]
             for path in protected:
                 resp = await c.get(path)
@@ -659,18 +659,18 @@ class TestAuthSecurity:
 
         # Register both users (no auth needed) — password must be >= 6 chars
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as c:
-            await c.post("/api/auth/register", json={
+            await c.post("/auth/register", json={
                 "email": "ua@multi.com", "password": "passAA", "name": "User A"
             })
-            resp_a = await c.post("/api/auth/login", json={
+            resp_a = await c.post("/auth/login", json={
                 "email": "ua@multi.com", "password": "passAA"
             })
             token_a = resp_a.json()["access_token"]
 
-            await c.post("/api/auth/register", json={
+            await c.post("/auth/register", json={
                 "email": "ub@multi.com", "password": "passBB", "name": "User B"
             })
-            resp_b = await c.post("/api/auth/login", json={
+            resp_b = await c.post("/auth/login", json={
                 "email": "ub@multi.com", "password": "passBB"
             })
             token_b = resp_b.json()["access_token"]
@@ -678,13 +678,13 @@ class TestAuthSecurity:
         # User A independent session
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as ca:
             ca.headers.update({"Authorization": f"Bearer {token_a}"})
-            resp = await ca.get("/api/auth/me")
+            resp = await ca.get("/auth/me")
             assert resp.json()["email"] == "ua@multi.com"
 
         # User B independent session
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as cb:
             cb.headers.update({"Authorization": f"Bearer {token_b}"})
-            resp = await cb.get("/api/auth/me")
+            resp = await cb.get("/auth/me")
             assert resp.json()["email"] == "ub@multi.com"
 
 

@@ -50,7 +50,7 @@ class TestAuthMe:
     async def test_me_with_bearer_token(self, client: httpx.AsyncClient, _auth_db):
         app.dependency_overrides[get_db] = _override_get_db()
         try:
-            resp = await client.get("/api/auth/me")
+            resp = await client.get("/auth/me")
             assert resp.status_code == 200
             data = resp.json()
             assert data["email"] == "admin@example.com"
@@ -62,7 +62,7 @@ class TestAuthMe:
         app.dependency_overrides[get_db] = _override_get_db()
         try:
             token = create_access_token({"sub": "test-admin-id", "email": "admin@example.com", "name": "Admin"})
-            resp = await client.get(f"/api/auth/me?token={token}")
+            resp = await client.get(f"/auth/me?token={token}")
             assert resp.status_code == 200
             data = resp.json()
             assert data["email"] == "admin@example.com"
@@ -71,17 +71,17 @@ class TestAuthMe:
 
     async def test_me_with_invalid_query_param_token(self):
         async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as c:
-            resp = await c.get("/api/auth/me?token=invalid.token.here")
+            resp = await c.get("/auth/me?token=invalid.token.here")
             assert resp.status_code == 401
 
     async def test_me_no_auth(self):
         async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as c:
-            resp = await c.get("/api/auth/me")
+            resp = await c.get("/auth/me")
             assert resp.status_code == 401
 
     async def test_me_with_unknown_user_token(self):
         """Token with valid sub but no corresponding user in DB."""
         async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as c:
             token = create_access_token({"sub": "nonexistent-user", "email": "unknown@example.com", "name": "Unknown"})
-            resp = await c.get(f"/api/auth/me?token={token}")
+            resp = await c.get(f"/auth/me?token={token}")
             assert resp.status_code == 404
