@@ -1,0 +1,12 @@
+
+> property-pi-frontend@0.1.0 dev
+> vite
+
+
+  VITE v5.4.21  ready in 106 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+8:44:01 AM [vite] hmr update /src/pages/Register.jsx
+8:51:21 AM [vite] .env changed, restarting server...
+8:51:21 AM [vite] server restarted.

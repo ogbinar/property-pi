@@ -1,0 +1,69 @@
+[
+  {
+    "id": "proc_2026-05-03T0803_c80edf",
+    "workspaceId": "moph6rqj",
+    "title": "FastAPI Backend Server",
+    "command": "cd /projects/property-pi/backend && python -m uvicorn app.main:app --host 0.0.0.0 --port 8002 --reload 2>&1",
+    "cwd": "/projects/property-pi",
+    "status": "error",
+    "pid": 982155,
+    "startedAt": "2026-05-03T08:03:51.405Z",
+    "outputSizeBytes": 40,
+    "notify": {
+      "sessionID": "ses_21504b04bffewFCKLZTgWn3pAP",
+      "directory": "/projects/property-pi",
+      "sentAt": "2026-05-03T08:03:51.455Z"
+    },
+    "terminalReason": "failed",
+    "exitCode": 127,
+    "stoppedAt": "2026-05-03T08:03:51.410Z"
+  },
+  {
+    "id": "proc_2026-05-03T0805_6c981e",
+    "workspaceId": "moph6rqj",
+    "title": "FastAPI Backend Server",
+    "command": "cd /projects/property-pi/backend && uvicorn app.main:app --host 0.0.0.0 --port 8002",
+    "cwd": "/projects/property-pi",
+    "status": "running",
+    "pid": 982747,
+    "startedAt": "2026-05-03T08:05:08.223Z",
+    "outputSizeBytes": 0,
+    "notify": {
+      "sessionID": "ses_21504b04bffewFCKLZTgWn3pAP",
+      "directory": "/projects/property-pi"
+    }
+  },
+  {
+    "id": "proc_2026-05-03T0805_e7cb90",
+    "workspaceId": "moph6rqj",
+    "title": "Vite Frontend Dev Server",
+    "command": "cd /projects/property-pi/frontend && npm run dev",
+    "cwd": "/projects/property-pi",
+    "status": "stopped",
+    "pid": 983247,
+    "startedAt": "2026-05-03T08:05:35.031Z",
+    "outputSizeBytes": 251,
+    "notify": {
+      "sessionID": "ses_21504b04bffewFCKLZTgWn3pAP",
+      "directory": "/projects/property-pi",
+      "sentAt": "2026-05-03T08:29:49.662Z"
+    },
+    "terminalReason": "user_stopped",
+    "stoppedAt": "2026-05-03T08:29:49.617Z"
+  },
+  {
+    "id": "proc_2026-05-03T0837_64881d",
+    "workspaceId": "moph6rqj",
+    "title": "Vite Frontend Dev Server",
+    "command": "cd /projects/property-pi/frontend && npm run dev",
+    "cwd": "/projects/property-pi",
+    "status": "running",
+    "pid": 996268,
+    "startedAt": "2026-05-03T08:37:37.961Z",
+    "outputSizeBytes": 0,
+    "notify": {
+      "sessionID": "ses_21504b04bffewFCKLZTgWn3pAP",
+      "directory": "/projects/property-pi"
+    }
+  }
+]

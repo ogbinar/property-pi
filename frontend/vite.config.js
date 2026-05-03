@@ -4,6 +4,7 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
+  base: '/',
   resolve: {
     extensions: ['.jsx', '.js', '.mjs', '.json', '.ts', '.tsx', '.txt'],
     alias: {
@@ -14,17 +15,17 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:8002',
+        target: 'http://localhost:8000',
         changeOrigin: true,
       },
       '/auth': {
-        target: 'http://localhost:8002',
+        target: 'http://localhost:8000',
         changeOrigin: true,
       },
     },
   },
   preview: {
-    port: 5173,
+    port: 3000,
     host: '0.0.0.0',
   },
   build: {

@@ -1,43 +1,19 @@
+version: '3.8'
+
 services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./app.db
+      - SECRET_KEY=your-secret-key-change-in-production
+    volumes:
+      - ./backend:/app
+
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        VITE_API_BASE_URL: /api
-    working_dir: /app
-    command: sh -c "npm run build && npx serve -s dist -l 3000"
+    build: ./frontend
+    ports:
+      - "3000:3000"
     depends_on:
       - backend
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    restart: unless-stopped
-
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    working_dir: /app
-    command: uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
-    environment:
-      DATABASE_URL: sqlite:////data/property_pi.db
-      SECRET_KEY: ${SECRET_KEY}
-      ACCESS_TOKEN_EXPIRE_MINUTES: 120
-      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
-      ENVIRONMENT: production
-    volumes:
-      - backend_db_data:/data
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health/full"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    restart: unless-stopped
-
-volumes:
-  backend_db_data:

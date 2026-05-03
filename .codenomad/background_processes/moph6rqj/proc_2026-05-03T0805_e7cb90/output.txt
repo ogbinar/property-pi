@@ -1,0 +1,11 @@
+
+> property-pi-frontend@0.1.0 dev
+> vite
+
+
+  VITE v5.4.21  ready in 108 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+4:29:44 PM [vite] vite.config.js changed, restarting server...
+4:29:44 PM [vite] server restarted.

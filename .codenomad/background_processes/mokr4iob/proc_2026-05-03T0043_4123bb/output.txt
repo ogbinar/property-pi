@@ -1,0 +1,230 @@
+/home/myk/.local/lib/python3.12/site-packages/pydantic/main.py:250: RuntimeWarning: Using default JWT secret. Set SECRET_KEY for production security.
+  validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+INFO:     Started server process [831745]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:52076 - "OPTIONS /api/auth/register HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52080 - "POST /api/auth/register HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:42852 - "POST /api/auth/register HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:38994 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39006 - "GET /api/docs HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50088 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:44464 - "OPTIONS /auth/register HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44480 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:44480 - "OPTIONS /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44464 - "OPTIONS /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44496 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44464 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44464 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44496 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44480 - "GET /api/auth/me HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:44496 - "GET /api/auth/me HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:38960 - "OPTIONS /auth/register HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38964 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:38964 - "OPTIONS /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38960 - "OPTIONS /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38972 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38960 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38960 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38972 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38964 - "GET /api/auth/me HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:38972 - "GET /api/auth/me HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:48196 - "OPTIONS /auth/register HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48204 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:48204 - "OPTIONS /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48196 - "OPTIONS /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48216 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48196 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48196 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48216 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48204 - "GET /api/auth/me HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:48216 - "GET /api/auth/me HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54238 - "OPTIONS /auth/register HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54250 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:54250 - "OPTIONS /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54238 - "OPTIONS /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54260 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54238 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54238 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54260 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54250 - "GET /api/auth/me HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54260 - "GET /api/auth/me HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56842 - "OPTIONS /auth/register HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56852 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:56852 - "OPTIONS /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56842 - "OPTIONS /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56864 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56842 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56842 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56864 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56864 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56842 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56852 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56842 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52124 - "OPTIONS /auth/register HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52132 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:52132 - "OPTIONS /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52124 - "OPTIONS /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52138 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52124 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52124 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52138 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52138 - "OPTIONS /dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52124 - "OPTIONS /dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52132 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52124 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:46878 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:46894 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54926 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41866 - "OPTIONS /api/auth/register HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41880 - "POST /api/auth/register HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:47810 - "OPTIONS /api/auth/register HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47812 - "POST /api/auth/register HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58844 - "POST /api/auth/register HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:47048 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42288 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:47968 - "OPTIONS /api/auth/register HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47976 - "POST /api/auth/register HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:48686 - "OPTIONS /api/auth/register HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48690 - "POST /api/auth/register HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57024 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:54426 - "OPTIONS /api/auth/register HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54428 - "POST /api/auth/register HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:48286 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:42242 - "OPTIONS /api/auth/register HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42244 - "POST /api/auth/register HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60780 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:41636 - "GET /auth/register HTTP/1.1" 405 Method Not Allowed
+INFO:     127.0.0.1:35112 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:59098 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:40874 - "OPTIONS /api/auth/register HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40878 - "POST /api/auth/register HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60356 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:60366 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60380 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60392 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60402 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60404 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60418 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50472 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:50476 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50478 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:50486 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50500 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50506 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50508 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50512 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50518 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:45310 - "POST /auth/login HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:45326 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:45342 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45346 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45348 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45358 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45368 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:45380 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:34454 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:34456 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34458 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34472 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34486 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34498 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:34500 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:34502 - "GET /units/new HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54882 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:54894 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54908 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54916 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54932 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54944 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54950 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54952 - "GET /units HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53198 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:53206 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53220 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53232 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53238 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53248 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53254 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53266 - "GET /units/new HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:47172 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:47178 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47192 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47202 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47214 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47220 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:47232 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:47244 - "GET /units/new HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:37582 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:37588 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37590 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37606 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37614 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37622 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:37624 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:37626 - "GET /units/new HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:35772 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:35786 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35792 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:35802 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35816 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35822 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35832 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35844 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:35858 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58932 - "POST /auth/login HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:43500 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:43512 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43526 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43542 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43544 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43560 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:43562 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:34726 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:34740 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34744 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34752 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34768 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34774 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:34780 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:34786 - "GET /units/new HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:45910 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:45912 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45920 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45928 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45930 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45942 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:45950 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:45956 - "GET /units HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52672 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:52678 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52682 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52690 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52704 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52714 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52722 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52738 - "GET /units/new HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56520 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:56536 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56552 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56566 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56578 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56588 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56596 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:47540 - "POST /auth/register HTTP/1.1" 201 Created
+INFO:     127.0.0.1:47546 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47552 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47564 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47576 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47578 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:47592 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:47602 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47618 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47620 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47634 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47646 - "GET /auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47652 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:47658 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:36360 - "GET /dashboard HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:38912 - "GET /api/dashboard HTTP/1.1" 401 Unauthorized

@@ -1,0 +1,19 @@
+
+> property-pi-frontend@0.1.0 dev
+> vite
+
+
+  VITE v5.4.21  ready in 89 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+9:24:50 AM [vite] hmr update /src/auth.jsx, /src/components/Layout.jsx, /src/pages/Dashboard.jsx, /src/pages/UnitsNew.jsx, /src/pages/Units.jsx, /src/pages/UnitDetail.jsx, /src/pages/UnitEdit.jsx, /src/pages/Tenants.jsx, /src/pages/TenantDetail.jsx, /src/pages/TenantEdit.jsx, /src/pages/Leases.jsx, /src/pages/LeasesNew.jsx, /src/pages/LeaseDetail.jsx, /src/pages/Expenses.jsx, /src/pages/ExpensesNew.jsx, /src/pages/ExpenseEdit.jsx, /src/pages/Maintenance.jsx, /src/pages/MaintenanceNew.jsx, /src/pages/MaintenanceDetail.jsx, /src/pages/RentCollection.jsx, /src/pages/Login.jsx, /src/pages/Register.jsx, /src/components/dashboard/UnitStatusGrid.jsx, /src/components/units/UnitDeleteClient.jsx, /src/components/tenants/TenantDeleteClient.jsx
+9:35:02 AM [vite] vite.config.js changed, restarting server...
+9:35:02 AM [vite] server restarted.
+9:40:38 AM [vite] hmr update /src/auth.jsx, /src/components/Layout.jsx, /src/pages/Dashboard.jsx, /src/pages/UnitsNew.jsx, /src/pages/Units.jsx, /src/pages/UnitEdit.jsx, /src/pages/Tenants.jsx, /src/pages/UnitDetail.jsx, /src/pages/TenantEdit.jsx, /src/pages/TenantDetail.jsx, /src/pages/Leases.jsx, /src/pages/LeasesNew.jsx, /src/pages/LeaseDetail.jsx, /src/pages/Expenses.jsx, /src/pages/ExpensesNew.jsx, /src/pages/ExpenseEdit.jsx, /src/pages/Maintenance.jsx, /src/pages/Login.jsx, /src/pages/MaintenanceNew.jsx, /src/pages/MaintenanceDetail.jsx, /src/pages/Register.jsx, /src/pages/RentCollection.jsx, /src/components/dashboard/UnitStatusGrid.jsx, /src/components/units/UnitDeleteClient.jsx, /src/components/tenants/TenantDeleteClient.jsx
+9:41:03 AM [vite] .env changed, restarting server...
+9:41:03 AM [vite] server restarted.
+9:41:10 AM [vite] .env changed, restarting server...
+9:41:10 AM [vite] server restarted.
+9:42:21 AM [vite] hmr update /src/auth.jsx, /src/components/Layout.jsx, /src/pages/Dashboard.jsx, /src/pages/UnitsNew.jsx, /src/pages/Units.jsx, /src/pages/UnitEdit.jsx, /src/pages/UnitDetail.jsx, /src/pages/Tenants.jsx, /src/pages/TenantEdit.jsx, /src/pages/TenantDetail.jsx, /src/pages/LeasesNew.jsx, /src/pages/Leases.jsx, /src/pages/LeaseDetail.jsx, /src/pages/Expenses.jsx, /src/pages/ExpensesNew.jsx, /src/pages/ExpenseEdit.jsx, /src/pages/Maintenance.jsx, /src/pages/Login.jsx, /src/pages/MaintenanceNew.jsx, /src/pages/MaintenanceDetail.jsx, /src/pages/Register.jsx, /src/pages/RentCollection.jsx, /src/components/dashboard/UnitStatusGrid.jsx, /src/components/units/UnitDeleteClient.jsx, /src/components/tenants/TenantDeleteClient.jsx
+9:52:03 AM [vite] hmr update /src/pages/Dashboard.jsx

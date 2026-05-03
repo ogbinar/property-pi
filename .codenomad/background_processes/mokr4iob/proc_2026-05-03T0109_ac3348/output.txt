@@ -1,0 +1,15 @@
+
+> property-pi-frontend@0.1.0 dev
+> vite
+
+
+  VITE v5.4.21  ready in 92 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+9:13:56 AM [vite] hmr update /src/components/Layout.jsx
+9:15:21 AM [vite] hmr update /src/pages/Dashboard.jsx
+9:15:53 AM [vite] hmr update /src/pages/Dashboard.jsx
+9:17:12 AM [vite] hmr update /src/auth.jsx, /src/components/Layout.jsx, /src/pages/UnitsNew.jsx, /src/pages/Dashboard.jsx, /src/pages/Units.jsx, /src/pages/UnitDetail.jsx, /src/pages/UnitEdit.jsx, /src/pages/Tenants.jsx, /src/pages/TenantDetail.jsx, /src/pages/TenantEdit.jsx, /src/pages/Leases.jsx, /src/pages/LeasesNew.jsx, /src/pages/Expenses.jsx, /src/pages/LeaseDetail.jsx, /src/pages/ExpensesNew.jsx, /src/pages/ExpenseEdit.jsx, /src/pages/Maintenance.jsx, /src/pages/MaintenanceNew.jsx, /src/pages/MaintenanceDetail.jsx, /src/pages/RentCollection.jsx, /src/pages/Login.jsx, /src/pages/Register.jsx, /src/components/dashboard/UnitStatusGrid.jsx, /src/components/units/UnitDeleteClient.jsx, /src/components/tenants/TenantDeleteClient.jsx
+9:17:19 AM [vite] .env changed, restarting server...
+9:17:19 AM [vite] server restarted.

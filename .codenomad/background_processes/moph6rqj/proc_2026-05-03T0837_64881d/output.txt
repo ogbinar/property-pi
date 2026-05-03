@@ -1,0 +1,12 @@
+
+> property-pi-frontend@0.1.0 dev
+> vite
+
+
+  VITE v5.4.21  ready in 93 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+4:53:54 PM [vite] hmr update /src/pages/Dashboard.jsx
+8:48:09 PM [vite] vite.config.js changed, restarting server...
+8:48:09 PM [vite] server restarted.

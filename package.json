@@ -9,7 +9,10 @@
     "lint": "echo 'No linter configured'",
     "db:migrate": "cd backend && alembic upgrade head",
     "db:revision": "cd backend && alembic revision --autogenerate -m",
-    "db:stamp": "cd backend && alembic stamp head"
+    "db:stamp": "cd backend && alembic stamp head",
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "e2e:report": "playwright show-report e2e/report"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
@@ -26,6 +29,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4",
     "tailwindcss": "^4",
     "tsx": "^4.21.0"

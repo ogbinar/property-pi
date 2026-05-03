@@ -1,0 +1,12 @@
+
+> property-pi-frontend@0.1.0 dev
+> vite
+
+Port 5173 is in use, trying another one...
+
+  VITE v5.4.21  ready in 95 ms
+
+  ➜  Local:   http://localhost:5174/
+  ➜  Network: use --host to expose
+9:35:02 AM [vite] vite.config.js changed, restarting server...
+9:35:02 AM [vite] server restarted.

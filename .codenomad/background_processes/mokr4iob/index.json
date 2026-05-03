@@ -37,5 +37,158 @@
     "outputSizeBytes": 1023,
     "terminalReason": "user_stopped",
     "stoppedAt": "2026-04-30T10:05:52.516Z"
+  },
+  {
+    "id": "proc_2026-05-03T0016_c16ce9",
+    "workspaceId": "mokr4iob",
+    "title": "Vite Frontend Dev Server",
+    "command": "cd /projects/property-pi/frontend && npm run dev",
+    "cwd": "/projects/property-pi",
+    "status": "stopped",
+    "pid": 808222,
+    "startedAt": "2026-05-03T00:16:21.308Z",
+    "outputSizeBytes": 294,
+    "notify": {
+      "sessionID": "ses_21504b04bffewFCKLZTgWn3pAP",
+      "directory": "/projects/property-pi",
+      "sentAt": "2026-05-03T00:51:26.683Z"
+    },
+    "terminalReason": "user_stopped",
+    "stoppedAt": "2026-05-03T00:51:26.614Z"
+  },
+  {
+    "id": "proc_2026-05-03T0043_4123bb",
+    "workspaceId": "mokr4iob",
+    "title": "FastAPI Backend Server",
+    "command": "cd /projects/property-pi/backend && uvicorn app.main:app --host 0.0.0.0 --port 8002",
+    "cwd": "/projects/property-pi",
+    "status": "running",
+    "pid": 831745,
+    "startedAt": "2026-05-03T00:43:48.447Z",
+    "outputSizeBytes": 0,
+    "notify": {
+      "sessionID": "ses_21504b04bffewFCKLZTgWn3pAP",
+      "directory": "/projects/property-pi"
+    }
+  },
+  {
+    "id": "proc_2026-05-03T0107_c2faa7",
+    "workspaceId": "mokr4iob",
+    "title": "Vite Frontend Dev Server",
+    "command": "cd /projects/property-pi/frontend && npm run dev",
+    "cwd": "/projects/property-pi",
+    "status": "stopped",
+    "pid": 868994,
+    "startedAt": "2026-05-03T01:07:09.655Z",
+    "outputSizeBytes": 984,
+    "notify": {
+      "sessionID": "ses_21504b04bffewFCKLZTgWn3pAP",
+      "directory": "/projects/property-pi",
+      "sentAt": "2026-05-03T01:08:54.271Z"
+    },
+    "terminalReason": "user_stopped",
+    "stoppedAt": "2026-05-03T01:08:54.234Z"
+  },
+  {
+    "id": "proc_2026-05-03T0109_ac3348",
+    "workspaceId": "mokr4iob",
+    "title": "Vite Frontend Dev Server",
+    "command": "cd /projects/property-pi/frontend && npm run dev",
+    "cwd": "/projects/property-pi",
+    "status": "stopped",
+    "pid": 870873,
+    "startedAt": "2026-05-03T01:09:37.519Z",
+    "outputSizeBytes": 1147,
+    "notify": {
+      "sessionID": "ses_21504b04bffewFCKLZTgWn3pAP",
+      "directory": "/projects/property-pi",
+      "sentAt": "2026-05-03T01:18:28.353Z"
+    },
+    "terminalReason": "user_stopped",
+    "stoppedAt": "2026-05-03T01:18:28.307Z"
+  },
+  {
+    "id": "proc_2026-05-03T0121_de732e",
+    "workspaceId": "mokr4iob",
+    "title": "Vite Frontend Dev Server",
+    "command": "cd /projects/property-pi/frontend && npm run dev",
+    "cwd": "/projects/property-pi",
+    "status": "running",
+    "pid": 877406,
+    "startedAt": "2026-05-03T01:21:52.487Z",
+    "outputSizeBytes": 0,
+    "notify": {
+      "sessionID": "ses_21504b04bffewFCKLZTgWn3pAP",
+      "directory": "/projects/property-pi"
+    }
+  },
+  {
+    "id": "proc_2026-05-03T0133_4d4e7c",
+    "workspaceId": "mokr4iob",
+    "title": "Vite Frontend Dev Server",
+    "command": "cd /projects/property-pi/frontend && npm run dev",
+    "cwd": "/projects/property-pi",
+    "status": "stopped",
+    "pid": 881647,
+    "startedAt": "2026-05-03T01:33:56.953Z",
+    "outputSizeBytes": 293,
+    "notify": {
+      "sessionID": "ses_21504b04bffewFCKLZTgWn3pAP",
+      "directory": "/projects/property-pi",
+      "sentAt": "2026-05-03T01:35:08.160Z"
+    },
+    "terminalReason": "user_stopped",
+    "stoppedAt": "2026-05-03T01:35:08.123Z"
+  },
+  {
+    "id": "proc_2026-05-03T0135_43adb8",
+    "workspaceId": "mokr4iob",
+    "title": "Vite Frontend Dev Server",
+    "command": "cd /projects/property-pi/frontend && npm run dev",
+    "cwd": "/projects/property-pi",
+    "status": "stopped",
+    "pid": 882846,
+    "startedAt": "2026-05-03T01:35:23.342Z",
+    "outputSizeBytes": 195,
+    "notify": {
+      "sessionID": "ses_21504b04bffewFCKLZTgWn3pAP",
+      "directory": "/projects/property-pi",
+      "sentAt": "2026-05-03T01:37:32.171Z"
+    },
+    "terminalReason": "user_stopped",
+    "stoppedAt": "2026-05-03T01:37:32.146Z"
+  },
+  {
+    "id": "proc_2026-05-03T0138_407374",
+    "workspaceId": "mokr4iob",
+    "title": "Vite Frontend Dev Server",
+    "command": "cd /projects/property-pi/frontend && npm run dev 2>&1",
+    "cwd": "/projects/property-pi",
+    "status": "stopped",
+    "pid": 884794,
+    "startedAt": "2026-05-03T01:38:04.732Z",
+    "outputSizeBytes": 373,
+    "notify": {
+      "sessionID": "ses_21504b04bffewFCKLZTgWn3pAP",
+      "directory": "/projects/property-pi",
+      "sentAt": "2026-05-03T01:41:15.101Z"
+    },
+    "terminalReason": "user_stopped",
+    "stoppedAt": "2026-05-03T01:41:15.065Z"
+  },
+  {
+    "id": "proc_2026-05-03T0141_b23184",
+    "workspaceId": "mokr4iob",
+    "title": "Vite Frontend Dev Server",
+    "command": "cd /projects/property-pi/frontend && npm run dev",
+    "cwd": "/projects/property-pi",
+    "status": "running",
+    "pid": 887585,
+    "startedAt": "2026-05-03T01:41:50.415Z",
+    "outputSizeBytes": 0,
+    "notify": {
+      "sessionID": "ses_21504b04bffewFCKLZTgWn3pAP",
+      "directory": "/projects/property-pi"
+    }
   }
 ]
