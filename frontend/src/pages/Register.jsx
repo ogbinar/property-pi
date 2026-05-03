@@ -16,7 +16,7 @@ export default function RegisterPage() {
     setLoading(true)
 
     try {
-      const res = await apiRequest('/api/auth/register', {
+      const res = await apiRequest('/auth/register', {
         method: 'POST',
         body: { name, email, password },
       })

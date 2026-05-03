@@ -2,23 +2,23 @@
 
 ## Overview
 
-Property-Pi is a two-service application consisting of a Next.js frontend and a FastAPI backend, backed by a single SQLite database.
+Property-Pi is a two-service application consisting of a React + Vite SPA frontend and a FastAPI backend, backed by a single SQLite database.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                      Browser                            │
 │                                                         │
 │  ┌───────────────────────────────────────────────────┐  │
-│  │              Next.js Frontend (port 3000)         │  │
+│  │        React + Vite SPA Frontend (port 5173)      │  │
 │  │                                                   │  │
 │  │  ┌──────────┐  ┌──────────┐  ┌────────────────┐  │  │
-│  │  │ (dashboard)│ │ login/   │  │ tenant/        │  │  │
+│  │  │ /dashboard │ /login   │  │ /tenant/portal │  │  │
 │  │  │ Landlord │  │ Login    │  │ Tenant Portal  │  │  │
 │  │  │ Pages    │  │ Page     │  │ (shared link)  │  │  │
 │  │  └──────────┘  └──────────┘  └────────────────┘  │  │
 │  │                                                   │  │
-│  │  Auth: session cookie (JWT, 2h expiry)            │  │
-│  │  Server Actions → GET /api/* with token header    │  │
+│  │  Auth: localStorage JWT token                     │  │
+│  │  React Router → API calls via api.js              │  │
 │  └───────────────────────────────────────────────────┘  │
 │                              │                          │
 │                              │ HTTP (token in header)   │
@@ -49,59 +49,68 @@ Property-Pi is a two-service application consisting of a Next.js frontend and a 
 
 ## Frontend Architecture
 
-### Framework: Next.js 14+ (App Router)
+### Framework: React + Vite SPA
 
-The frontend is a thin client that communicates with the FastAPI backend via REST APIs. It uses Server Actions for authenticated requests and client-side actions for auth flows.
+The frontend is a single-page application that communicates with the FastAPI backend via REST APIs. It uses React Router for client-side navigation.
 
 ### Routing Structure
 
 ```
-src/app/
-├── (dashboard)/              # Route group — landlord pages
-│   ├── layout.tsx            # Dashboard layout with auth guard + sidebar
-│   ├── page.tsx              # Dashboard overview
-│   ├── units/                # Unit CRUD
-│   ├── tenants/              # Tenant CRUD
-│   ├── leases/               # Lease CRUD
-│   ├── rent/                 # Rent payments
-│   ├── expenses/             # Expense CRUD
-│   └── maintenance/          # Maintenance request CRUD
-├── login/                    # Login page
-├── tenant/                   # Tenant portal
-│   └── portal/               # Shared-link tenant dashboard
-├── actions/                  # Server Actions
-│   ├── auth-actions.ts       # signIn, signOut, register (client-side)
-│   ├── unit-actions.ts       # CRUD unit operations
-│   ├── tenant-actions.ts     # CRUD tenant operations
-│   ├── lease-actions.ts      # CRUD lease operations
-│   ├── payment-actions.ts    # Payment operations
-│   ├── expense-actions.ts    # CRUD expense operations
-│   ├── maintenance-actions.ts# CRUD maintenance operations
-│   └── dashboard-actions.ts  # Dashboard data fetch
-├── layout.tsx                # Root layout
-└── page.tsx                  # Root redirect (→ /login or /dashboard)
+src/pages/
+├── Dashboard/                # Landlord dashboard pages
+│   ├── Dashboard.jsx         # Dashboard overview
+│   ├── Units/                # Unit CRUD
+│   │   ├── UnitsList.jsx
+│   │   ├── UnitForm.jsx
+│   │   └── UnitDetail.jsx
+│   ├── Tenants/              # Tenant CRUD
+│   │   ├── TenantsList.jsx
+│   │   ├── TenantForm.jsx
+│   │   └── TenantDetail.jsx
+│   ├── Leases/               # Lease CRUD
+│   │   ├── LeasesList.jsx
+│   │   ├── LeaseForm.jsx
+│   │   └── LeaseDetail.jsx
+│   ├── Payments/             # Rent payments
+│   │   ├── PaymentsList.jsx
+│   │   └── PaymentForm.jsx
+│   ├── Expenses/             # Expense CRUD
+│   │   ├── ExpensesList.jsx
+│   │   ├── ExpenseForm.jsx
+│   │   └── ExpenseDetail.jsx
+│   └── Maintenance/          # Maintenance request CRUD
+│       ├── MaintenanceList.jsx
+│       ├── MaintenanceForm.jsx
+│       └── MaintenanceDetail.jsx
+├── Login.jsx                 # Login page
+├── Register.jsx              # Registration page
+├── TenantPortal/             # Tenant portal
+│   └── Portal.jsx            # Shared-link tenant dashboard
+├── Layout.jsx                # Main layout with sidebar
+└── App.jsx                   # Router setup
+
+src/components/               # Reusable components
+├── Sidebar.jsx
+├── Header.jsx
+├── ProtectedRoute.jsx
+└── ui/                       # shadcn/ui components
 ```
 
 ### Auth Flow
 
-1. **Registration/Login** (`'use client'` Server Action):
-   - `signIn(email, password)` calls `POST /api/auth/login`
-   - On success, sets `session=<jwt>` cookie (2h expiry, SameSite=Lax)
+1. **Registration/Login**:
    - `register(name, email, password)` calls `POST /api/auth/register`
-   - Same cookie setting on success
+   - `signIn(email, password)` calls `POST /api/auth/login`
+   - On success, stores JWT token in `localStorage`
+   - Redirects to `/dashboard`
 
-2. **Authenticated Requests** (`'use server'` Server Actions):
-   - `getServerToken()` reads `session` cookie from `next/headers`
-   - Passes token as `Authorization: Bearer <token>` header to `apiRequest()`
-   - All CRUD Server Actions follow this pattern
+2. **Authenticated Requests** (`api.js`):
+   - `api.js` reads token from `localStorage`
+   - Passes token as `Authorization: Bearer <token>` header
+   - Handles 401/403 by clearing token and redirecting to login
 
-3. **Client-Side Auth** (`api-client.ts`):
-   - Reads `session` cookie from `document.cookie` for client-side requests
-   - Accepts explicit `token` parameter for server-side requests
-   - Handles 401/403 by redirecting to login
-
-4. **Dashboard Layout Guard**:
-   - `(dashboard)/layout.tsx` checks for valid session
+3. **Protected Routes** (`ProtectedRoute.jsx`):
+   - Checks for valid token in `localStorage`
    - Redirects to `/login` if no valid token
 
 ### Component Architecture
@@ -196,9 +205,9 @@ Origins configured via `ALLOWED_ORIGINS` env var (comma-separated string). Parse
 ### Landlord Creating a Unit
 
 ```
-Dashboard UI → Unit Form → createUnitAction (Server Action)
-  → getServerToken() reads session cookie
-  → apiRequest('POST /api/units', { token })
+Dashboard UI → Unit Form → createUnit() (API call)
+  → api.js reads token from localStorage
+  → api.js calls 'POST /api/units' with Authorization header
   → FastAPI: validate schema, create SQLAlchemy model, commit
   → _unit_to_out() serializes to dict
   → JSON response → UI shows new unit
@@ -220,7 +229,7 @@ Shared link (from lease detail page) → Tenant Portal page
 ### Docker Compose
 
 `docker-compose.yml` defines two services:
-1. **app** (Next.js): Built from Dockerfile, port 3000, depends on backend
+1. **app** (React + Vite): Built from Dockerfile, port 5173, depends on backend
 2. **backend** (FastAPI): Built from backend/Dockerfile, port 8000, SQLite volume
 
 SQLite database stored in mounted volume at `prop-pi-data:/app/property_pi.db`.
@@ -241,4 +250,5 @@ SQLite database stored in mounted volume at `prop-pi-data:/app/property_pi.db`.
 |-------|-------------|--------|
 | v1.0 | Next.js + PocketBase + FastAPI (hybrid) | Complete, abandoned |
 | post-v1.0 | Next.js single service + SQLite + Drizzle + Server Actions | Complete, abandoned |
-| post-v1.1 | Next.js frontend + FastAPI backend + SQLite | **Current** |
+| post-v1.1 | Next.js frontend + FastAPI backend + SQLite | Abandoned |
+| current | React + Vite SPA frontend + FastAPI backend + SQLite | **Current** |

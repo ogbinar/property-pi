@@ -12,16 +12,17 @@ export default function Layout() {
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (token) {
-      apiRequest('/api/auth/me')
+      apiRequest('/auth/me')
         .then(setUser)
         .catch(() => {
           localStorage.removeItem('token')
+          setUser(null)
         })
         .finally(() => setLoading(false))
     } else {
       setLoading(false)
     }
-  }, [location.pathname])
+  }, [])
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900"><div className="text-gray-500">Loading...</div></div>

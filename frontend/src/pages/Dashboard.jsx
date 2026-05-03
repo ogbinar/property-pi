@@ -27,10 +27,21 @@ export default function DashboardPage() {
     )
   }
 
-  if (error) {
+  if (error || !data) {
     return (
       <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded">
-        Failed to load dashboard: {error}
+        Failed to load dashboard: {error || 'No data received'}
+      </div>
+    )
+  }
+
+  if (!data.unit_counts || !data.monthly_revenue) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">No data available yet.</p>
+        </div>
       </div>
     )
   }
@@ -58,14 +69,14 @@ export default function DashboardPage() {
     categoryBreakdown: data.expenses.by_category,
   }
 
-  const activitiesData = data.recent_activities.map(a => ({
+  const activitiesData = (data.recent_activities || []).map(a => ({
     type: a.type,
     message: a.description,
     timestamp: a.date,
     link: '#',
   }))
 
-  const expirationsData = data.upcoming_expirations.map(e => ({
+  const expirationsData = (data.upcoming_expirations || []).map(e => ({
     unitNumber: e.unit_number,
     tenantName: e.tenant_name,
     endDate: e.end_date,
