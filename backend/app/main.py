@@ -17,7 +17,6 @@ app = FastAPI(
     title="Property-Pi",
     description="Small-scale property management API",
     version="0.1.0",
-    root_path=os.environ.get("ROOT_PATH", "/api"),
 )
 
 # Register global exception handlers
