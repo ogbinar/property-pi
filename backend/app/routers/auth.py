@@ -6,10 +6,11 @@ from app import models, schemas, auth
 from app.auth import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+legacy_router = APIRouter(tags=["auth"])
+api_router = APIRouter(prefix="/api", tags=["auth"])
 
 
-@router.post("/register", response_model=schemas.Token, status_code=status.HTTP_201_CREATED)
-async def register(payload: schemas.UserCreate, db: Session = Depends(get_db)):
+async def _register(payload: schemas.UserCreate, db: Session):
     existing = db.query(models.User).filter(models.User.email == payload.email).first()
     if existing:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exists")
@@ -28,8 +29,7 @@ async def register(payload: schemas.UserCreate, db: Session = Depends(get_db)):
     return {"access_token": token, "token_type": "bearer"}
 
 
-@router.post("/login", response_model=schemas.Token)
-async def login(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
+async def _login(payload: schemas.LoginRequest, db: Session):
     user = db.query(models.User).filter(models.User.email == payload.email).first()
     if not user or not auth.verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
@@ -38,12 +38,7 @@ async def login(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
     return {"access_token": token, "token_type": "bearer"}
 
 
-@router.get("/me", response_model=schemas.UserOut)
-async def get_me(
-    token: str | None = None,
-    db: Session = Depends(get_db),
-    request: Request = None,
-):
+async def _get_me(token: str | None, db: Session, request: Request):
     if token:
         current_user = auth.get_current_user_from_token(token)
     else:
@@ -58,6 +53,77 @@ async def get_me(
     return user
 
 
+async def _logout():
+    return {"message": "Logged out successfully"}
+
+
+@router.post("/register", response_model=schemas.Token, status_code=status.HTTP_201_CREATED)
+async def register(payload: schemas.UserCreate, db: Session = Depends(get_db)):
+    return await _register(payload, db)
+
+
+@legacy_router.post("/register", response_model=schemas.Token, status_code=status.HTTP_201_CREATED)
+async def legacy_register(payload: schemas.UserCreate, db: Session = Depends(get_db)):
+    return await _register(payload, db)
+
+
+@api_router.post("/login", response_model=schemas.Token)
+async def api_login(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
+    return await _login(payload, db)
+
+
+@api_router.post("/register", response_model=schemas.Token, status_code=status.HTTP_201_CREATED)
+async def api_register(payload: schemas.UserCreate, db: Session = Depends(get_db)):
+    return await _register(payload, db)
+
+
+@router.post("/login", response_model=schemas.Token)
+async def login(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
+    return await _login(payload, db)
+
+
+@legacy_router.post("/login", response_model=schemas.Token)
+async def legacy_login(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
+    return await _login(payload, db)
+
+
+@router.get("/me", response_model=schemas.UserOut)
+async def get_me(
+    token: str | None = None,
+    db: Session = Depends(get_db),
+    request: Request = None,
+):
+    return await _get_me(token, db, request)
+
+
+@legacy_router.get("/me", response_model=schemas.UserOut)
+async def legacy_get_me(
+    token: str | None = None,
+    db: Session = Depends(get_db),
+    request: Request = None,
+):
+    return await _get_me(token, db, request)
+
+
+@api_router.get("/me", response_model=schemas.UserOut)
+async def api_get_me(
+    token: str | None = None,
+    db: Session = Depends(get_db),
+    request: Request = None,
+):
+    return await _get_me(token, db, request)
+
+
 @router.post("/logout")
 async def logout():
-    return {"message": "Logged out successfully"}
+    return await _logout()
+
+
+@legacy_router.post("/logout")
+async def legacy_logout():
+    return await _logout()
+
+
+@api_router.post("/logout")
+async def api_logout():
+    return await _logout()

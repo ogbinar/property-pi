@@ -74,7 +74,10 @@ app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 # Routers
 app.include_router(health.router)
+app.include_router(health.legacy_router)
 app.include_router(auth.router)
+app.include_router(auth.legacy_router)
+app.include_router(auth.api_router)
 app.include_router(units.router)
 app.include_router(tenants.router)
 app.include_router(leases.router)

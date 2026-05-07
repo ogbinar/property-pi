@@ -10,6 +10,11 @@ class TestHealth:
         assert resp.status_code == 200
         assert "status" in resp.json()
 
+    async def test_legacy_health_check(self, client: httpx.AsyncClient):
+        resp = await client.get("/health")
+        assert resp.status_code == 200
+        assert resp.json()["status"] == "ok"
+
 
 class TestAuth:
     async def test_register_and_login(self, client: httpx.AsyncClient):
@@ -28,6 +33,32 @@ class TestAuth:
         data = resp.json()
         assert "access_token" in data
         assert data["token_type"] == "bearer"
+
+    async def test_legacy_register_and_login_aliases(self, client: httpx.AsyncClient):
+        resp = await client.post("/register", json={
+            "email": "legacy@example.com",
+            "password": "secret123",
+            "name": "Legacy User",
+        })
+        assert resp.status_code == 201
+
+        resp = await client.post("/login", json={
+            "email": "legacy@example.com",
+            "password": "secret123",
+        })
+        assert resp.status_code == 200
+
+    async def test_api_login_alias(self, client: httpx.AsyncClient):
+        await client.post("/auth/register", json={
+            "email": "api@example.com",
+            "password": "secret123",
+            "name": "API User",
+        })
+        resp = await client.post("/api/login", json={
+            "email": "api@example.com",
+            "password": "secret123",
+        })
+        assert resp.status_code == 200
 
     async def test_login_wrong_password(self, client: httpx.AsyncClient):
         await client.post("/auth/register", json={
