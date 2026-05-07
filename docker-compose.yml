@@ -11,7 +11,8 @@ services:
       ACCESS_TOKEN_EXPIRE_MINUTES: 120
       ALLOWED_ORIGINS: https://property-pi.apps.ogbinar.com
       ENVIRONMENT: production
-      CREATE_DEFAULT_ADMIN: false
+      CREATE_DEFAULT_ADMIN: true
+      DEFAULT_ADMIN_PASSWORD: admin123
     volumes:
       - backend_db_data:/data
       - ./uploads:/app/uploads
