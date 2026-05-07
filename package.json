@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "cd frontend && vite",
-    "build": "cd frontend && vite build",
-    "start": "cd frontend && npx serve dist",
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "start": "npm --prefix frontend run preview -- --host 0.0.0.0 --port 3000",
     "lint": "echo 'No linter configured'",
     "db:migrate": "cd backend && alembic upgrade head",
     "db:revision": "cd backend && alembic revision --autogenerate -m",

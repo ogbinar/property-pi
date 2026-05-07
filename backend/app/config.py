@@ -59,18 +59,18 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def check_jwt_secret(self):
         """Validate JWT secret - error in production, warning in dev."""
-        jwt_secret_env = os.environ.get("SECRET_KEY")
-        is_default = jwt_secret_env is None and self.jwt_secret == _DEFAULT_JWT_SECRET
         env = os.environ.get("ENVIRONMENT", "development")
+        secret = (self.jwt_secret or "").strip()
+        is_placeholder = not secret or secret == _DEFAULT_JWT_SECRET
         
         if env == "production":
-            if is_default:
+            if is_placeholder:
                 raise RuntimeError(
-                    "Production requires non-default JWT secret. "
+                    "Production requires a non-empty, non-default JWT secret. "
                     "Set SECRET_KEY environment variable. "
                     "Generate with: openssl rand -base64 32"
                 )
-        elif is_default:
+        elif is_placeholder:
             warnings.warn(
                 "Using default JWT secret. Set SECRET_KEY for production security.",
                 RuntimeWarning,

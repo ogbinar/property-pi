@@ -1,19 +1,31 @@
-version: '3.8'
-
 services:
   backend:
-    build: ./backend
-    ports:
-      - "8000:8000"
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    working_dir: /app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     environment:
-      - DATABASE_URL=sqlite:///./app.db
-      - SECRET_KEY=your-secret-key-change-in-production
+      DATABASE_URL: sqlite:////data/property_pi.db
+      SECRET_KEY: ${SECRET_KEY}
+      ACCESS_TOKEN_EXPIRE_MINUTES: 120
+      ALLOWED_ORIGINS: https://property-pi.apps.ogbinar.com
+      ENVIRONMENT: production
+      CREATE_DEFAULT_ADMIN: false
     volumes:
-      - ./backend:/app
+      - backend_db_data:/data
+      - ./uploads:/app/uploads
+    restart: unless-stopped
 
   frontend:
-    build: ./frontend
-    ports:
-      - "8080:8080"
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    working_dir: /usr/share/nginx/html
+    command: nginx -g "daemon off;"
     depends_on:
       - backend
+    restart: unless-stopped
+
+volumes:
+  backend_db_data:

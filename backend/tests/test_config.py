@@ -93,6 +93,24 @@ class TestSettings:
             if old_env2:
                 os.environ["JWT_SECRET"] = old_env2
 
+    def test_blank_secret_rejected_in_production(self):
+        old_env = os.environ.get("SECRET_KEY")
+        old_mode = os.environ.get("ENVIRONMENT")
+        try:
+            os.environ["SECRET_KEY"] = ""
+            os.environ["ENVIRONMENT"] = "production"
+            with pytest.raises(RuntimeError):
+                Settings()
+        finally:
+            if old_env is not None:
+                os.environ["SECRET_KEY"] = old_env
+            else:
+                os.environ.pop("SECRET_KEY", None)
+            if old_mode is not None:
+                os.environ["ENVIRONMENT"] = old_mode
+            else:
+                os.environ.pop("ENVIRONMENT", None)
+
     def test_jwt_secret_suppressed_when_env_set(self):
         old_env = os.environ.get("SECRET_KEY")
         try:

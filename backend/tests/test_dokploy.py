@@ -94,10 +94,33 @@ class TestDockerCompose:
             assert "DATABASE_URL" in env, (
                 "DATABASE_URL should be set in compose environment variables"
             )
+            assert env["DATABASE_URL"].startswith("sqlite:///"), (
+                "DATABASE_URL should point at the SQLite file inside the data volume"
+            )
         elif isinstance(env, list):
             keys = [e.split("=")[0] for e in env if "=" in e]
             assert "DATABASE_URL" in keys, (
                 "DATABASE_URL should be set in compose environment variables"
+            )
+
+    def test_backend_secret_has_no_dev_fallback(self, compose):
+        """Production compose should require a real SECRET_KEY from Dokploy."""
+        backend = compose.get("services", {}).get("backend", {})
+        env = backend.get("environment", {})
+        if isinstance(env, dict):
+            secret = env.get("SECRET_KEY", "")
+            assert "dev-secret-key" not in secret, (
+                "Production compose should not fall back to a dev secret. "
+                "Dokploy must inject a real SECRET_KEY."
+            )
+            assert secret == "${SECRET_KEY}" or secret == "${SECRET_KEY?}", (
+                "Production compose should reference SECRET_KEY without a dev fallback."
+            )
+        elif isinstance(env, list):
+            secrets = [e for e in env if e.startswith("SECRET_KEY=")]
+            assert secrets, "SECRET_KEY should be set in compose environment variables"
+            assert all("dev-secret-key" not in s for s in secrets), (
+                "Production compose should not fall back to a dev secret."
             )
 
     def test_cors_allows_https(self, compose):

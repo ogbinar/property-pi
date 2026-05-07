@@ -45,7 +45,9 @@ A lightweight rental property management application for small-scale landlords. 
 
 ```bash
 # Install frontend dependencies
+cd frontend
 npm install
+cd ..
 
 # Install backend dependencies (in backend directory)
 cd backend
