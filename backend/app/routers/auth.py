@@ -6,9 +6,6 @@ from app import models, schemas, auth
 from app.auth import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-legacy_router = APIRouter(tags=["auth"])
-api_router = APIRouter(prefix="/api", tags=["auth"])
-api_auth_router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
 async def _register(payload: schemas.UserCreate, db: Session):
@@ -63,38 +60,8 @@ async def register(payload: schemas.UserCreate, db: Session = Depends(get_db)):
     return await _register(payload, db)
 
 
-@legacy_router.post("/register", response_model=schemas.Token, status_code=status.HTTP_201_CREATED)
-async def legacy_register(payload: schemas.UserCreate, db: Session = Depends(get_db)):
-    return await _register(payload, db)
-
-
-@api_router.post("/login", response_model=schemas.Token)
-async def api_login(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
-    return await _login(payload, db)
-
-
-@api_auth_router.post("/login", response_model=schemas.Token)
-async def api_auth_login(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
-    return await _login(payload, db)
-
-
-@api_router.post("/register", response_model=schemas.Token, status_code=status.HTTP_201_CREATED)
-async def api_register(payload: schemas.UserCreate, db: Session = Depends(get_db)):
-    return await _register(payload, db)
-
-
-@api_auth_router.post("/register", response_model=schemas.Token, status_code=status.HTTP_201_CREATED)
-async def api_auth_register(payload: schemas.UserCreate, db: Session = Depends(get_db)):
-    return await _register(payload, db)
-
-
 @router.post("/login", response_model=schemas.Token)
 async def login(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
-    return await _login(payload, db)
-
-
-@legacy_router.post("/login", response_model=schemas.Token)
-async def legacy_login(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
     return await _login(payload, db)
 
 
@@ -107,48 +74,6 @@ async def get_me(
     return await _get_me(token, db, request)
 
 
-@legacy_router.get("/me", response_model=schemas.UserOut)
-async def legacy_get_me(
-    token: str | None = None,
-    db: Session = Depends(get_db),
-    request: Request = None,
-):
-    return await _get_me(token, db, request)
-
-
-@api_router.get("/me", response_model=schemas.UserOut)
-async def api_get_me(
-    token: str | None = None,
-    db: Session = Depends(get_db),
-    request: Request = None,
-):
-    return await _get_me(token, db, request)
-
-
-@api_auth_router.get("/me", response_model=schemas.UserOut)
-async def api_auth_get_me(
-    token: str | None = None,
-    db: Session = Depends(get_db),
-    request: Request = None,
-):
-    return await _get_me(token, db, request)
-
-
 @router.post("/logout")
 async def logout():
-    return await _logout()
-
-
-@legacy_router.post("/logout")
-async def legacy_logout():
-    return await _logout()
-
-
-@api_router.post("/logout")
-async def api_logout():
-    return await _logout()
-
-
-@api_auth_router.post("/logout")
-async def api_auth_logout():
     return await _logout()

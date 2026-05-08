@@ -1,61 +1,30 @@
-# Property-Pi Dokploy Deployment Guide
+# Property-Pi Dokploy Deployment
 
-## Architecture
+## Current Deployment Shape
 
-- **Frontend:** Vite + React (port 5173)
-- **Backend:** FastAPI + Python 3.12 (port 8000)
-- **Database:** SQLite (persistent volume)
+Deploy the application as a single service built from the repository root.
 
-## Environment Variables
+- Build file: `Dockerfile`
+- Compose file: `docker-compose.yml`
+- Runtime: FastAPI serving SPA + API
 
-Create a `.env` file with:
+## Required Environment
 
-```bash
-# Backend
+```env
+SECRET_KEY=replace-me
 DATABASE_URL=sqlite:////data/property_pi.db
-SECRET_KEY=<generate-with-openssl-rand-base64-32>
-ACCESS_TOKEN_EXPIRE_MINUTES=120
-ALLOWED_ORIGINS=https://property-pi.apps.ogbinar.com
+ALLOWED_ORIGINS=https://your-domain.example
 ENVIRONMENT=production
-
-# Frontend
-VITE_API_BASE_URL=/api
+ACCESS_TOKEN_EXPIRE_MINUTES=120
 ```
 
-## Dokploy Configuration
+## Route Checks
 
-1. **Create Compose Project** in Dokploy pointing to `https://github.com/ogbinar/property-pi`
-2. **Set Environment Variables** in Dokploy's UI for:
-   - `SECRET_KEY`
-   - `ALLOWED_ORIGINS`
-3. **Configure Domains:**
-   - Frontend: `property-pi.apps.ogbinar.com` → port 5173
-   - Backend: `property-pi.apps.ogbinar.com/api/*` → port 8000
-4. **Enable Volumes** for `backend_db_data`
+- `GET /api/health`
+- `POST /auth/login`
+- `GET /`
 
-## Deployment
+## Notes
 
-```bash
-# Push to GitHub (Dokploy auto-deploys)
-git push
-
-# Or deploy manually
-docker compose up -d --build
-```
-
-## Admin Login
-
-After first deployment, create admin user or set:
-
-```bash
-CREATE_DEFAULT_ADMIN=true
-DEFAULT_ADMIN_PASSWORD=<your-password>
-```
-
-Then restart the backend container.
-
-## Health Check
-
-- Basic: `https://property-pi.apps.ogbinar.com/api/health`
-- Database: `https://property-pi.apps.ogbinar.com/api/health/db`
-- Full: `https://property-pi.apps.ogbinar.com/api/health/full`
+- Do not rely on old split-service deployment instructions.
+- Do not commit secrets into deployment notes.

@@ -21,7 +21,6 @@ services:
       ACCESS_TOKEN_EXPIRE_MINUTES: 120
       ALLOWED_ORIGINS: http://localhost:18080,http://localhost:18000
       ENVIRONMENT: development
-      CREATE_DEFAULT_ADMIN: true
     volumes:
       - ./backend:/app
       - ./uploads:/app/uploads

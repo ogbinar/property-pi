@@ -37,23 +37,6 @@ async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
         content={"error": "rate_limit_exceeded", "detail": "Rate limit exceeded. Try again later."}
     )
 
-
-def _collapse_duplicate_prefix(path: str) -> str:
-    """Collapse duplicated leading segments caused by stale proxy path rewrites."""
-    parts = [segment for segment in path.split("/") if segment]
-    if len(parts) >= 2 and parts[0] == parts[1]:
-        return "/" + "/".join([parts[0], *parts[2:]])
-    return path
-
-
-@app.middleware("http")
-async def normalize_path_prefixes(request: Request, call_next):
-    normalized_path = _collapse_duplicate_prefix(request.scope.get("path", ""))
-    if normalized_path != request.scope.get("path", ""):
-        request.scope["path"] = normalized_path
-        request.scope["raw_path"] = normalized_path.encode("utf-8")
-    return await call_next(request)
-
 # CORS — read origins from settings
 origins = settings.origins_list
 app.add_middleware(
@@ -64,28 +47,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize database and seed default admin user
+# Initialize database
 from app.db_init import init_db
-from app.database import SessionLocal
-from app import models, auth as auth_module
 init_db()
-
-# Create default admin only if explicitly enabled (development mode)
-CREATE_DEFAULT_ADMIN = os.environ.get("CREATE_DEFAULT_ADMIN", "false").lower() == "true"
-if CREATE_DEFAULT_ADMIN:
-    with SessionLocal() as db:
-        existing = db.query(models.User).filter(models.User.email == "admin@propertypi.com").first()
-        if not existing:
-            admin_password = os.environ.get("DEFAULT_ADMIN_PASSWORD", "admin123")
-            admin = models.User(
-                name="Admin",
-                email="admin@propertypi.com",
-                password_hash=auth_module.hash_password(admin_password),
-                role="landlord",
-            )
-            db.add(admin)
-            db.commit()
-            print(f"⚠️  Default admin created with password: {admin_password}")
 
 # Serve uploaded files statically
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "uploads")
@@ -94,11 +58,7 @@ app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 # Routers
 app.include_router(health.router)
-app.include_router(health.legacy_router)
 app.include_router(auth.router)
-app.include_router(auth.legacy_router)
-app.include_router(auth.api_router)
-app.include_router(auth.api_auth_router)
 app.include_router(units.router)
 app.include_router(tenants.router)
 app.include_router(leases.router)
@@ -119,11 +79,20 @@ FRONTEND_DIST_DIR = Path(
 FRONTEND_INDEX = FRONTEND_DIST_DIR / "index.html"
 
 
-@app.get("/{path:path}", include_in_schema=False)
+def _has_duplicate_prefix(path: str) -> bool:
+    parts = [segment for segment in path.split("/") if segment]
+    return len(parts) >= 2 and parts[0] == parts[1]
+
+
+@app.api_route(
+    "/{path:path}",
+    include_in_schema=False,
+    methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"],
+)
 async def spa_fallback(path: str):
     """Serve the built SPA for client-side routes in production."""
-    blocked_prefixes = ("api", "auth", "uploads", "docs", "openapi.json", "redoc")
-    if path.startswith(blocked_prefixes):
+    blocked_prefixes = ("api", "auth", "uploads", "docs", "openapi.json", "redoc", "health")
+    if path.startswith(blocked_prefixes) or _has_duplicate_prefix(path):
         raise HTTPException(status_code=404, detail="Not Found")
 
     if not FRONTEND_INDEX.exists():

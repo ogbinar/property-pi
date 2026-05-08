@@ -2,77 +2,53 @@
 
 ## Summary
 
-Property-Pi is a React + Vite frontend backed by FastAPI and SQLite.
+Property-Pi runs as a single production service:
 
-The development setup still uses two processes:
+- FastAPI serves the REST API
+- FastAPI serves the built SPA from `frontend/dist`
+- FastAPI serves uploaded files from `/uploads`
 
-- Vite dev server for the SPA
-- FastAPI for the API
+The repository still contains separate `frontend/` and `backend/` source trees, but production is one container and one HTTP service.
 
-The production direction is a single Python runtime that serves:
+## Production Runtime
 
-- the API
-- the built SPA
-- static uploads
+1. The root `Dockerfile` builds the Vite frontend.
+2. The same image installs the FastAPI backend.
+3. Built frontend assets are copied into the runtime image.
+4. `uvicorn app.main:app` serves the API and SPA together.
 
-## Current Runtime Shape
+## Request Contract
 
-### Frontend
+- `/auth/*` is the canonical auth surface.
+- `/api/health` is the canonical health endpoint.
+- `/api/*` contains application APIs.
+- `/uploads/*` serves uploaded files.
+- Any non-API client route falls back to `index.html`.
 
-- React + Vite SPA
-- Client-side routing via React Router
-- Bearer token auth stored in `localStorage`
-- API calls through `frontend/src/api.js`
+Compatibility aliases still exist in the backend for older callers, but they are not the active contract.
 
-### Backend
+## Development Shape
 
-- FastAPI application
-- SQLAlchemy + SQLite
-- JWT auth with bcrypt password hashing
-- file uploads under `/uploads`
-- rate limiting via `slowapi`
+Local development remains split by process:
 
-### Deployment
+- Vite dev server for frontend work
+- FastAPI dev server for backend work
 
-- Production compose now builds one backend image from the repo root
-- The backend image copies the built frontend assets into the runtime image
-- FastAPI serves the SPA and API together
+That is a development convenience, not the production architecture.
 
-## Key Paths
+## Storage
 
-- `/api/*` - canonical backend API
-- `/auth/*` - auth API
-- `/uploads/*` - file uploads
-- `/docs` - FastAPI docs
-- `/` and client routes - SPA fallback
+- Database: SQLite
+- Uploads: local filesystem under `uploads/`
+- Static frontend assets: baked into the production image
 
-## Why This Shape
+## Operational Implications
 
-The old split runtime added unnecessary failure modes:
+- One deployable service in production
+- One health endpoint for platform checks
+- No frontend Nginx proxy in the active production design
+- No separate production frontend container in the active production design
 
-- frontend Nginx depended on backend reachability
-- route prefixes had to be preserved perfectly
-- Dokploy env and proxy state could drift independently
+## Historical Note
 
-Serving the SPA from FastAPI removes the proxy hop and makes production deploys easier to reason about.
-
-## Persistence
-
-- SQLite remains on a volume
-- uploads remain on a separate volume
-- schema changes should go through Alembic
-
-## Operational Rules
-
-- `SECRET_KEY` must be non-default in production
-- `ALLOWED_ORIGINS` must include the live origin
-- production should not rely on implicit bootstrap behavior
-
-## Migration Notes
-
-Compatibility routes and transition code may remain temporarily during the rearchitecture loop, but the end state should be canonical and single-path:
-
-- one SPA host path
-- one API prefix
-- one production runtime service
-
+Earlier planning documents described split runtimes, Next.js pivots, and PocketBase-based designs. Those are historical artifacts only and should not be treated as the current architecture.

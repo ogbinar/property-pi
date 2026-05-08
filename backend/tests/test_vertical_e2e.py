@@ -175,7 +175,7 @@ async def test_vertical_spa_fallback_and_blocked_paths(tmp_path, monkeypatch, db
 
 
 @pytest.mark.asyncio
-async def test_vertical_stale_proxy_paths_are_normalized(tmp_path, monkeypatch, db_session):
+async def test_vertical_stale_proxy_paths_are_rejected(tmp_path, monkeypatch, db_session):
     _seed_admin(db_session)
 
     frontend_dist = tmp_path / "frontend-dist"
@@ -186,23 +186,22 @@ async def test_vertical_stale_proxy_paths_are_normalized(tmp_path, monkeypatch, 
 
     async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
         api_health = await client.get("/api/api/health")
-        assert api_health.status_code == 200
+        assert api_health.status_code == 404
 
         legacy_health = await client.get("/health/health")
-        assert legacy_health.status_code == 200
+        assert legacy_health.status_code == 404
 
         login = await client.post(
             "/auth/auth/login",
             json={"email": "admin@propertypi.com", "password": "admin123"},
         )
-        assert login.status_code == 200
+        assert login.status_code == 404
 
         api_login = await client.post(
             "/api/api/auth/login",
             json={"email": "admin@propertypi.com", "password": "admin123"},
         )
-        assert api_login.status_code == 200
+        assert api_login.status_code == 404
 
         page = await client.get("/login/login")
-        assert page.status_code == 200
-        assert "Property Pi" in page.text
+        assert page.status_code == 404

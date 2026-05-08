@@ -1,81 +1,25 @@
-# Dokploy Configuration
+# Dokploy Config Notes
 
-## Dokploy Instance
+## Current Application Model
 
-**Instance URL:** `https://dokploy.ogbinar.com`
+Property-Pi should be configured in Dokploy as a single production service.
 
-**API Key:** `RQjKSEVFjWwgWKfHfStuUIGhoNpSMLsWGWcGxeuNEnewJfPbHXaVeCPZDuzEmPDB`
+- Repository root is the build context.
+- Use the root `Dockerfile`.
+- If using compose, use `docker-compose.yml`.
 
-**Status:** ✅ Configured
+## Required Variables
 
-**API Access:** 
-- Swagger UI available at `https://dokploy.ogbinar.com/swagger`
-- Requires session authentication (not direct API key auth)
-- Use dashboard for initial deployment setup
+- `SECRET_KEY`
+- `DATABASE_URL`
+- `ALLOWED_ORIGINS`
+- `ENVIRONMENT`
 
-**Note:** The API key appears to be for dashboard access. Direct API calls require session tokens obtained through login. Dashboard deployment recommended for initial setup.
+## Security
 
-## Deployment Configuration
+- No API keys or tokens should be stored in this repository.
+- Keep Dokploy credentials only in Dokploy or a secure secret manager.
 
-### Next Steps to Deploy
+## Historical Note
 
-1. **Access Dokploy Dashboard**
-   - URL: `https://dokploy.ogbinar.com`
-   - Use API key for authentication
-
-2. **Create Application/Stack**
-   - Use `docker-compose.dokploy.yml`
-   - Or create via API
-
-3. **Set Environment Variables**
-   ```
-   NEXT_PUBLIC_POCKETBASE_URL=https://your-app.dokploy.ogbinar.com:8090
-   NEXT_PUBLIC_API_URL=https://your-app.dokploy.ogbinar.com:8000
-   BACKEND_POCKETBASE_ADMIN_TOKEN=<generate-from-pocketbase>
-   BACKEND_SECRET_KEY=<generate-random-key>
-   CORS_ORIGINS=https://your-app.dokploy.ogbinar.com
-   ```
-
-4. **Configure Domain**
-   - Subdomain or custom domain pointing to Dokploy instance
-
-5. **Deploy**
-   - Via Dashboard UI or API
-
-## Repository
-
-**Property-Pi Repo:** `/projects/property-pi`
-
-**Docker Files:**
-- `docker-compose.dokploy.yml` - Production compose file
-- `Dockerfile` - Next.js frontend
-- `backend/Dockerfile` - FastAPI backend
-
-## API Endpoints (Dokploy)
-
-Based on Dokploy documentation, common API endpoints:
-
-```
-POST /api/auth/login
-POST /api/applications
-POST /api/stacks
-GET /api/stacks/{stackId}
-POST /api/stacks/{stackId}/deploy
-```
-
-Authentication: Use API key in `Authorization: Bearer <key>` header
-
-## Current Status
-
-- ✅ Dokploy instance identified
-- ✅ API key configured
-- ✅ Docker compose files ready
-- ⏳ Environment variables need configuration
-- ⏳ Domain/subdomain assignment needed
-- ⏳ PocketBase collections setup required
-
-## Notes
-
-- API key is sensitive - treat as password
-- Generate unique admin token in PocketBase after setup
-- Update CORS origins when domain changes
+Earlier versions of this file contained environment examples for PocketBase-era and split-runtime deployments. Those are obsolete.
