@@ -1,7 +1,7 @@
 """Tests for Dokploy deployment configuration fixes.
 
 Validates:
-- production compose uses a single backend service
+- production compose uses a single frontend service running the FastAPI runtime
 - production compose has no Traefik labels, no external networks, no ports
 - production Dockerfile is root-level and does not shadow compose env vars
 - config.py env var names are consistent
@@ -72,38 +72,38 @@ class TestDockerCompose:
                 "Dokploy manages port exposure via dashboard — remove it."
             )
 
-    def test_backend_has_working_dir_and_command(self, compose):
-        """Backend should have working_dir and explicit command."""
-        backend = compose.get("services", {}).get("backend", {})
-        assert "working_dir" in backend, "Backend should have working_dir set"
-        assert "command" in backend, "Backend should have explicit command"
-        assert "uvicorn" in backend["command"], (
-            "Backend command should run uvicorn"
+    def test_frontend_has_working_dir_and_command(self, compose):
+        """Frontend should have working_dir and explicit command."""
+        frontend = compose.get("services", {}).get("frontend", {})
+        assert "working_dir" in frontend, "Frontend should have working_dir set"
+        assert "command" in frontend, "Frontend should have explicit command"
+        assert "uvicorn" in frontend["command"], (
+            "Frontend command should run uvicorn"
         )
 
-    def test_no_frontend_runtime_service(self, compose):
-        """Production compose should not define a frontend runtime service."""
+    def test_no_backend_runtime_service(self, compose):
+        """Production compose should not define a separate backend runtime service."""
         services = compose.get("services", {})
-        assert "frontend" not in services, (
-            "Production compose should be a single backend service. "
-            "Remove the frontend runtime container from production."
+        assert "backend" not in services, (
+            "Production compose should be a single frontend service. "
+            "Remove the separate backend runtime container from production."
         )
 
-    def test_backend_builds_from_repo_root(self, compose):
-        """Backend should build the single production image from the repo root."""
-        backend = compose.get("services", {}).get("backend", {})
-        build = backend.get("build", {})
+    def test_frontend_builds_from_repo_root(self, compose):
+        """Frontend should build the single production image from the repo root."""
+        frontend = compose.get("services", {}).get("frontend", {})
+        build = frontend.get("build", {})
         assert build.get("context") == ".", (
-            "Backend should build from the repo root so it can bundle the SPA"
+            "Frontend should build from the repo root so it can bundle the SPA"
         )
         assert build.get("dockerfile") == "Dockerfile", (
             "Production should use the root Dockerfile for the single-service image"
         )
 
-    def test_backend_database_url_not_hardcoded(self, compose):
+    def test_frontend_database_url_not_hardcoded(self, compose):
         """DATABASE_URL should come from compose environment, not Dockerfile."""
-        backend = compose.get("services", {}).get("backend", {})
-        env = backend.get("environment", {})
+        frontend = compose.get("services", {}).get("frontend", {})
+        env = frontend.get("environment", {})
         if isinstance(env, dict):
             assert "DATABASE_URL" in env, (
                 "DATABASE_URL should be set in compose environment variables"
@@ -117,10 +117,10 @@ class TestDockerCompose:
                 "DATABASE_URL should be set in compose environment variables"
             )
 
-    def test_backend_secret_has_no_dev_fallback(self, compose):
+    def test_frontend_secret_has_no_dev_fallback(self, compose):
         """Production compose should require a real SECRET_KEY from Dokploy."""
-        backend = compose.get("services", {}).get("backend", {})
-        env = backend.get("environment", {})
+        frontend = compose.get("services", {}).get("frontend", {})
+        env = frontend.get("environment", {})
         if isinstance(env, dict):
             secret = env.get("SECRET_KEY", "")
             assert "dev-secret-key" not in secret, (
@@ -139,8 +139,8 @@ class TestDockerCompose:
 
     def test_cors_allows_https(self, compose):
         """CORS origins should include HTTPS for Dokploy deployments."""
-        backend = compose.get("services", {}).get("backend", {})
-        env = backend.get("environment", {})
+        frontend = compose.get("services", {}).get("frontend", {})
+        env = frontend.get("environment", {})
         origins = None
         if isinstance(env, dict):
             origins = env.get("ALLOWED_ORIGINS", "")
@@ -202,7 +202,7 @@ class TestBackendDockerfile:
         )
 
     def test_exposes_port_8000(self, dockerfile):
-        """Backend should EXPOSE 8000."""
+        """Backend Dockerfile should EXPOSE 8000."""
         assert "EXPOSE 8000" in dockerfile, "Backend Dockerfile should EXPOSE 8000"
 
 
