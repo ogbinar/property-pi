@@ -1,5 +1,7 @@
 # Code Review: Property-Pi
 
+> Historical review. Use [ARCHITECTURE.md](./ARCHITECTURE.md) and [REARCHITECTURE-PLAN.md](./REARCHITECTURE-PLAN.md) for current guidance.
+
 ## Executive Summary
 
 Property-Pi is a property management application for small-scale landlords. The backend is a well-structured FastAPI application with SQLAlchemy ORM, JWT auth, and rate limiting. The frontend is a React + Vite SPA with React Router. The codebase is functional and covers core workflows, but has several security, correctness, and quality issues that should be addressed.

@@ -1,8 +1,9 @@
 """Tests for Dokploy deployment configuration fixes.
 
 Validates:
-- docker-compose.yml has no Traefik labels, no external networks, no ports
-- backend Dockerfile does not shadow compose env vars
+- production compose uses a single backend service
+- production compose has no Traefik labels, no external networks, no ports
+- production Dockerfile is root-level and does not shadow compose env vars
 - config.py env var names are consistent
 - .env.example matches Vite (not Next.js)
 - backend/.dockerignore exists
@@ -80,11 +81,24 @@ class TestDockerCompose:
             "Backend command should run uvicorn"
         )
 
-    def test_frontend_has_working_dir_and_command(self, compose):
-        """Frontend should have working_dir and explicit command."""
-        frontend = compose.get("services", {}).get("frontend", {})
-        assert "working_dir" in frontend, "Frontend should have working_dir set"
-        assert "command" in frontend, "Frontend should have explicit command"
+    def test_no_frontend_runtime_service(self, compose):
+        """Production compose should not define a frontend runtime service."""
+        services = compose.get("services", {})
+        assert "frontend" not in services, (
+            "Production compose should be a single backend service. "
+            "Remove the frontend runtime container from production."
+        )
+
+    def test_backend_builds_from_repo_root(self, compose):
+        """Backend should build the single production image from the repo root."""
+        backend = compose.get("services", {}).get("backend", {})
+        build = backend.get("build", {})
+        assert build.get("context") == ".", (
+            "Backend should build from the repo root so it can bundle the SPA"
+        )
+        assert build.get("dockerfile") == "Dockerfile", (
+            "Production should use the root Dockerfile for the single-service image"
+        )
 
     def test_backend_database_url_not_hardcoded(self, compose):
         """DATABASE_URL should come from compose environment, not Dockerfile."""
@@ -190,6 +204,31 @@ class TestBackendDockerfile:
     def test_exposes_port_8000(self, dockerfile):
         """Backend should EXPOSE 8000."""
         assert "EXPOSE 8000" in dockerfile, "Backend Dockerfile should EXPOSE 8000"
+
+
+class TestProductionDockerfile:
+    """Validate the root production Dockerfile for the single-service runtime."""
+
+    @pytest.fixture
+    def dockerfile(self):
+        path = PROJECT_ROOT / "Dockerfile"
+        assert path.exists(), "root Dockerfile must exist for production builds"
+        return path.read_text()
+
+    def test_builds_frontend_and_backend(self, dockerfile):
+        """Production Dockerfile should build the frontend and run FastAPI."""
+        assert "npm run build --prefix frontend" in dockerfile, (
+            "Production Dockerfile should build the Vite frontend"
+        )
+        assert "uvicorn" in dockerfile, (
+            "Production Dockerfile should start the FastAPI backend"
+        )
+
+    def test_copies_frontend_dist(self, dockerfile):
+        """Production Dockerfile should copy built SPA assets into the image."""
+        assert "frontend/dist" in dockerfile, (
+            "Production Dockerfile should copy built frontend assets into the runtime image"
+        )
 
 
 class TestConfigEnvVars:

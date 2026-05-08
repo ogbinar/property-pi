@@ -1,8 +1,11 @@
 import os
+from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -87,3 +90,29 @@ app.include_router(maintenance.router)
 app.include_router(dashboard.router)
 app.include_router(tenant_portal.router)
 app.include_router(upload.router)
+
+
+FRONTEND_DIST_DIR = Path(
+    os.environ.get(
+        "FRONTEND_DIST_DIR",
+        Path(__file__).resolve().parents[2] / "frontend-dist",
+    )
+)
+FRONTEND_INDEX = FRONTEND_DIST_DIR / "index.html"
+
+
+@app.get("/{path:path}", include_in_schema=False)
+async def spa_fallback(path: str):
+    """Serve the built SPA for client-side routes in production."""
+    blocked_prefixes = ("api", "auth", "uploads", "docs", "openapi.json", "redoc")
+    if path.startswith(blocked_prefixes):
+        raise HTTPException(status_code=404, detail="Not Found")
+
+    if not FRONTEND_INDEX.exists():
+        raise HTTPException(status_code=404, detail="Not Found")
+
+    candidate = FRONTEND_DIST_DIR / path if path else FRONTEND_INDEX
+    if path and candidate.exists() and candidate.is_file():
+        return FileResponse(candidate)
+
+    return FileResponse(FRONTEND_INDEX)

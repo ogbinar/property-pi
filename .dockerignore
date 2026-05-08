@@ -1,12 +1,17 @@
 node_modules
+frontend/node_modules
+frontend/dist
 pb_data
+uploads
 .git
 .gitignore
 backend/.venv
 backend/__pycache__
+backend/tests
 **/*.pyc
 **/*.pyo
 **/__pycache__
+*.db
 *.md
 .Dockerfile
 .dockerignore

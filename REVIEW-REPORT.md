@@ -1,5 +1,7 @@
 # Simplification Plan — Implementation Review Report
 
+> Historical review report. It documents the old simplification phase and should not be used as the current source of truth.
+
 **Date:** 2026-04-30
 **Reviewed by:** Automated review
 **Scope:** All 3 completed phases of SIMPLIFICATION-PLAN.md
