@@ -37,6 +37,23 @@ async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
         content={"error": "rate_limit_exceeded", "detail": "Rate limit exceeded. Try again later."}
     )
 
+
+def _collapse_duplicate_prefix(path: str) -> str:
+    """Collapse duplicated leading segments caused by stale proxy path rewrites."""
+    parts = [segment for segment in path.split("/") if segment]
+    if len(parts) >= 2 and parts[0] == parts[1]:
+        return "/" + "/".join([parts[0], *parts[2:]])
+    return path
+
+
+@app.middleware("http")
+async def normalize_path_prefixes(request: Request, call_next):
+    normalized_path = _collapse_duplicate_prefix(request.scope.get("path", ""))
+    if normalized_path != request.scope.get("path", ""):
+        request.scope["path"] = normalized_path
+        request.scope["raw_path"] = normalized_path.encode("utf-8")
+    return await call_next(request)
+
 # CORS — read origins from settings
 origins = settings.origins_list
 app.add_middleware(
@@ -81,6 +98,7 @@ app.include_router(health.legacy_router)
 app.include_router(auth.router)
 app.include_router(auth.legacy_router)
 app.include_router(auth.api_router)
+app.include_router(auth.api_auth_router)
 app.include_router(units.router)
 app.include_router(tenants.router)
 app.include_router(leases.router)

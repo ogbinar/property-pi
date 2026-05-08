@@ -172,3 +172,37 @@ async def test_vertical_spa_fallback_and_blocked_paths(tmp_path, monkeypatch, db
 
         api_health = await client.get("/api/health")
         assert api_health.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_vertical_stale_proxy_paths_are_normalized(tmp_path, monkeypatch, db_session):
+    _seed_admin(db_session)
+
+    frontend_dist = tmp_path / "frontend-dist"
+    frontend_dist.mkdir(parents=True)
+    (frontend_dist / "index.html").write_text("<html><body>Property Pi</body></html>")
+    monkeypatch.setattr(main_module, "FRONTEND_DIST_DIR", frontend_dist)
+    monkeypatch.setattr(main_module, "FRONTEND_INDEX", frontend_dist / "index.html")
+
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+        api_health = await client.get("/api/api/health")
+        assert api_health.status_code == 200
+
+        legacy_health = await client.get("/health/health")
+        assert legacy_health.status_code == 200
+
+        login = await client.post(
+            "/auth/auth/login",
+            json={"email": "admin@propertypi.com", "password": "admin123"},
+        )
+        assert login.status_code == 200
+
+        api_login = await client.post(
+            "/api/api/auth/login",
+            json={"email": "admin@propertypi.com", "password": "admin123"},
+        )
+        assert api_login.status_code == 200
+
+        page = await client.get("/login/login")
+        assert page.status_code == 200
+        assert "Property Pi" in page.text
